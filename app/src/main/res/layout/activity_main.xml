@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <com.rilixtech.widget.countrycodepicker.CountryCodePicker
+        android:id="@+id/ccp"
+        android:layout_width="215dp"
+        android:layout_height="45dp"
+        android:layout_marginStart="115dp"
+        android:layout_marginTop="139dp"
+        android:layout_marginEnd="92dp"
+        android:layout_marginBottom="20dp"
+        android:padding="10dp"
+        app:layout_constraintBottom_toTopOf="@+id/getNumber"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/getNumber"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="115dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="83dp"
+        android:layout_marginBottom="18dp"
+        android:ems="10"
+        android:inputType="phone"
+        app:layout_constraintBottom_toTopOf="@+id/otpEnter"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ccp" />
+
+    <EditText
+        android:id="@+id/otpEnter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="115dp"
+        android:layout_marginTop="14dp"
+        android:layout_marginEnd="83dp"
+        android:layout_marginBottom="23dp"
+        android:ems="10"
+        android:inputType="number"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@+id/nextOTP"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/getNumber" />
+
+    <Button
+        android:id="@+id/nextOTP"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="172dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="151dp"
+        android:layout_marginBottom="305dp"
+        android:text="Next"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/otpEnter" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

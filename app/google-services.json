@@ -1,0 +1,77 @@
+{
+  "project_info": {
+    "project_number": "414505890310",
+    "firebase_url": "https://fir-63909.firebaseio.com",
+    "project_id": "fir-63909",
+    "storage_bucket": "fir-63909.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:414505890310:android:4798af84db2d7f9789c987",
+        "android_client_info": {
+          "package_name": "com.example.authotp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "414505890310-h33m2l8mjp4m6b8759nooslvnia33nvp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.authotp",
+            "certificate_hash": "812e027bf06314e602a5dd48650f1ec96d949d76"
+          }
+        },
+        {
+          "client_id": "414505890310-ktu0vrdl2ptrf3eu9b1g9ov6vuhp91cr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAiIMlPbVQk1CC6tjMP6yhtP2jwuGIFrk8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "414505890310-ktu0vrdl2ptrf3eu9b1g9ov6vuhp91cr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:414505890310:android:85321a60562c03f389c987",
+        "android_client_info": {
+          "package_name": "com.example.firebasedemo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "414505890310-ktu0vrdl2ptrf3eu9b1g9ov6vuhp91cr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAiIMlPbVQk1CC6tjMP6yhtP2jwuGIFrk8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "414505890310-ktu0vrdl2ptrf3eu9b1g9ov6vuhp91cr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

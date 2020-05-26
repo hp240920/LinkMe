@@ -41,6 +41,23 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
+
+
+        // testing ******************* TO delete afterwards ************************
+        Intent intent = new Intent(MainActivity.this, Dashboard.class);
+        intent.putExtra("phoneNo", "9732647457");
+        startActivity(intent);
+
+        // testing ***************************************************************
+
+
+
+
+
+
+
         setContentView(R.layout.activity_main);
         phone = findViewById(R.id.getNumber);
         next = findViewById(R.id.signUp);

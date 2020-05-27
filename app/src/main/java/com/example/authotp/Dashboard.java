@@ -16,7 +16,7 @@ public class Dashboard extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
 
         MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.dashboard_menu,menu);
+        menuInflater.inflate(R.menu.dashboard_menu, menu);
         return super.onCreateOptionsMenu(menu);
     }
 

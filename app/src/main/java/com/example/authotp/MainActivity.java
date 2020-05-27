@@ -2,10 +2,12 @@ package com.example.authotp;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.view.View;
@@ -37,26 +39,11 @@ public class MainActivity extends AppCompatActivity {
     Boolean verificationOnProgress = false;
     PhoneAuthProvider.ForceResendingToken token;
     TextView otpTV;
+    ConstraintLayout layoutMain;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-
-
-
-        // testing ******************* TO delete afterwards ************************
-        Intent intent = new Intent(MainActivity.this, Dashboard.class);
-        intent.putExtra("phoneNo", "9732647457");
-        startActivity(intent);
-
-        // testing ***************************************************************
-
-
-
-
-
-
 
         setContentView(R.layout.activity_main);
         phone = findViewById(R.id.getNumber);
@@ -66,6 +53,18 @@ public class MainActivity extends AppCompatActivity {
         otpTV = findViewById(R.id.otpTextView);
         countryCodePicker = findViewById(R.id.ccp);
         fAuth = FirebaseAuth.getInstance();
+        layoutMain = findViewById(R.id.layoutMain);
+
+        layoutMain.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(v.getId() == R.id.layoutMain){
+                    InputMethodManager inputKeyboard = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                    assert inputKeyboard != null;
+                    inputKeyboard.hideSoftInputFromWindow(Objects.requireNonNull(getCurrentFocus()).getWindowToken(), 0);
+                }
+            }
+        });
 
         next.setOnClickListener(new View.OnClickListener(){
             @Override

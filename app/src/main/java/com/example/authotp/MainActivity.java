@@ -45,6 +45,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+
+
+
+        //*************** TO DELETE ****************************
+        Intent intent = new Intent(MainActivity.this, Sign_Up.class);
+        intent.putExtra("phoneNo", "1234567890");
+        startActivity(intent);
+        //*************** TO DELETE ****************************
+
         setContentView(R.layout.activity_main);
         phone = findViewById(R.id.getNumber);
         next = findViewById(R.id.signUp);

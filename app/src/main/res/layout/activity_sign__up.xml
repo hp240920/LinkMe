@@ -22,6 +22,9 @@
                 android:id="@+id/textView3"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
+                android:layout_marginLeft="15px"
+                android:layout_marginTop="30px"
+                android:layout_marginRight="15px"
                 android:text="Full Name/Comapany Name: "
                 android:textSize="18sp" />
 
@@ -29,6 +32,9 @@
                 android:id="@+id/fullName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="15px"
+                android:layout_marginRight="15px"
+                android:layout_marginBottom="10px"
                 android:ems="10"
                 android:hint="Name..."
                 android:inputType="textPersonName" />
@@ -37,6 +43,9 @@
                 android:id="@+id/textView4"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="15px"
+                android:layout_marginTop="30px"
+                android:layout_marginRight="15px"
                 android:text="Phone Number: "
                 android:textSize="18sp" />
 
@@ -44,6 +53,9 @@
                 android:id="@+id/phoneNo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="15px"
+                android:layout_marginRight="15px"
+                android:layout_marginBottom="10px"
                 android:editable="false"
                 android:ems="10"
                 android:inputType="textPersonName"
@@ -53,6 +65,9 @@
                 android:id="@+id/textView5"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="15px"
+                android:layout_marginTop="30px"
+                android:layout_marginRight="15px"
                 android:text="Instagram Id: "
                 android:textSize="18sp" />
 
@@ -60,6 +75,9 @@
                 android:id="@+id/insta"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="15px"
+                android:layout_marginRight="15px"
+                android:layout_marginBottom="10px"
                 android:ems="10"
                 android:hint="insta id..."
                 android:inputType="textPersonName" />
@@ -68,6 +86,9 @@
                 android:id="@+id/textView6"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="15px"
+                android:layout_marginTop="30px"
+                android:layout_marginRight="15px"
                 android:text="SnapChat Id: "
                 android:textSize="18sp" />
 
@@ -75,6 +96,9 @@
                 android:id="@+id/snap"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="15px"
+                android:layout_marginRight="15px"
+                android:layout_marginBottom="10px"
                 android:ems="10"
                 android:hint="snapchat id"
                 android:inputType="textPersonName" />
@@ -83,6 +107,9 @@
                 android:id="@+id/textView7"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="15px"
+                android:layout_marginTop="30px"
+                android:layout_marginRight="15px"
                 android:text="LinkedIn Website: "
                 android:textSize="18sp" />
 
@@ -90,6 +117,9 @@
                 android:id="@+id/linkedin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="15px"
+                android:layout_marginRight="15px"
+                android:layout_marginBottom="10px"
                 android:ems="10"
                 android:hint="linkedin..."
                 android:inputType="textPersonName" />
@@ -98,6 +128,9 @@
                 android:id="@+id/textView8"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="15px"
+                android:layout_marginTop="30px"
+                android:layout_marginRight="15px"
                 android:text="GitHub:"
                 android:textSize="18sp" />
 
@@ -105,6 +138,9 @@
                 android:id="@+id/github"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="15px"
+                android:layout_marginRight="15px"
+                android:layout_marginBottom="10px"
                 android:ems="10"
                 android:hint="github url..."
                 android:inputType="textPersonName" />
@@ -113,6 +149,9 @@
                 android:id="@+id/textView9"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="15px"
+                android:layout_marginTop="30px"
+                android:layout_marginRight="15px"
                 android:text="File Attachment:  "
                 android:textSize="18sp" />
 
@@ -120,26 +159,31 @@
                 android:id="@+id/fileName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="15px"
+                android:layout_marginRight="15px"
                 android:hint="file name..."
                 android:textSize="19sp" />
 
             <Button
-                android:id="@+id/button2"
+                android:id="@+id/btnSelectFile"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="12dp"
+                android:layout_marginLeft="15px"
+                android:layout_marginRight="15px"
+                android:onClick="onClickbtnSelect"
                 android:text="Select File" />
         </LinearLayout>
     </ScrollView>
 
     <Button
-        android:id="@+id/button3"
+        android:id="@+id/btnSignUp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="161dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="40dp"
         android:layout_marginEnd="162dp"
-        android:layout_marginBottom="29dp"
+        android:layout_marginBottom="100dp"
+        android:onClick="onclickbtnSignUp"
         android:text="Sign Up"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

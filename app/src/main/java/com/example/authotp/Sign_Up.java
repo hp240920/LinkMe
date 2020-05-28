@@ -26,6 +26,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
@@ -38,6 +39,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Sign_Up extends AppCompatActivity {
 
@@ -120,17 +123,44 @@ public class Sign_Up extends AppCompatActivity {
 
     public void onclickbtnSignUp(View v){
 
+
+            Uri myFileUri = uploadFile();
+
+            User myUser = createUser();
             if (pdfUri != null) {
                 // if you have selected a file to upload
-                uploadFile(); // uploading 2 files .... 1 with info and other is the selected file
-                uploadFiletoDatabase(pdfUri);
+                 // uploading 2 files .... 1 with info and other is the selected file
+                if(myFileUri != null){
+
+                    uploadFiletoDatabase(pdfUri,myUser,myFileUri);
+                }
             } else {
                 // if you have not selected a file to upload
-                uploadFile();// ONLY uploading the info file
+                if(myFileUri != null){
+
+                    uploadFiletoDatabase(null,myUser,myFileUri); // ONLY uploading the info file
+                }
+
             }
     }
 
-    private void uploadFile() {
+    private User createUser(){
+
+        String username = name.getText().toString();
+        String userPhone = phoneNo.getText().toString();
+        String userInsta = insta.getText().toString();
+        String userSnap = snap.getText().toString();
+        String userGit = github.getText().toString();
+        String userLinkedIn = linkedin.getText().toString();
+        String userFile1 ="";
+        String userFile2 = "";
+        ArrayList<User> arrFiles = new ArrayList<>();
+
+        User newUser = new User(username,userInsta,userSnap,userGit,userLinkedIn, userFile1,userFile2,arrFiles,userPhone);
+        return newUser;
+    }
+
+    private Uri uploadFile() {
         if (ContextCompat.checkSelfPermission(Sign_Up.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             String details = "";
             details += "Name :" + name.getText().toString();
@@ -140,13 +170,14 @@ public class Sign_Up extends AppCompatActivity {
             details += "\nLinkedIn :" + linkedin.getText().toString();
             details += "\nGitHub :" + github.getText().toString();
 
-            createPDF(details);
+            return createPDF(details);
         } else {
             ActivityCompat.requestPermissions(Sign_Up.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
         }
+        return null;
     }
 
-    private void createPDF(String text){
+    private Uri createPDF(String text){
         PdfDocument document = new PdfDocument();
         PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(300,600,1).create();
         PdfDocument.Page myPage = document.startPage(pageInfo);
@@ -176,7 +207,7 @@ public class Sign_Up extends AppCompatActivity {
         try {
             fileOutputStream = new FileOutputStream(myFile);
             document.writeTo(fileOutputStream);
-            uploadFiletoDatabase(myFileUri);
+            //uploadFiletoDatabase(myFileUri);
 
         }catch (IOException e){
             e.printStackTrace();
@@ -184,10 +215,11 @@ public class Sign_Up extends AppCompatActivity {
         }
 
             document.close();
+        return myFileUri;
     }
 
 
-    private void uploadFiletoDatabase(final Uri pdfUriFile){
+    private void uploadFiletoDatabase(final Uri pdfUriFile, final User myUser, final Uri myFileUri){
 
         final ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
@@ -195,48 +227,68 @@ public class Sign_Up extends AppCompatActivity {
         progressDialog.setProgress(0);
         progressDialog.show();
 
-        String abc = pdfUriFile.getPath();
         final String phone = phoneNo.getText().toString() + "/";
-        StorageReference storageReference = storage.getReference().child("files/"+ phone + pdfUriFile.getLastPathSegment().toString());
-        UploadTask uploadTask = storageReference.putFile(pdfUriFile);
-        uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                String url = taskSnapshot.getMetadata().getReference().getDownloadUrl().toString(); // return a url of your uploaded file
-                DatabaseReference dbref = database.getReference(); // returns the path to root
-                dbref.child("files/" + phone + pdfUriFile.getLastPathSegment().toString()).setValue(url).addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()){
-                            Toast.makeText(Sign_Up.this, "file Successfully uploaded", Toast.LENGTH_SHORT).show();
-                            progressDialog.dismiss();
-                            // Sign Up Complete
-                        }
-                        else{
+            StorageReference storageReference = storage.getReference().child("files/"+ phone + pdfUriFile.getLastPathSegment().toString());
+            UploadTask uploadTask = storageReference.putFile(pdfUriFile);
+
+            StorageReference storageReference2 = storage.getReference().child("files/"+ phone + myFileUri.getLastPathSegment().toString());
+            UploadTask uploadTask2 = storageReference2.putFile(myFileUri);
+
+        if (myFileUri != null) {
+            uploadTask2.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                                @Override
+                                                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                                    String url = taskSnapshot.getMetadata().getReference().getDownloadUrl().toString(); // return a url of your uploaded file
+
+                                                    HashMap<String, User> hashMap = new HashMap<>();
+                                                    hashMap.put(myUser.getPhonenumber(), myUser);
+
+                                                    database.getReference().child("User").setValue(hashMap);
+
+                                                    DatabaseReference dbref = database.getReference("User").child(myUser.getPhonenumber()); // returns the path to root
+
+                                                    if (pdfUriFile == null) {
+                                                        dbref.child("files1").setValue(url);
+                                                    }
+
+                                                    dbref.child("files").setValue(url).addOnCompleteListener(new OnCompleteListener<Void>() {
+
+                                                        // dbref.child("files/" + phone + pdfUriFile.getLastPathSegment().toString()).setValue(url).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                        @Override
+                                                        public void onComplete(@NonNull Task<Void> task) {
+                                                            if (task.isSuccessful()) {
+                                                                Toast.makeText(Sign_Up.this, "file Successfully uploaded", Toast.LENGTH_SHORT).show();
+                                                                progressDialog.dismiss();
+                                                                // Sign Up Complete
+
+                                                            } else {
+                                                                Toast.makeText(Sign_Up.this, "file not uploaded !!", Toast.LENGTH_SHORT).show();
+                                                            }
+
+                                                        }
+                                                    });
+                                                }
+
+                                            }
+            )
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
                             Toast.makeText(Sign_Up.this, "file not uploaded !!", Toast.LENGTH_SHORT).show();
                         }
+                    })
+                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
 
-                    }
-                });
-            }
+                            // tacking the progress of our upload
+                            int currentProgress = (int) (100 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                            progressDialog.setProgress(currentProgress);
+                        }
+                    });
 
         }
-        )
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(Sign_Up.this, "file not uploaded !!", Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
 
-                        // tacking the progress of our upload
-                        int currentProgress = (int) (100 * taskSnapshot.getBytesTransferred()/taskSnapshot.getTotalByteCount());
-                        progressDialog.setProgress(currentProgress);
-                    }
-                });
     }
 
 }

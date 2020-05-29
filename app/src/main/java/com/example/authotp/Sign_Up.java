@@ -10,11 +10,13 @@ import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Paint;
 import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -30,6 +32,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.ListResult;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -41,6 +44,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class Sign_Up extends AppCompatActivity {
 
@@ -52,6 +56,7 @@ public class Sign_Up extends AppCompatActivity {
     private Uri pdfUri;
     FirebaseDatabase database;
     FirebaseStorage storage;
+    String displayName = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,7 +107,24 @@ public class Sign_Up extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == INTENT_CODE_SELECTFILE && resultCode == RESULT_OK && data != null) {
             pdfUri = data.getData(); // getting the uri of selected file
-            fileName.setText(" Selected File: "+ data.getData().getLastPathSegment());
+            String uriString = pdfUri.toString();
+            File myFile = new File(uriString);
+            String path = myFile.getAbsolutePath();
+
+            if (uriString.startsWith("content://")) {
+                Cursor cursor = null;
+                try {
+                    cursor = this.getContentResolver().query(pdfUri, null, null, null, null);
+                    if (cursor != null && cursor.moveToFirst()) {
+                        displayName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                    }
+                } finally {
+                    cursor.close();
+                }
+            } else if (uriString.startsWith("file://")) {
+                displayName = myFile.getName();
+            }
+            fileName.setText(" Selected File: "+ displayName);
         }
         else{
             Toast.makeText(this,"Please select a file",Toast.LENGTH_SHORT).show();
@@ -122,8 +144,6 @@ public class Sign_Up extends AppCompatActivity {
 
 
     public void onclickbtnSignUp(View v){
-
-
             Uri myFileUri = uploadFile();
 
             User myUser = createUser();
@@ -138,7 +158,7 @@ public class Sign_Up extends AppCompatActivity {
                 // if you have not selected a file to upload
                 if(myFileUri != null){
 
-                    uploadFiletoDatabase(null,myUser,myFileUri); // ONLY uploading the info file
+                    uploadFiletoDatabase(null ,myUser,myFileUri); // ONLY uploading the info file
                 }
 
             }
@@ -227,68 +247,119 @@ public class Sign_Up extends AppCompatActivity {
         progressDialog.setProgress(0);
         progressDialog.show();
 
+        //may be we need a for loop to delete all the files, but wont work
+        //so to replace old files with new files, we need to delete the folder or the old files...
+
         final String phone = phoneNo.getText().toString() + "/";
-            StorageReference storageReference = storage.getReference().child("files/"+ phone + pdfUriFile.getLastPathSegment().toString());
+
+        StorageReference storageRef = storage.getReference();
+
+        StorageReference desertRef = storageRef.child("files/" + phone);
+
+        desertRef.listAll().addOnSuccessListener(new OnSuccessListener<ListResult>() {
+            @Override
+            public void onSuccess(ListResult listResult) {
+                for(StorageReference item : listResult.getItems()){
+                    Log.i("Item: ", item.getName());
+                    Toast.makeText(Sign_Up.this, "Please", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+
+
+        StorageReference storageReference2 = storage.getReference().child("files/" + phone + myFileUri.getLastPathSegment().toString());
+        UploadTask uploadTask2 = storageReference2.putFile(myFileUri);
+
+        uploadTask2.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                String url = taskSnapshot.getMetadata().getReference().getDownloadUrl().toString(); // return a url of your uploaded file
+
+                HashMap<String, User> hashMap = new HashMap<>();
+                hashMap.put(myUser.getPhonenumber(), myUser);
+
+                database.getReference().child("User").setValue(hashMap);
+
+                DatabaseReference dbref = database.getReference("User").child(myUser.getPhonenumber()); // returns the path to root
+
+
+                dbref.child("files2").setValue(url);
+
+
+                dbref.child("files2").setValue(url).addOnCompleteListener(new OnCompleteListener<Void>() {
+
+                    // dbref.child("files/" + phone + pdfUriFile.getLastPathSegment().toString()).setValue(url).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(Sign_Up.this, "File2 Successfully uploaded!!!", Toast.LENGTH_LONG).show();
+                            progressDialog.dismiss();
+                            // Sign Up Complete
+
+                        } else {
+                            Toast.makeText(Sign_Up.this, "File2 not uploaded!!!", Toast.LENGTH_LONG).show();
+                        }
+
+                    }
+                });
+            }
+
+        })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(Sign_Up.this, "File2 not uploaded !!", Toast.LENGTH_LONG).show();
+                    }
+                })
+                .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
+                        // tacking the progress of our upload
+                        int currentProgress = (int) (100 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                        progressDialog.setProgress(currentProgress);
+                    }
+                });
+
+        if(pdfUriFile != null) {
+            StorageReference storageReference = storage.getReference().child("files/" + phone + displayName);
             UploadTask uploadTask = storageReference.putFile(pdfUriFile);
 
-            StorageReference storageReference2 = storage.getReference().child("files/"+ phone + myFileUri.getLastPathSegment().toString());
-            UploadTask uploadTask2 = storageReference2.putFile(myFileUri);
+            uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    String url = taskSnapshot.getMetadata().getReference().getDownloadUrl().toString();
+                    DatabaseReference dbref = database.getReference("User").child(myUser.getPhonenumber());
+                    dbref.child("files1").setValue(url);
+                    dbref.child("files1").setValue(url).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                Toast.makeText(Sign_Up.this, "File1 Successfully uploaded!!!", Toast.LENGTH_LONG).show();
+                                progressDialog.dismiss();
+                                // Sign Up Complete
+                            } else {
+                                Toast.makeText(Sign_Up.this, "File1 not uploaded!!!", Toast.LENGTH_LONG).show();
+                            }
 
-        if (myFileUri != null) {
-            uploadTask2.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                                                @Override
-                                                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                                    String url = taskSnapshot.getMetadata().getReference().getDownloadUrl().toString(); // return a url of your uploaded file
-
-                                                    HashMap<String, User> hashMap = new HashMap<>();
-                                                    hashMap.put(myUser.getPhonenumber(), myUser);
-
-                                                    database.getReference().child("User").setValue(hashMap);
-
-                                                    DatabaseReference dbref = database.getReference("User").child(myUser.getPhonenumber()); // returns the path to root
-
-                                                    if (pdfUriFile == null) {
-                                                        dbref.child("files1").setValue(url);
-                                                    }
-
-                                                    dbref.child("files").setValue(url).addOnCompleteListener(new OnCompleteListener<Void>() {
-
-                                                        // dbref.child("files/" + phone + pdfUriFile.getLastPathSegment().toString()).setValue(url).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                        @Override
-                                                        public void onComplete(@NonNull Task<Void> task) {
-                                                            if (task.isSuccessful()) {
-                                                                Toast.makeText(Sign_Up.this, "file Successfully uploaded", Toast.LENGTH_SHORT).show();
-                                                                progressDialog.dismiss();
-                                                                // Sign Up Complete
-
-                                                            } else {
-                                                                Toast.makeText(Sign_Up.this, "file not uploaded !!", Toast.LENGTH_SHORT).show();
-                                                            }
-
-                                                        }
-                                                    });
-                                                }
-
-                                            }
-            )
+                        }
+                    });
+                }
+            })
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(Sign_Up.this, "file not uploaded !!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(Sign_Up.this, "File1 not uploaded !!", Toast.LENGTH_LONG).show();
                         }
                     })
                     .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
-
                             // tacking the progress of our upload
                             int currentProgress = (int) (100 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
                             progressDialog.setProgress(currentProgress);
                         }
                     });
-
         }
-
     }
 
 }

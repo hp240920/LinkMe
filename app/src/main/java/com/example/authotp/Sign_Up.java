@@ -86,7 +86,6 @@ public class Sign_Up extends AppCompatActivity {
 
 
     public void onClickbtnSelect(View v){
-
         if (ContextCompat.checkSelfPermission(Sign_Up.this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             selectPdf();
         } else {
@@ -252,20 +251,40 @@ public class Sign_Up extends AppCompatActivity {
 
         final String phone = phoneNo.getText().toString() + "/";
 
-        StorageReference storageRef = storage.getReference();
-
-        StorageReference desertRef = storageRef.child("files/" + phone);
+        final StorageReference desertRef = storage.getReference().child("files/" + phone);
 
         desertRef.listAll().addOnSuccessListener(new OnSuccessListener<ListResult>() {
             @Override
             public void onSuccess(ListResult listResult) {
+                //final int[] count = {0};
                 for(StorageReference item : listResult.getItems()){
-                    Log.i("Item: ", item.getName());
-                    Toast.makeText(Sign_Up.this, "Please", Toast.LENGTH_LONG).show();
+                    String path = item.toString().substring(item.toString().lastIndexOf('/') + 1);
+                    StorageReference desertRef1 = storage.getReference().child("files/" + phone + path);
+                    desertRef1.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            // File deleted successfully
+                            Log.i("Success", "onSuccess: deleted file");
+                        }
+                    })
+                            .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception exception) {
+                            // Uh-oh, an error occurred!
+                            Log.i("Failure", "onFailure: did not delete file");
+                        }
+                    });
+                    Log.i("Item: ", path);
+                    //Toast.makeText(Sign_Up.this, "Please", Toast.LENGTH_LONG).show();
                 }
             }
-        });
-
+        })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.i("Fail: ", "item.getName()");
+                    }
+                });
 
         StorageReference storageReference2 = storage.getReference().child("files/" + phone + myFileUri.getLastPathSegment().toString());
         UploadTask uploadTask2 = storageReference2.putFile(myFileUri);

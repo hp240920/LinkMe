@@ -48,8 +48,8 @@ public class MainActivity extends AppCompatActivity {
 
         // ********************** To delete ********************
 
-        Intent intent = new Intent(this,Sign_Up.class);
-        intent.putExtra("phoneNo","9876543210");
+        Intent intent = new Intent(this,Dashboard.class);
+        //intent.putExtra("phoneNo","1111111111");
         startActivity(intent);
 
         //  // ********************** To delete ********************

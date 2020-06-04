@@ -4,11 +4,16 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Paint;
@@ -146,6 +151,7 @@ public class Sign_Up extends AppCompatActivity {
     public void onclickbtnSignUp(View v){
             Uri myFileUri = uploadFile();
 
+            addNotification();
             User myUser = createUser();
             if (pdfUri != null) {
                 // if you have selected a file to upload
@@ -162,6 +168,44 @@ public class Sign_Up extends AppCompatActivity {
                 }
 
             }
+
+            createSharedPref(myUser);
+
+            Intent intent = new Intent(Sign_Up.this,Dashboard.class);
+            startActivity(intent);
+    }
+
+    private void addNotification() {
+        // Builds your notification
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
+                .setSmallIcon(R.mipmap.ic_launcher_round)
+                .setContentTitle("John's Android Studio Tutorials")
+                .setContentText("A video has just arrived!");
+
+        // Creates the intent needed to show the notification
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        builder.setContentIntent(contentIntent);
+
+        // Add as notification
+        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        manager.notify(0, builder.build());
+        Toast.makeText(this,"Toast in Notification",Toast.LENGTH_LONG).show();
+    }
+
+
+    private void createSharedPref(User myUser) {
+        SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
+
+        sharedPreferences.edit().putString("name",myUser.getName()).apply();
+        sharedPreferences.edit().putString("phone",myUser.getPhonenumber()).apply();
+        sharedPreferences.edit().putString("insta",myUser.getInstagram()).apply();
+        sharedPreferences.edit().putString("snap",myUser.getSnapchat()).apply();
+        sharedPreferences.edit().putString("github",myUser.getGitHub()).apply();
+        sharedPreferences.edit().putString("linkedIn",myUser.getLinkedIn()).apply();
+
+        sharedPreferences.edit().putString("file1",myUser.getFiles1()).apply();
+        sharedPreferences.edit().putString("file2",myUser.getFiles2()).apply();
     }
 
     private User createUser(){

@@ -6,13 +6,29 @@
     android:layout_height="match_parent"
     tools:context=".Dashboard">
 
+    <ScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView4">
+
+        <LinearLayout
+            android:id="@+id/scrollViewLinearLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+    </ScrollView>
+
     <TextView
         android:id="@+id/textView4"
-        android:layout_width="334dp"
+        android:layout_width="match_parent"
         android:layout_height="62dp"
-        android:layout_marginStart="34dp"
-        android:layout_marginTop="269dp"
-        android:text="You are ready !!   You will be able to see the messages on this screen"
+        android:layout_marginTop="43dp"
+        android:gravity="center"
+        android:text="You are ready and will see new messages below !!"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

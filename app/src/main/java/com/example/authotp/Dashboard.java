@@ -77,7 +77,7 @@ public class Dashboard extends AppCompatActivity {
         getSharedPref(sharedPreferences);
 
         //////////////////////////////////
-        currentUser.setPhonenumber("1489");
+        currentUser.setPhonenumber("7777");
         /////////////////////////////////
 
         // Getting Firebase Database and Storage
@@ -90,14 +90,18 @@ public class Dashboard extends AppCompatActivity {
 
         // check for Notification and start Service
 
-        serviceIntent = new Intent(this, com.example.authotp.Notify.class);
-        serviceIntent.putExtra("inputExtra", "input");
-        ContextCompat.startForegroundService(this, serviceIntent);
+        if(serviceIntent == null){
+            serviceIntent = new Intent(this, com.example.authotp.Notify.class);
+            serviceIntent.putExtra("inputExtra", "input");
+            ContextCompat.startForegroundService(this, serviceIntent);
 
-        check_notification();
+            check_notification();
+        }
+
 
 
     }
+    
 
     private void check_notification() {
 
@@ -136,9 +140,12 @@ public class Dashboard extends AppCompatActivity {
         query.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                LinearLayout linearLayout = findViewById(R.id.scrollViewLinearLayout);
+                linearLayout.removeAllViews();
                 for(DataSnapshot messageSnapshot : dataSnapshot.getChildren()){
                     if(messageSnapshot.exists()){
                         Message newMessage = messageSnapshot.getValue(Message.class);
+
                         writeTextView(newMessage.getFrom(),scrollView);
                     }
                 }
@@ -153,6 +160,7 @@ public class Dashboard extends AppCompatActivity {
 
     private void writeTextView(String phone, ScrollView scrollView){
 
+        System.out.println(phone);
         LinearLayout linearLayout = findViewById(R.id.scrollViewLinearLayout);
         TextView textView = new TextView(this);
         textView.setText(phone);

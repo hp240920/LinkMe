@@ -1,6 +1,7 @@
 package com.example.authotp;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
@@ -20,7 +21,9 @@ import android.view.MenuItem;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -101,26 +104,39 @@ public class Dashboard extends AppCompatActivity {
 
 
     }
-    
+
 
     private void check_notification() {
-
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        database.getReference().child("Message").limitToLast(1).addValueEventListener(new ValueEventListener() {
+        System.out.println("Needed!!!");
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        database.getReference().child("Message").addChildEventListener(new ChildEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                System.out.println("Outside for loop");
-                for(DataSnapshot user : dataSnapshot.getChildren()){
-                    System.out.println("For loop");
-                    if(user.exists()){
-                        System.out.println("user exists");
-                        if(user.getValue(Message.class).getTo().equals(currentUser.getPhonenumber())){ // insert your current number
-                            System.out.println("changes made");
-                            notification2();
-                        }
-                    }
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                String key = dataSnapshot.getKey();
+                Message message = dataSnapshot.getValue(Message.class);
+                //System.out.println("Needed123!!! " + message.toString());
+                boolean check = message.isCheck();
+                String toNumber = message.getTo();
+                //count++;
+                if(!check && toNumber.equals("5512147895")) {
+                    notification2(message.getFrom());
+                    database.getReference("Message").child(key).child("check").setValue(true);
                 }
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                Toast.makeText(Dashboard.this, "Hello There", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
             }
 
             @Override
@@ -128,7 +144,6 @@ public class Dashboard extends AppCompatActivity {
 
             }
         });
-
     }
 
     private void updateScrollView() {
@@ -179,12 +194,12 @@ public class Dashboard extends AppCompatActivity {
         currentUser.setFiles2(sharedPreferences.getString("file2",""));
     }
 
-    private void notification2() {
+    private void notification2(String num) {
         // Builds your notification
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher_round)
                 .setContentTitle("John's Android Studio Tutorials")
-                .setContentText("A video has just arrived!");
+                .setContentText("Message from " + num);
 
         // Creates the intent needed to show the notification
         Intent notificationIntent = new Intent(this, Dashboard.class);

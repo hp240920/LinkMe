@@ -4,7 +4,9 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.inputmethod.InputMethodManager;
@@ -47,11 +49,11 @@ public class MainActivity extends AppCompatActivity {
 
 
         // ********************** To delete ********************
-
-        Intent intent = new Intent(this,Dashboard.class);
-        //intent.putExtra("phoneNo","1111111111");
-        startActivity(intent);
-
+        SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
+        if(sharedPreferences.contains("phone")){
+            Intent intent = new Intent(this,Dashboard.class);
+            startActivity(intent);
+        }
         //  // ********************** To delete ********************
 
         setContentView(R.layout.activity_main);

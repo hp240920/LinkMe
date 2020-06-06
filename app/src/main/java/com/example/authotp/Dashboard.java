@@ -12,17 +12,21 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -31,6 +35,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+
+import org.w3c.dom.Text;
 
 public class Dashboard extends AppCompatActivity {
 
@@ -50,15 +57,38 @@ public class Dashboard extends AppCompatActivity {
         switch (item.getItemId()){
             case R.id.edit_information:
                 Log.i("Selected :","edit info");
+                EditInfo();
                 return true;
             case R.id.about_us:
                 Log.i("Selected :","about us");
                 return true;
             case R.id.log_out:
                 Log.i("Selected :","log out");
+                logOut();
+                return true;
             default:
                 return false;
         }
+    }
+
+    private void EditInfo() {
+        SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.clear();
+        editor.apply();
+        Intent intent = new Intent(this,Sign_Up.class);
+        intent.putExtra("phoneNo",currentUser.getPhonenumber());
+        startActivity(intent);
+    }
+
+    // removing shared pref and going to main Activity
+    private void logOut() {
+        SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.clear();
+        editor.apply();
+        Intent intent = new Intent(this,MainActivity.class);
+        startActivity(intent);
     }
 
     private User currentUser;
@@ -79,10 +109,6 @@ public class Dashboard extends AppCompatActivity {
         currentUser = new User();
         getSharedPref(sharedPreferences);
 
-        //////////////////////////////////
-        currentUser.setPhonenumber("7777");
-        /////////////////////////////////
-
         // Getting Firebase Database and Storage
 
         firebaseDatabase = FirebaseDatabase.getInstance();
@@ -101,8 +127,6 @@ public class Dashboard extends AppCompatActivity {
             check_notification();
         }
 
-
-
     }
 
 
@@ -118,7 +142,7 @@ public class Dashboard extends AppCompatActivity {
                 boolean check = message.isCheck();
                 String toNumber = message.getTo();
                 //count++;
-                if(!check && toNumber.equals("5512147895")) {
+                if(!check && toNumber.equals(currentUser.getPhonenumber())) {
                     notification2(message.getFrom());
                     database.getReference("Message").child(key).child("check").setValue(true);
                 }
@@ -126,7 +150,7 @@ public class Dashboard extends AppCompatActivity {
 
             @Override
             public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                Toast.makeText(Dashboard.this, "Hello There", Toast.LENGTH_SHORT).show();
+               // Toast.makeText(Dashboard.this, "Hello There", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -160,7 +184,6 @@ public class Dashboard extends AppCompatActivity {
                 for(DataSnapshot messageSnapshot : dataSnapshot.getChildren()){
                     if(messageSnapshot.exists()){
                         Message newMessage = messageSnapshot.getValue(Message.class);
-
                         writeTextView(newMessage.getFrom(),scrollView);
                     }
                 }
@@ -179,7 +202,64 @@ public class Dashboard extends AppCompatActivity {
         LinearLayout linearLayout = findViewById(R.id.scrollViewLinearLayout);
         TextView textView = new TextView(this);
         textView.setText(phone);
-        linearLayout.addView(textView);
+        textView.setOnClickListener(onClickListener);
+        linearLayout.addView(textView,0);
+    }
+
+    private View.OnClickListener onClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+
+            if(view instanceof TextView){
+                TextView tv = (TextView)view;
+                String selectedUserNumber = tv.getText().toString();
+                getFileFromNumber(selectedUserNumber);
+            }
+        }
+    };
+
+    private void getFileFromNumber(String selectedUserNumber) {
+
+        DatabaseReference dbref = firebaseDatabase.getReference().child("User");
+
+        Query query = dbref.orderByChild("phonenumber").equalTo(selectedUserNumber);
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for(DataSnapshot userSnapshot : dataSnapshot.getChildren()){
+                    if(userSnapshot.exists()){
+                        String file1 = userSnapshot.getValue(User.class).getFiles1();
+                        String file2 = userSnapshot.getValue(User.class).getFiles2();
+                      //  System.out.println("  File 1 "+ file1 + "  File 2 "+ file2);
+                        downloadfiles(file1,file2);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
+    }
+
+    private void downloadfiles(String file1, String file2) {
+
+        StorageReference storageReference = FirebaseStorage.getInstance().getReferenceFromUrl(file1);
+
+        final long ONE_MEGABYTE = 1024 * 1024;
+        storageReference.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+            @Override
+            public void onSuccess(byte[] bytes) {
+                // Data for "images/island.jpg" is returns, use this as needed
+                Toast.makeText(getApplicationContext(), "Download Complete", Toast.LENGTH_SHORT).show();
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Handle any errors
+            }
+        });
+
     }
 
     private void getSharedPref(SharedPreferences sharedPreferences){

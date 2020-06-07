@@ -54,16 +54,29 @@ public class Detector extends BroadcastReceiver{
 
     public void notification2(Context context,String incomingNumber) {
         // Builds your notification
+
+        Intent notificationIntent = new Intent(context, Conformation.class);
+        notificationIntent.putExtra("phoneNum", incomingNumber);
+        PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
+
+        Intent broadcastIntent = new Intent(context, NotificationAction.class);
+        broadcastIntent.putExtra("phoneNum",incomingNumber);
+        PendingIntent actionIntent = PendingIntent.getBroadcast(context,
+                0, broadcastIntent, 0);
+
+        Intent intent = new Intent(context, CancelNotification.class);
+        //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.putExtra("notification_id", 0);
+        PendingIntent dismissIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
                 .setSmallIcon(R.mipmap.ic_launcher_round)
-                .setContentTitle("Click here to send your Details")
-                .setContentText("Do you want to share it with "+incomingNumber);
-
-        // Creates the intent needed to show the notification
-        Intent notificationIntent = new Intent(context,Conformation.class);
-        notificationIntent.putExtra("phoneNum",incomingNumber);
-        PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        builder.setContentIntent(contentIntent);
+                .setContentTitle("Click here to confirm and send!")
+                .setContentText("Do you want to share your details with " + incomingNumber)
+                .setContentIntent(contentIntent)
+                .setAutoCancel(true)
+                .addAction(R.mipmap.ic_launcher, "Send", actionIntent)
+                .addAction(R.drawable.ic_launcher_foreground, "Dismiss", dismissIntent);
 
         // Add as notification
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -77,9 +90,7 @@ public class Detector extends BroadcastReceiver{
             manager.createNotificationChannel(channel);
             builder.setChannelId(channelId);
         }
-
         manager.notify(0, builder.build());
-
     }
 
 }

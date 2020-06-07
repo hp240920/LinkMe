@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
         // ********************** To delete ********************
         SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
         if(sharedPreferences.contains("phone")){
-            Intent intent = new Intent(this,Dashboard.class);
+            Intent intent = new Intent(this, Dashboard.class);
             startActivity(intent);
         }
         //  // ********************** To delete ********************
@@ -172,6 +172,11 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
+    @Override
+    public void onBackPressed() {
+        this.moveTaskToBack(true);
+    }
+
     private void verifyIt(PhoneAuthCredential cred) {
         fAuth.signInWithCredential(cred).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
@@ -185,6 +190,7 @@ public class MainActivity extends AppCompatActivity {
                                 Objects.requireNonNull(fAuth.getCurrentUser()).getPhoneNumber(), Toast.LENGTH_SHORT).show();
                         Intent intent = new Intent(MainActivity.this, Sign_Up.class);
                         intent.putExtra("phoneNo", fAuth.getCurrentUser().getPhoneNumber());
+                        SharePreHelper.setName(fAuth.getCurrentUser().getPhoneNumber());
                         startActivity(intent);
                     } else {
                         Toast.makeText(MainActivity.this, "Your phone already exists.", Toast.LENGTH_SHORT).show();

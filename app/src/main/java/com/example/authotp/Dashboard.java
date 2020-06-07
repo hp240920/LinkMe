@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 
+import android.app.DownloadManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -15,6 +16,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -38,6 +40,8 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import org.w3c.dom.Text;
+
+import static android.os.Environment.DIRECTORY_DOWNLOADS;
 
 public class Dashboard extends AppCompatActivity {
 
@@ -72,12 +76,14 @@ public class Dashboard extends AppCompatActivity {
     }
 
     private void EditInfo() {
+        //this gotta be fix... few corner cases check...
         SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.clear();
         editor.apply();
-        Intent intent = new Intent(this,Sign_Up.class);
-        intent.putExtra("phoneNo",currentUser.getPhonenumber());
+        SharePreHelper.setName(null);
+        Intent intent = new Intent(this, Sign_Up.class);
+        intent.putExtra("phoneNo", currentUser.getPhonenumber());
         startActivity(intent);
     }
 
@@ -87,6 +93,7 @@ public class Dashboard extends AppCompatActivity {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.clear();
         editor.apply();
+        SharePreHelper.setName(null);
         Intent intent = new Intent(this,MainActivity.class);
         startActivity(intent);
     }
@@ -123,12 +130,14 @@ public class Dashboard extends AppCompatActivity {
             serviceIntent = new Intent(this, com.example.authotp.Notify.class);
             serviceIntent.putExtra("inputExtra", "input");
             ContextCompat.startForegroundService(this, serviceIntent);
-
             check_notification();
         }
-
     }
 
+    @Override
+    public void onBackPressed() {
+        this.moveTaskToBack(true);
+    }
 
     private void check_notification() {
         System.out.println("Needed!!!");
@@ -209,11 +218,11 @@ public class Dashboard extends AppCompatActivity {
     private View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-
             if(view instanceof TextView){
                 TextView tv = (TextView)view;
                 String selectedUserNumber = tv.getText().toString();
                 getFileFromNumber(selectedUserNumber);
+                Toast.makeText(getApplicationContext(), selectedUserNumber, Toast.LENGTH_SHORT).show();
             }
         }
     };
@@ -230,7 +239,7 @@ public class Dashboard extends AppCompatActivity {
                     if(userSnapshot.exists()){
                         String file1 = userSnapshot.getValue(User.class).getFiles1();
                         String file2 = userSnapshot.getValue(User.class).getFiles2();
-                      //  System.out.println("  File 1 "+ file1 + "  File 2 "+ file2);
+                        System.out.println("  File 1 "+ file1 + "  File 2 "+ file2);
                         downloadfiles(file1,file2);
                     }
                 }
@@ -244,26 +253,30 @@ public class Dashboard extends AppCompatActivity {
 
     private void downloadfiles(String file1, String file2) {
 
-        StorageReference storageReference = FirebaseStorage.getInstance().getReferenceFromUrl(file1);
+       // StorageReference storageReference = FirebaseStorage.getInstance().getReferenceFromUrl(file2);
 
-        final long ONE_MEGABYTE = 1024 * 1024;
-        storageReference.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
-            @Override
-            public void onSuccess(byte[] bytes) {
-                // Data for "images/island.jpg" is returns, use this as needed
-                Toast.makeText(getApplicationContext(), "Download Complete", Toast.LENGTH_SHORT).show();
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception exception) {
-                // Handle any errors
-            }
-        });
+        DownloadManager downloadManager = (DownloadManager) getApplicationContext().
+                getSystemService(Context.DOWNLOAD_SERVICE);
+        Uri uri = Uri.parse(file1);
+        DownloadManager.Request request = new DownloadManager.Request(uri);
 
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        request.setDestinationInExternalFilesDir(getApplicationContext(), DIRECTORY_DOWNLOADS, "Try123.pdf");
+
+        downloadManager.enqueue(request);
+
+        DownloadManager downloadManager1 = (DownloadManager) getApplicationContext().
+                getSystemService(Context.DOWNLOAD_SERVICE);
+        Uri uri1 = Uri.parse(file2);
+        DownloadManager.Request request1 = new DownloadManager.Request(uri1);
+
+        request1.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        request1.setDestinationInExternalFilesDir(getApplicationContext(), DIRECTORY_DOWNLOADS, "Try1.pdf");
+
+        downloadManager1.enqueue(request1);
     }
 
     private void getSharedPref(SharedPreferences sharedPreferences){
-
         currentUser.setName(sharedPreferences.getString("name",""));
         currentUser.setPhonenumber(sharedPreferences.getString("phone",""));
         currentUser.setInstagram(sharedPreferences.getString("insta",""));
@@ -298,8 +311,6 @@ public class Dashboard extends AppCompatActivity {
             manager.createNotificationChannel(channel);
             builder.setChannelId(channelId);
         }
-
         manager.notify(0, builder.build());
-
     }
 }

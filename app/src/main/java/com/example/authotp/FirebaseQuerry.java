@@ -42,16 +42,18 @@ public class FirebaseQuerry {
     }
          */
 
-        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
-        DatabaseReference dbref = firebaseDatabase.getReference().child("User");
 
-        Query query = dbref.orderByChild("phonenumber");
+        final FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+        DatabaseReference dbref = firebaseDatabase.getReference("User");
+
+        Query query = dbref.orderByChild("phonenumber").equalTo(ExistingPhone);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
                     if (userSnapshot.exists()) {
-                       System.out.println("I am here.");
+                        User currentUser = userSnapshot.getValue(User.class);
+                        firestoreCallback.OncallBack(currentUser);
                     }
                 }
             }

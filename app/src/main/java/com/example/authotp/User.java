@@ -4,6 +4,9 @@ import java.util.ArrayList;
 
 public class User {
 
+
+    public static String lastestNumber= "";
+
     private String Name;
     private String Instagram;
     private String Snapchat;

@@ -206,6 +206,7 @@ public class MainActivity extends AppCompatActivity {
                         final Intent intent = new Intent(MainActivity.this, Dashboard.class);
 
                         // give your the user with that phone number
+
                         FirebaseQuerry.getData(new FirebaseQuerry.FirestoreCallback() {
                             @Override
                             public void OncallBack(User currentUser) {

@@ -19,7 +19,8 @@ public class NotificationAction extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        String send_to = intent.getStringExtra("phoneNum");
+        String send_to = intent.getStringExtra("asdfghjkl");
+        //String send_to = User.lastestNumber;
         String send_from = intent.getStringExtra("myPhone");
         int notificationId = intent.getIntExtra("notification_id", 0);
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);

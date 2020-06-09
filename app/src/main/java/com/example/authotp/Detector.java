@@ -46,6 +46,7 @@ public class Detector extends BroadcastReceiver{
             String myNumber  = sharedPreferences.getString("phone","");
 
 
+            User.lastestNumber = incomingNumber;
 
             assert state != null;
             if (state.equals(TelephonyManager.EXTRA_STATE_RINGING)) {
@@ -59,14 +60,15 @@ public class Detector extends BroadcastReceiver{
             if (state.equals(TelephonyManager.EXTRA_STATE_IDLE)) {
                 //end = true;
                 Toast.makeText(context, "Idle State", Toast.LENGTH_SHORT).show();
-                incomingNumber = getlastCall(context);
-                notificationOut(context,incomingNumber,myNumber);
+               // incomingNumber = getlastCall(context);
+                String incomingNumber1 = User.lastestNumber;
+                notificationOut(context,incomingNumber1,myNumber);
 
                 if(SharePreHelper.getName().equals("true")){
-                    notificationIn(context, incomingNumber, myNumber);
+                    notificationIn(context, incomingNumber1, myNumber);
                     SharePreHelper.setName("");
                 }else{
-                    notificationOut(context, incomingNumber, myNumber);
+                    notificationOut(context, incomingNumber1, myNumber);
                 }
             }
 

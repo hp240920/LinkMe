@@ -87,7 +87,7 @@ public class Dashboard extends AppCompatActivity {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.clear();
         editor.apply();
-        SharePreHelper.setName(null);
+        //SharePreHelper.setName(null);
         Intent intent = new Intent(this, Sign_Up.class);
         intent.putExtra("phoneNo", currentUser.getPhonenumber());
         startActivity(intent);
@@ -141,7 +141,7 @@ public class Dashboard extends AppCompatActivity {
 
         if(serviceIntent == null){
             serviceIntent = new Intent(this, com.example.authotp.Notify.class);
-            serviceIntent.putExtra("inputExtra", "input");
+            serviceIntent.putExtra("inputExtra", "AuthOTP");
             ContextCompat.startForegroundService(this, serviceIntent);
             check_notification();
         }

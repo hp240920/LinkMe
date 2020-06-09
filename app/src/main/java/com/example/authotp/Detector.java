@@ -1,5 +1,6 @@
 package com.example.authotp;
 
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
@@ -29,6 +30,9 @@ import static android.app.PendingIntent.FLAG_CANCEL_CURRENT;
 
 public class Detector extends BroadcastReceiver{
 
+    boolean in_out = false;
+
+    @SuppressLint("UnsafeProtectedBroadcastReceiver")
     public void onReceive(final Context context, Intent intent) {
 
         try {
@@ -43,27 +47,81 @@ public class Detector extends BroadcastReceiver{
 
 
 
+            assert state != null;
             if (state.equals(TelephonyManager.EXTRA_STATE_RINGING)) {
-
+                //in_out = true;
+                SharePreHelper.setName("true");
                 Toast.makeText(context, "Ringing State Number is -" + incomingNumber, Toast.LENGTH_SHORT).show();
-
             }
             if ((state.equals(TelephonyManager.EXTRA_STATE_OFFHOOK))) {
                 Toast.makeText(context, "Received State", Toast.LENGTH_SHORT).show();
-
-
             }
             if (state.equals(TelephonyManager.EXTRA_STATE_IDLE)) {
+                //end = true;
                 Toast.makeText(context, "Idle State", Toast.LENGTH_SHORT).show();
                 incomingNumber = getlastCall(context);
                 notification2(context,incomingNumber,myNumber);
 
+                if(SharePreHelper.getName().equals("true")){
+                    notificationIn(context, incomingNumber, my_phone);
+                    SharePreHelper.setName("");
+                }else{
+                    notificationOut(context, incomingNumber, my_phone);
+                }
             }
+
+
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
+    public void notificationIn(Context context, String incomingNumber, String my_phone) {
+        // Builds your notification
+
+        Intent notificationIntent = new Intent(context, Conformation.class);
+        notificationIntent.putExtra("phoneNum", incomingNumber);
+        notificationIntent.putExtra("myPhone", my_phone);
+        notificationIntent.putExtra("notification_id", 0);
+        PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, FLAG_CANCEL_CURRENT);
+
+        Intent broadcastIntent = new Intent(context, NotificationAction.class);
+        broadcastIntent.putExtra("phoneNum",incomingNumber);
+        broadcastIntent.putExtra("myPhone", my_phone);
+        broadcastIntent.putExtra("notification_id", FLAG_CANCEL_CURRENT);
+        PendingIntent actionIntent = PendingIntent.getBroadcast(context,
+                0, broadcastIntent, 0);
+
+        Intent intent = new Intent(context, CancelNotification.class);
+        //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.putExtra("notification_id", 0);
+        PendingIntent dismissIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
+                .setSmallIcon(R.mipmap.ic_launcher_round)
+                .setContentTitle("Incoming Notification AuthOTP")
+                .setContentText("Do you want to share your details with " + incomingNumber)
+                .setContentIntent(contentIntent)
+                .setAutoCancel(true)
+                .addAction(R.mipmap.ic_launcher, "Send", actionIntent)
+                .addAction(R.drawable.ic_launcher_foreground, "Dismiss", dismissIntent);
+
+        // Add as notification
+        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        {
+            String channelId = "IncomingCalls";
+            NotificationChannel channel = new NotificationChannel(
+                    channelId,
+                    "Notify for Incoming Calls",
+                    NotificationManager.IMPORTANCE_HIGH);
+            assert manager != null;
+            manager.createNotificationChannel(channel);
+            builder.setChannelId(channelId);
+        }
+        assert manager != null;
+        manager.notify(0, builder.build());
     }
 
 private String getlastCall(Context context){
@@ -100,20 +158,21 @@ private String getlastCall(Context context){
 }
 
     public void notification2(Context context, String incomingNumber, String my_phone) {
+    public void notificationOut(Context context, String incomingNumber, String my_phone) {
         // Builds your notification
 
         Intent notificationIntent = new Intent(context, Conformation.class);
         notificationIntent.putExtra("phoneNum", incomingNumber);
         notificationIntent.putExtra("myPhone", my_phone);
         notificationIntent.putExtra("notification_id", 0);
-        @SuppressLint("WrongConstant") PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, FLAG_CANCEL_CURRENT);
+        PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, FLAG_CANCEL_CURRENT);
 
         Intent broadcastIntent = new Intent(context, NotificationAction.class);
         broadcastIntent.putExtra("phoneNum",incomingNumber);
         broadcastIntent.putExtra("myPhone", my_phone);
-        broadcastIntent.putExtra("notification_id", 0);
+        broadcastIntent.putExtra("notification_id", FLAG_CANCEL_CURRENT);
         PendingIntent actionIntent = PendingIntent.getBroadcast(context,
-                0, broadcastIntent, FLAG_CANCEL_CURRENT);
+                0, broadcastIntent, 0);
 
         Intent intent = new Intent(context, CancelNotification.class);
         //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -122,7 +181,7 @@ private String getlastCall(Context context){
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
                 .setSmallIcon(R.mipmap.ic_launcher_round)
-                .setContentTitle("Click here to confirm and send!")
+                .setContentTitle("Outgoing Notification AuthOTP")
                 .setContentText("Do you want to share your details with " + incomingNumber)
                 .setContentIntent(contentIntent)
                 .setAutoCancel(true)
@@ -133,14 +192,17 @@ private String getlastCall(Context context){
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
         {
-            String channelId = "Your_channel_id";
+            String channelId = "OutgoingCalls";
             NotificationChannel channel = new NotificationChannel(
                     channelId,
-                    "Channel human readable title",
+                    "Notify for Outgoing Calls",
                     NotificationManager.IMPORTANCE_HIGH);
+            assert manager != null;
             manager.createNotificationChannel(channel);
             builder.setChannelId(channelId);
         }
+        assert manager != null;
         manager.notify(0, builder.build());
     }
+
 }

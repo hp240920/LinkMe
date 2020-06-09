@@ -22,6 +22,7 @@ public class App extends Application {
                     NotificationManager.IMPORTANCE_DEFAULT
             );
             NotificationManager manager = getSystemService(NotificationManager.class);
+            assert manager != null;
             manager.createNotificationChannel(serviceChannel);
         }
     }

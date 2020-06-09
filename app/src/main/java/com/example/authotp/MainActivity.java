@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -47,30 +48,21 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // to remove the notification once clicked
+        Intent intent = getIntent();
+        int notificationId = intent.getIntExtra("notification_id", 0);
+        NotificationManager manager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+        assert manager != null;
+        manager.cancel(notificationId);
+        //
 
-        //// ************************* to delete **********************
-
-        /*
-        SharedPreferences sp = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
-        sp.edit().clear().apply();
-        Intent it = new Intent(this, Sign_Up.class);
-        it.putExtra("phoneNo","0000000003");
-        startActivity(it);
-
-
-         */
-        //// ************************* to delete **********************
-
+        // ********************** To delete ********************
         SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
-
         if(sharedPreferences.contains("phone")){
-
-            Intent intent = new Intent(this, Dashboard.class);
-            startActivity(intent);
+            Intent intent1 = new Intent(this, Dashboard.class);
+            startActivity(intent1);
         }
-
-
-
+        //  // ********************** To delete ********************
 
         setContentView(R.layout.activity_main);
         phone = findViewById(R.id.getNumber);

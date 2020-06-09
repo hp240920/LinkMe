@@ -4,14 +4,14 @@ import java.util.ArrayList;
 
 public class User {
 
-    String Name;
-    String Instagram;
-    String Snapchat;
-    String GitHub;
-    String LinkedIn;
-    String Files1;
-    String Files2;
-    String phonenumber;
+    private String Name;
+    private String Instagram;
+    private String Snapchat;
+    private String GitHub;
+    private String LinkedIn;
+    private String Files1;
+    private String Files2;
+    private String phonenumber;
     //ArrayList<User> arrfiles = new ArrayList<>();
 
     public String getFiles1() {

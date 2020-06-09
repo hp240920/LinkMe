@@ -52,17 +52,17 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = getIntent();
         int notificationId = intent.getIntExtra("notification_id", 0);
         NotificationManager manager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
-        assert manager != null;
         manager.cancel(notificationId);
-        //
 
-        // ********************** To delete ********************
+
         SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
+
+
         if(sharedPreferences.contains("phone")){
             Intent intent1 = new Intent(this, Dashboard.class);
             startActivity(intent1);
         }
-        //  // ********************** To delete ********************
+
 
         setContentView(R.layout.activity_main);
         phone = findViewById(R.id.getNumber);
@@ -196,15 +196,25 @@ public class MainActivity extends AppCompatActivity {
                     if (creationTimestamp == lastSignInTimestamp) {
                         Toast.makeText(MainActivity.this, "Phone Verified." +
                                 Objects.requireNonNull(fAuth.getCurrentUser()).getPhoneNumber(), Toast.LENGTH_SHORT).show();
+
                         Intent intent = new Intent(MainActivity.this, Sign_Up.class);
                         intent.putExtra("phoneNo", fAuth.getCurrentUser().getPhoneNumber());
                         SharePreHelper.setName(fAuth.getCurrentUser().getPhoneNumber());
                         startActivity(intent);
                     } else {
                         Toast.makeText(MainActivity.this, "Your phone already exists.", Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(MainActivity.this, Dashboard.class);
-                        intent.putExtra("phoneNo", fAuth.getCurrentUser().getPhoneNumber());
-                        startActivity(intent);
+                        final Intent intent = new Intent(MainActivity.this, Dashboard.class);
+
+                        // give your the user with that phone number
+                        FirebaseQuerry.getData(new FirebaseQuerry.FirestoreCallback() {
+                            @Override
+                            public void OncallBack(User currentUser) {
+                                createSharedPref(currentUser);
+                                startActivity(intent);
+                            }
+                        },fAuth.getCurrentUser().getPhoneNumber());
+
+
                     }
                 }else {
                     Toast.makeText(MainActivity.this, "Cannot Verify " +
@@ -213,5 +223,18 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+    private void createSharedPref(User myUser) {
+        SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
 
+        sharedPreferences.edit().putString("name",myUser.getName()).apply();
+        sharedPreferences.edit().putString("phone",myUser.getPhonenumber()).apply();
+      //  SharePreHelper.setName(myUser.getPhonenumber());
+        sharedPreferences.edit().putString("insta",myUser.getInstagram()).apply();
+        sharedPreferences.edit().putString("snap",myUser.getSnapchat()).apply();
+        sharedPreferences.edit().putString("github",myUser.getGitHub()).apply();
+        sharedPreferences.edit().putString("linkedIn",myUser.getLinkedIn()).apply();
+
+        sharedPreferences.edit().putString("file1",myUser.getFiles1()).apply();
+        sharedPreferences.edit().putString("file2",myUser.getFiles2()).apply();
+    }
 }

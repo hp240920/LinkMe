@@ -155,6 +155,11 @@ public class Sign_Up extends AppCompatActivity {
       //  addNotification();
         addNotification();
         User myUser = createUser();
+
+
+
+
+
         if (pdfUri != null) {
             // if you have selected a file to upload
             // uploading 2 files .... 1 with info and other is the selected file
@@ -394,14 +399,20 @@ public class Sign_Up extends AppCompatActivity {
 
 
         if(pdfUriFile != null) {
-            final StorageReference storageReference = storage.getReference().child("files/" + phone + displayName);
 
+            final ProgressDialog progressDialog1 = new ProgressDialog(this);
+            progressDialog1.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            progressDialog1.setTitle("Uploading files....");
+            progressDialog1.setProgress(0);
+            progressDialog1.show();
+
+            final StorageReference storageReference = storage.getReference().child("files/" + phone + displayName);
             UploadTask uploadTask = storageReference.putFile(pdfUriFile);
 
             uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                   progressDialog.dismiss();
+                   progressDialog1.dismiss();
                    Toast.makeText(getApplicationContext(),"File1 successfully Uploaded",Toast.LENGTH_SHORT).show();
                     storageReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                         @Override
@@ -425,7 +436,7 @@ public class Sign_Up extends AppCompatActivity {
                         public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
                             // tacking the progress of our upload
                             int currentProgress = (int) (100 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
-                            progressDialog.setProgress(currentProgress);
+                            progressDialog1.setProgress(currentProgress);
                         }
                     });
         }

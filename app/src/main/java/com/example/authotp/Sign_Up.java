@@ -187,6 +187,7 @@ public class Sign_Up extends AppCompatActivity {
 
         // Creates the intent needed to show the notification
         Intent notificationIntent = new Intent(this, MainActivity.class);
+        notificationIntent.putExtra("notification_id", 0);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(contentIntent);
 
@@ -222,9 +223,9 @@ public class Sign_Up extends AppCompatActivity {
         String userLinkedIn = linkedin.getText().toString();
         String userFile1 ="";
         String userFile2 = "";
-        ArrayList<User> arrFiles = new ArrayList<>();
+        //ArrayList<User> arrFiles = new ArrayList<>();
 
-        User newUser = new User(username,userInsta,userSnap,userGit,userLinkedIn, userFile1,userFile2,arrFiles,userPhone);
+        User newUser = new User(username,userInsta,userSnap,userGit,userLinkedIn, userFile1,userFile2,userPhone);
         return newUser;
     }
 

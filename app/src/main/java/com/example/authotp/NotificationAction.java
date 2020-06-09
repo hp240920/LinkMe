@@ -19,14 +19,13 @@ public class NotificationAction extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-
         String send_to = intent.getStringExtra("phoneNum");
-        String send_from = SharePreHelper.getName();
-
-        //SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
-        //String my_phone = sharedPreferences.getString("phone","");
+        String send_from = intent.getStringExtra("myPhone");
+        int notificationId = intent.getIntExtra("notification_id", 0);
+        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        assert manager != null;
+        manager.cancel(notificationId);
         sendInfo(send_from, send_to, context);
-        //display.setText("Message Successfully sent to :"+send_to + " :) .......");
     }
 
     private void sendInfo(String my_phone, String send_to, final Context context) {

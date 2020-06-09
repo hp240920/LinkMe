@@ -32,6 +32,10 @@ public class Conformation extends AppCompatActivity {
         display.setText("Message Successfully sent to :"+send_to + " :) .......");
     }
 
+    public void onBackPressed() {
+      finish();
+    }
+
     private void sendInfo(String my_phone, String send_to) {
 
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();

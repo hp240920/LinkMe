@@ -20,6 +20,8 @@ public class Notify extends Service {
     public void onCreate() {
         super.onCreate();
     }
+
+    
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String input = intent.getStringExtra("inputExtra");

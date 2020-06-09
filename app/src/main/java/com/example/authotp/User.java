@@ -12,7 +12,7 @@ public class User {
     String Files1;
     String Files2;
     String phonenumber;
-    ArrayList<User> arrfiles = new ArrayList<>();
+    //ArrayList<User> arrfiles = new ArrayList<>();
 
     public String getFiles1() {
         return Files1;
@@ -38,22 +38,6 @@ public class User {
         this.phonenumber = phonenumber;
     }
 
-    public ArrayList<User> getArrfiles() {
-        return arrfiles;
-    }
-
-    public void setArrfiles(ArrayList<User> arrfiles) {
-        this.arrfiles = arrfiles;
-    }
-
-
-    public ArrayList<User> getString() {
-        return arrfiles;
-    }
-
-    public void setString(ArrayList<User> string) {
-        this.arrfiles = string;
-    }
 
     public User(){
 
@@ -99,17 +83,6 @@ public class User {
     }
 
 
-    public User(String name, String Instagram, String Snapchat, String Github, String LinkedIn, String Files1 ,String File2,  ArrayList<User> array, String phonenumber){
-        this.Name = name;
-        this.Instagram = Instagram;
-        this.Snapchat = Snapchat;
-        this.GitHub = Github;
-        this.LinkedIn = LinkedIn;
-        this.Files1 = Files1;
-        this.Files2 = File2;
-        this.arrfiles = array;
-        this.phonenumber = phonenumber;
-    }
     public User(String name, String Instagram, String Snapchat, String Github, String LinkedIn, String File1, String File2, String phonenumber){
         this.Name = name;
         this.Instagram = Instagram;

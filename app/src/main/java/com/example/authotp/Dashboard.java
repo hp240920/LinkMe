@@ -3,9 +3,12 @@ package com.example.authotp;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.DownloadManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -13,15 +16,18 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -109,12 +115,19 @@ public class Dashboard extends AppCompatActivity {
         setContentView(R.layout.activity_dashboard);
         setTitle("Dashboard");
 
+        if (ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.SYSTEM_ALERT_WINDOW) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(Dashboard.this,
+                    new String[]{Manifest.permission.READ_PHONE_STATE, Manifest.permission.SYSTEM_ALERT_WINDOW, Manifest.permission.READ_CALL_LOG},
+                    1);
+        }
+
         // Get all the values from Shared Prefrences;
         SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
 
 
         currentUser = new User();
         getSharedPref(sharedPreferences);
+
 
         // Getting Firebase Database and Storage
 
@@ -195,6 +208,7 @@ public class Dashboard extends AppCompatActivity {
                         Message newMessage = messageSnapshot.getValue(Message.class);
                         writeTextView(newMessage.getFrom(),scrollView);
                     }
+
                 }
             }
             @Override

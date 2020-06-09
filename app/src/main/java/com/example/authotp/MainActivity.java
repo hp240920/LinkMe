@@ -48,13 +48,29 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
 
-        // ********************** To delete ********************
+        //// ************************* to delete **********************
+
+        /*
+        SharedPreferences sp = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
+        sp.edit().clear().apply();
+        Intent it = new Intent(this, Sign_Up.class);
+        it.putExtra("phoneNo","0000000003");
+        startActivity(it);
+
+
+         */
+        //// ************************* to delete **********************
+
         SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
+
         if(sharedPreferences.contains("phone")){
+
             Intent intent = new Intent(this, Dashboard.class);
             startActivity(intent);
         }
-        //  // ********************** To delete ********************
+
+
+
 
         setContentView(R.layout.activity_main);
         phone = findViewById(R.id.getNumber);

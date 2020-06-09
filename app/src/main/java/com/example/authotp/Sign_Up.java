@@ -152,6 +152,7 @@ public class Sign_Up extends AppCompatActivity {
     public void onclickbtnSignUp(View v){
         Uri myFileUri = uploadFile();
 
+      //  addNotification();
         addNotification();
         User myUser = createUser();
         if (pdfUri != null) {
@@ -171,11 +172,14 @@ public class Sign_Up extends AppCompatActivity {
         }
 
 
-        createSharedPref(myUser);
 
+    }
+
+    private void movetoDashboard(User myUser){
+
+        createSharedPref(myUser);
         Intent intent = new Intent(Sign_Up.this,Dashboard.class);
         startActivity(intent);
-
     }
 
     private void addNotification() {
@@ -224,7 +228,7 @@ public class Sign_Up extends AppCompatActivity {
         String userFile2 = "";
         ArrayList<User> arrFiles = new ArrayList<>();
 
-        User newUser = new User(username,userInsta,userSnap,userGit,userLinkedIn, userFile1,userFile2,arrFiles,userPhone);
+        User newUser = new User(username,userInsta,userSnap,userGit,userLinkedIn, userFile1,userFile2,userPhone);
         return newUser;
     }
 
@@ -357,6 +361,9 @@ public class Sign_Up extends AppCompatActivity {
                     public void onSuccess(Uri uri) {
                         myUser.setFiles2(uri.toString());
                         databaseReference.child(key).child("files2").setValue(uri.toString());
+                        if(pdfUriFile == null){
+                            movetoDashboard(myUser);
+                        }
                         System.out.println(uri.toString());
                     }
 
@@ -401,6 +408,7 @@ public class Sign_Up extends AppCompatActivity {
                             myUser.setFiles1(uri.toString());
                             databaseReference.child(key).child("files1").setValue(uri.toString());
                             System.out.println(uri.toString());
+                            movetoDashboard(myUser);
                         }
                     });
                 }

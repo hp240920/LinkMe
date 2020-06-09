@@ -87,6 +87,7 @@ public class Sign_Up extends AppCompatActivity {
         // Firebase connection
         database = FirebaseDatabase.getInstance();
         storage = FirebaseStorage.getInstance();
+
     }
 
 
@@ -156,10 +157,6 @@ public class Sign_Up extends AppCompatActivity {
         addNotification();
         User myUser = createUser();
 
-
-
-
-
         if (pdfUri != null) {
             // if you have selected a file to upload
             // uploading 2 files .... 1 with info and other is the selected file
@@ -175,8 +172,6 @@ public class Sign_Up extends AppCompatActivity {
             }
 
         }
-
-
 
     }
 

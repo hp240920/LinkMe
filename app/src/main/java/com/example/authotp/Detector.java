@@ -46,6 +46,7 @@ public class Detector extends BroadcastReceiver{
             String myNumber  = sharedPreferences.getString("phone","");
 
 
+            User.lastestNumber = incomingNumber;
 
             assert state != null;
             if (state.equals(TelephonyManager.EXTRA_STATE_RINGING)) {
@@ -59,14 +60,15 @@ public class Detector extends BroadcastReceiver{
             if (state.equals(TelephonyManager.EXTRA_STATE_IDLE)) {
                 //end = true;
                 Toast.makeText(context, "Idle State", Toast.LENGTH_SHORT).show();
-                incomingNumber = getlastCall(context);
-                //notificationOut(context, incomingNumber,myNumber);
+               // incomingNumber = getlastCall(context);
+                String incomingNumber1 = User.lastestNumber;
+                notificationOut(context,incomingNumber1,myNumber);
 
                 if(SharePreHelper.getName().equals("true")){
-                    notificationIn(context, incomingNumber, myNumber);
+                    notificationIn(context, incomingNumber1, myNumber);
                     SharePreHelper.setName("");
                 }else{
-                    notificationOut(context, incomingNumber, myNumber);
+                    notificationOut(context, incomingNumber1, myNumber);
                 }
             }
 
@@ -92,7 +94,6 @@ private String getlastCall(Context context){
     }
     Cursor c = context.getContentResolver().query(CallLog.Calls.CONTENT_URI, null, null, null, null);
 
-    assert c != null;
     c.moveToLast();
 
     int intNum = c.getColumnIndex(CallLog.Calls.NUMBER);
@@ -117,14 +118,12 @@ private String getlastCall(Context context){
         // Builds your notification
 
         Intent notificationIntent = new Intent(context, Conformation.class);
-        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         notificationIntent.putExtra("phoneNum", incomingNumber);
         notificationIntent.putExtra("myPhone", my_phone);
         notificationIntent.putExtra("notification_id", 0);
         PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, FLAG_CANCEL_CURRENT);
 
         Intent broadcastIntent = new Intent(context, NotificationAction.class);
-        broadcastIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         broadcastIntent.putExtra("phoneNum",incomingNumber);
         broadcastIntent.putExtra("myPhone", my_phone);
         broadcastIntent.putExtra("notification_id", FLAG_CANCEL_CURRENT);
@@ -132,7 +131,7 @@ private String getlastCall(Context context){
                 0, broadcastIntent, 0);
 
         Intent intent = new Intent(context, CancelNotification.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.putExtra("notification_id", 0);
         PendingIntent dismissIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
 
@@ -166,14 +165,12 @@ private String getlastCall(Context context){
         // Builds your notification
 
         Intent notificationIntent = new Intent(context, Conformation.class);
-        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         notificationIntent.putExtra("phoneNum", incomingNumber);
         notificationIntent.putExtra("myPhone", my_phone);
         notificationIntent.putExtra("notification_id", 0);
         PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, FLAG_CANCEL_CURRENT);
 
         Intent broadcastIntent = new Intent(context, NotificationAction.class);
-        broadcastIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         broadcastIntent.putExtra("phoneNum",incomingNumber);
         broadcastIntent.putExtra("myPhone", my_phone);
         broadcastIntent.putExtra("notification_id", FLAG_CANCEL_CURRENT);
@@ -181,7 +178,7 @@ private String getlastCall(Context context){
                 0, broadcastIntent, 0);
 
         Intent intent = new Intent(context, CancelNotification.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.putExtra("notification_id", 0);
         PendingIntent dismissIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
 

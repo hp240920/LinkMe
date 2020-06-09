@@ -208,11 +208,11 @@ public class MainActivity extends AppCompatActivity {
                         // give your the user with that phone number
                         FirebaseQuerry.getData(new FirebaseQuerry.FirestoreCallback() {
                             @Override
-                            public void OncallBack(User currentUser) {
+                            public void onCallBack(User currentUser) {
                                 createSharedPref(currentUser);
                                 startActivity(intent);
                             }
-                        },fAuth.getCurrentUser().getPhoneNumber());
+                        }, fAuth.getCurrentUser().getPhoneNumber());
 
 
                     }

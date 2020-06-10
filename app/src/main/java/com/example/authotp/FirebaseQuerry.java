@@ -64,8 +64,36 @@ public class FirebaseQuerry {
         });
     }
 
+
+    public static void getKey(final FirestoreCallback firestoreCallback, String ExistingPhone){
+        final FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+        DatabaseReference dbref = firebaseDatabase.getReference("User");
+
+        Query query = dbref.orderByChild("phonenumber").equalTo(ExistingPhone);
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(!dataSnapshot.hasChildren()){
+                    firestoreCallback.OncallBackKey(null);
+                }
+                for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
+                    if (userSnapshot.exists()) {
+                         firestoreCallback.OncallBackKey(userSnapshot.getKey());
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
+    }
+
+
+
     public interface FirestoreCallback {
         void OncallBack(User currentUser);
+        void OncallBackKey(String key);
     }
 
 

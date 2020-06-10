@@ -12,7 +12,7 @@ public class User {
     private String Snapchat;
     private String GitHub;
     private String LinkedIn;
-    private String Files1;
+    private String Files1;  // User selected file
     private String Files2;
     private String phonenumber;
     //ArrayList<User> arrfiles = new ArrayList<>();

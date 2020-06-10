@@ -83,10 +83,13 @@ public class Dashboard extends AppCompatActivity {
 
     private void EditInfo() {
         //this gotta be fix... few corner cases check...
+        /*
         SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.clear();
         editor.apply();
+         */
+
         //SharePreHelper.setName(null);
         Intent intent = new Intent(this, Sign_Up.class);
         intent.putExtra("check", true);
@@ -96,6 +99,7 @@ public class Dashboard extends AppCompatActivity {
         intent.putExtra("linkedin", currentUser.getLinkedIn());
         intent.putExtra("git", currentUser.getGitHub());
         intent.putExtra("phoneNo", currentUser.getPhonenumber());
+        intent.putExtra("file1",currentUser.getFiles1());
         startActivity(intent);
     }
 

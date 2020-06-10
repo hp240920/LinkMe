@@ -54,7 +54,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 
 public class Sign_Up extends AppCompatActivity {
 
@@ -68,7 +67,6 @@ public class Sign_Up extends AppCompatActivity {
     FirebaseStorage storage;
     String displayName = null;
     boolean editInfo = false;
-    String oldUri = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,35 +82,45 @@ public class Sign_Up extends AppCompatActivity {
         fileName = findViewById(R.id.fileName);
         btnSelect = findViewById(R.id.btnSelectFile);
         btnSignUp = findViewById(R.id.btnSignUp);
+
         Intent intent  = getIntent();
         String phone = intent.getStringExtra("phoneNo");
-        String userName, userInsta, userSnap, userLinkedin, userGit = null;
         if(intent.getBooleanExtra("check", false)){
-            editInfo = true;
-            userName = intent.getStringExtra("name");
-            name.setText(userName);
-            userInsta = intent.getStringExtra("insta");
-            insta.setText(userInsta);
-            userSnap = intent.getStringExtra("snap");
-            snap.setText(userSnap);
-            userLinkedin = intent.getStringExtra("linkedin");
-            linkedin.setText(userLinkedin);
-            userGit = intent.getStringExtra("git");
-            github.setText(userGit);
+            setFields(intent);
         }
-        //linkedin.setText("het");
+
         phoneNo.setText(phone);
         phoneNo.setEnabled(false);
-        assert phone != null;
-        Log.i("Phone No: ", phone);
+
 
         // Firebase connection
         database = FirebaseDatabase.getInstance();
         storage = FirebaseStorage.getInstance();
     }
 
+    private void setFields(Intent intent){
+        String userName, userInsta, userSnap, userLinkedin, userGit,file1 = null;
+        editInfo = true;
+        userName = intent.getStringExtra("name");
+        name.setText(userName);
+        userInsta = intent.getStringExtra("insta");
+        insta.setText(userInsta);
+        userSnap = intent.getStringExtra("snap");
+        snap.setText(userSnap);
+        userLinkedin = intent.getStringExtra("linkedin");
+        linkedin.setText(userLinkedin);
+        userGit = intent.getStringExtra("git");
+        github.setText(userGit);
+        file1 = intent.getStringExtra("file1");
+        Uri uri = Uri.parse(file1);
+        pdfUri= uri;
+        String filename = uri.getLastPathSegment();
+        fileName.setText(filename);
+    }
+
 
     public void onClickbtnSelect(View v){
+
         if (ContextCompat.checkSelfPermission(Sign_Up.this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             selectPdf();
         } else {
@@ -174,7 +182,8 @@ public class Sign_Up extends AppCompatActivity {
     //private User myUser;
 
     public void onclickbtnSignUp(View v){
-        if(editInfo){
+       /*
+         if(editInfo){
             DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
             Query query = ref.child("User").orderByChild("phonenumber").equalTo(phoneNo.getText().toString());
 
@@ -182,9 +191,7 @@ public class Sign_Up extends AppCompatActivity {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     for (DataSnapshot user: dataSnapshot.getChildren()) {
-                        //oldUri = "Objects.requireNonNull(user.getValue(User.class)).getFiles1();";
                         user.getRef().removeValue();
-                        editInfo = false;
                     }
                 }
                 @Override
@@ -193,21 +200,34 @@ public class Sign_Up extends AppCompatActivity {
                 }
             });
         }
-        Uri myFileUri = uploadFile();
+        */
+        final User myUser = createUser();
+        final Uri myFileUri = uploadFile();
 
-        //  addNotification();
-        addNotification();
-        User myUser = createUser();
+       FirebaseQuerry.getKey(new FirebaseQuerry.FirestoreCallback() {
+           @Override
+           public void OncallBack(User currentUser) {
 
-        if (pdfUri != null) {
-            if(myFileUri != null){
-                uploadFiletoDatabase(pdfUri, myUser,myFileUri);
-            }
-        } else {
-            if(myFileUri != null){
-                uploadFiletoDatabase(null, myUser, myFileUri); // ONLY uploading the info file
-            }
-        }
+           }
+
+           @Override
+           public void OncallBackKey(String key) {
+
+               if (pdfUri != null) {
+                   // if you have selected a file to upload
+                   // uploading 2 files .... 1 with info and other is the selected file
+                   if(myFileUri != null){
+                       uploadFiletoDatabase(pdfUri, myUser,myFileUri,key);
+                   }
+               } else {
+                   if(myFileUri != null){
+                       uploadFiletoDatabase(null, myUser, myFileUri,key); // ONLY uploading the info file
+                   }
+               }
+           }
+       },myUser.getPhonenumber());
+
+
     }
 
     private void movetoDashboard(User myUser){
@@ -260,7 +280,12 @@ public class Sign_Up extends AppCompatActivity {
         String userSnap = snap.getText().toString();
         String userGit = github.getText().toString();
         String userLinkedIn = linkedin.getText().toString();
-        String userFile1 ="";
+        String userFile1 = "";
+        if(pdfUri.toString().substring(0,5).equals("https")){
+            userFile1 =pdfUri.toString();
+            pdfUri = null;
+        }
+
         String userFile2 = "";
         //ArrayList<User> arrFiles = new ArrayList<>();
 
@@ -327,7 +352,7 @@ public class Sign_Up extends AppCompatActivity {
     }
 
 
-    private void uploadFiletoDatabase(final Uri pdfUriFile, final User myUser, final Uri myFileUri){
+    private void uploadFiletoDatabase(final Uri pdfUriFile,final User myUser, final Uri myFileUri, String key){
 
         final ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
@@ -335,10 +360,11 @@ public class Sign_Up extends AppCompatActivity {
         progressDialog.setProgress(0);
         progressDialog.show();
 
+        final String phone = phoneNo.getText().toString() + "/";
         //may be we need a for loop to delete all the files, but wont work
         //so to replace old files with new files, we need to delete the folder or the old files...
+/*
 
-        final String phone = phoneNo.getText().toString() + "/";
 
   final StorageReference desertRef = storage.getReference().child("files/" + phone);
 
@@ -375,12 +401,20 @@ public class Sign_Up extends AppCompatActivity {
                     }
                 });
 
+ */
 
 
 
         final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("User");
-        final DatabaseReference keyref = databaseReference.push();
-        final String key = keyref.getKey();
+        final DatabaseReference keyref;
+        if(key ==  null){
+            keyref = databaseReference.push();
+            key = keyref.getKey();
+        }else {
+            keyref = databaseReference.child(key);
+        }
+
+        final String finalkey = key;
         keyref.setValue(myUser);
 
 
@@ -396,12 +430,14 @@ public class Sign_Up extends AppCompatActivity {
                     @Override
                     public void onSuccess(Uri uri) {
                         myUser.setFiles2(uri.toString());
-                        databaseReference.child(key).child("files2").setValue(uri.toString());
-                        if(pdfUriFile == null){
+                        databaseReference.child(finalkey).child("files2").setValue(uri.toString());
+                        if(pdfUriFile == null ){
                             movetoDashboard(myUser);
                         }
                         System.out.println(uri.toString());
                     }
+
+
                 });
 
             }
@@ -410,7 +446,7 @@ public class Sign_Up extends AppCompatActivity {
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(Sign_Up.this, "File2 not uploaded!!", Toast.LENGTH_LONG).show();
+                        Toast.makeText(Sign_Up.this, "File2 not uploaded !!", Toast.LENGTH_LONG).show();
                         progressDialog.dismiss();
                     }
                 })
@@ -424,8 +460,9 @@ public class Sign_Up extends AppCompatActivity {
                 });
 
 
-        if(pdfUriFile != null) {
-            editInfo = false;
+
+
+        if(pdfUriFile != null ) {
 
             final ProgressDialog progressDialog1 = new ProgressDialog(this);
             progressDialog1.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
@@ -445,7 +482,7 @@ public class Sign_Up extends AppCompatActivity {
                         @Override
                         public void onSuccess(Uri uri) {
                             myUser.setFiles1(uri.toString());
-                            databaseReference.child(key).child("files1").setValue(uri.toString());
+                            databaseReference.child(finalkey).child("files1").setValue(uri.toString());
                             System.out.println(uri.toString());
                             movetoDashboard(myUser);
                         }
@@ -456,6 +493,7 @@ public class Sign_Up extends AppCompatActivity {
                         @Override
                         public void onFailure(@NonNull Exception e) {
                             Toast.makeText(Sign_Up.this, "File1 not uploaded !!", Toast.LENGTH_LONG).show();
+                            e.printStackTrace();
                         }
                     })
                     .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
@@ -467,24 +505,6 @@ public class Sign_Up extends AppCompatActivity {
                         }
                     });
         }
-
-        if(pdfUriFile == null && false){
-            DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
-            Query query = ref.child("User").orderByChild("phonenumber").equalTo(phoneNo.getText().toString());
-
-            query.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    for (DataSnapshot user: dataSnapshot.getChildren()) {
-                        user.getRef().child("files1").setValue(oldUri);
-                        editInfo = false;
-                    }
-                }
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-                    Log.i("Error: ", "onCancelled", databaseError.toException());
-                }
-            });
-        }
     }
+
 }

@@ -19,14 +19,18 @@ public class NotificationAction extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        String send_to = intent.getStringExtra("asdfghjkl");
-        //String send_to = User.lastestNumber;
-        String send_from = intent.getStringExtra("myPhone");
-        int notificationId = intent.getIntExtra("notification_id", 0);
+        //String send_to = intent.getStringExtra("asdfghjkl");
+        String send_to = User.lastestNumber;
+
+        SharedPreferences sharedPreferences = context.getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
+        String send_from  = sharedPreferences.getString("phone","");
+
+        //String send_from = intent.getStringExtra("myPhone");
+        sendInfo(send_from, send_to, context);
+        int notificationId = 0;
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         assert manager != null;
         manager.cancel(notificationId);
-        sendInfo(send_from, send_to, context);
     }
 
     private void sendInfo(String my_phone, String send_to, final Context context) {

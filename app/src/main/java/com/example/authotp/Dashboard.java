@@ -89,6 +89,12 @@ public class Dashboard extends AppCompatActivity {
         editor.apply();
         //SharePreHelper.setName(null);
         Intent intent = new Intent(this, Sign_Up.class);
+        intent.putExtra("check", true);
+        intent.putExtra("name", currentUser.getName());
+        intent.putExtra("insta", currentUser.getInstagram());
+        intent.putExtra("snap", currentUser.getSnapchat());
+        intent.putExtra("linkedin", currentUser.getLinkedIn());
+        intent.putExtra("git", currentUser.getGitHub());
         intent.putExtra("phoneNo", currentUser.getPhonenumber());
         startActivity(intent);
     }
@@ -100,7 +106,7 @@ public class Dashboard extends AppCompatActivity {
         editor.clear();
         editor.apply();
         SharePreHelper.setName(null);
-        Intent intent = new Intent(this,MainActivity.class);
+        Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
     }
 
@@ -161,11 +167,13 @@ public class Dashboard extends AppCompatActivity {
                 String key = dataSnapshot.getKey();
                 Message message = dataSnapshot.getValue(Message.class);
                 //System.out.println("Needed123!!! " + message.toString());
+                assert message != null;
                 boolean check = message.isCheck();
                 String toNumber = message.getTo();
                 //count++;
                 if(!check && toNumber.equals(currentUser.getPhonenumber())) {
                     notification2(message.getFrom());
+                    assert key != null;
                     database.getReference("Message").child(key).child("check").setValue(true);
                 }
             }
@@ -296,7 +304,7 @@ public class Dashboard extends AppCompatActivity {
         currentUser.setInstagram(sharedPreferences.getString("insta",""));
         currentUser.setSnapchat(sharedPreferences.getString("snap",""));
         currentUser.setGitHub(sharedPreferences.getString("github",""));
-        currentUser.setLinkedIn(sharedPreferences.getString("LinkedIn",""));
+        currentUser.setLinkedIn(sharedPreferences.getString("linkedIn",""));
         currentUser.setFiles1(sharedPreferences.getString("file1",""));
         currentUser.setFiles2(sharedPreferences.getString("file2",""));
     }
@@ -317,14 +325,14 @@ public class Dashboard extends AppCompatActivity {
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
         {
-            String channelId = "Your_channel_id";
+            String channelId = "Rec_Message";
             NotificationChannel channel = new NotificationChannel(
                     channelId,
-                    "Channel human readable title",
+                    "Message Received",
                     NotificationManager.IMPORTANCE_HIGH);
             manager.createNotificationChannel(channel);
             builder.setChannelId(channelId);
         }
-        manager.notify(0, builder.build());
+        manager.notify(1, builder.build());
     }
 }

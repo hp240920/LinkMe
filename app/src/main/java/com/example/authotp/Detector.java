@@ -60,7 +60,7 @@ public class Detector extends BroadcastReceiver{
             if (state.equals(TelephonyManager.EXTRA_STATE_IDLE)) {
                 //end = true;
                 Toast.makeText(context, "Idle State", Toast.LENGTH_SHORT).show();
-               // incomingNumber = getlastCall(context);
+                // incomingNumber = getlastCall(context);
                 String incomingNumber1 = User.lastestNumber;
                 notificationOut(context,incomingNumber1,myNumber);
 
@@ -126,7 +126,7 @@ private String getlastCall(Context context){
         Intent broadcastIntent = new Intent(context, NotificationAction.class);
         broadcastIntent.putExtra("phoneNum",incomingNumber);
         broadcastIntent.putExtra("myPhone", my_phone);
-        broadcastIntent.putExtra("notification_id", FLAG_CANCEL_CURRENT);
+        broadcastIntent.putExtra("notification_id", 0);
         PendingIntent actionIntent = PendingIntent.getBroadcast(context,
                 0, broadcastIntent, 0);
 
@@ -173,14 +173,14 @@ private String getlastCall(Context context){
         Intent broadcastIntent = new Intent(context, NotificationAction.class);
         broadcastIntent.putExtra("phoneNum",incomingNumber);
         broadcastIntent.putExtra("myPhone", my_phone);
-        broadcastIntent.putExtra("notification_id", FLAG_CANCEL_CURRENT);
+       // broadcastIntent.putExtra("notification_id", 0);
         PendingIntent actionIntent = PendingIntent.getBroadcast(context,
-                0, broadcastIntent, 0);
+                0, broadcastIntent, FLAG_CANCEL_CURRENT);
 
         Intent intent = new Intent(context, CancelNotification.class);
         //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.putExtra("notification_id", 0);
-        PendingIntent dismissIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
+        PendingIntent dismissIntent = PendingIntent.getBroadcast(context, 0, intent, FLAG_CANCEL_CURRENT);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
                 .setSmallIcon(R.mipmap.ic_launcher_round)

@@ -198,6 +198,7 @@ public class MainActivity extends AppCompatActivity {
                                 Objects.requireNonNull(fAuth.getCurrentUser()).getPhoneNumber(), Toast.LENGTH_SHORT).show();
 
                         Intent intent = new Intent(MainActivity.this, Sign_Up.class);
+                        intent.putExtra("check", false);
                         intent.putExtra("phoneNo", fAuth.getCurrentUser().getPhoneNumber());
                         SharePreHelper.setName(fAuth.getCurrentUser().getPhoneNumber());
                         startActivity(intent);
@@ -209,7 +210,7 @@ public class MainActivity extends AppCompatActivity {
 
                         FirebaseQuerry.getData(new FirebaseQuerry.FirestoreCallback() {
                             @Override
-                            public void onCallBack(User currentUser) {
+                            public void OncallBack(User currentUser) {
                                 createSharedPref(currentUser);
                                 startActivity(intent);
                             }

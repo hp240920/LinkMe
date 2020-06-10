@@ -25,15 +25,14 @@ public class Conformation extends AppCompatActivity {
         setContentView(R.layout.activity_conformation);
 
         display = findViewById(R.id.message);
-        Intent intent = getIntent();
-        String send_to = intent.getStringExtra("phoneNum");
-        String my_phone = intent.getStringExtra("myPhone");
-        int notificationId = intent.getIntExtra("notification_id", 0);
+        //Intent intent = getIntent();
+        String send_to = User.lastestNumber;
+        SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
+        String my_phone  = sharedPreferences.getString("phone","");
+        int notificationId = 0;
         NotificationManager manager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
         assert manager != null;
         manager.cancel(notificationId);
-
-
         sendInfo(my_phone,send_to);
         display.setText("Message Successfully sent to :" + send_to + " :) .......");
     }

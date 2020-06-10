@@ -8,6 +8,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
@@ -34,8 +35,11 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.ListResult;
 import com.google.firebase.storage.OnProgressListener;
@@ -62,6 +66,7 @@ public class Sign_Up extends AppCompatActivity {
     FirebaseDatabase database;
     FirebaseStorage storage;
     String displayName = null;
+    boolean editInfo = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +84,21 @@ public class Sign_Up extends AppCompatActivity {
         btnSignUp = findViewById(R.id.btnSignUp);
         Intent intent  = getIntent();
         String phone = intent.getStringExtra("phoneNo");
+        String userName, userInsta, userSnap, userLinkedin, userGit = null;
+        if(intent.getBooleanExtra("check", false)){
+            editInfo = true;
+            userName = intent.getStringExtra("name");
+            name.setText(userName);
+            userInsta = intent.getStringExtra("insta");
+            insta.setText(userInsta);
+            userSnap = intent.getStringExtra("snap");
+            snap.setText(userSnap);
+            userLinkedin = intent.getStringExtra("linkedin");
+            linkedin.setText(userLinkedin);
+            userGit = intent.getStringExtra("git");
+            github.setText(userGit);
+        }
+        //linkedin.setText("het");
         phoneNo.setText(phone);
         phoneNo.setEnabled(false);
         assert phone != null;
@@ -87,7 +107,6 @@ public class Sign_Up extends AppCompatActivity {
         // Firebase connection
         database = FirebaseDatabase.getInstance();
         storage = FirebaseStorage.getInstance();
-
     }
 
 
@@ -106,12 +125,14 @@ public class Sign_Up extends AppCompatActivity {
         startActivityForResult(intent,INTENT_CODE_SELECTFILE);
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         // check whether user has selected a pdf
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == INTENT_CODE_SELECTFILE && resultCode == RESULT_OK && data != null) {
             pdfUri = data.getData(); // getting the uri of selected file
+            assert pdfUri != null;
             String uriString = pdfUri.toString();
             File myFile = new File(uriString);
             String path = myFile.getAbsolutePath();
@@ -138,7 +159,7 @@ public class Sign_Up extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 
-        if(requestCode == REQUEST_CODE && grantResults[0] == PackageManager.PERMISSION_GRANTED && requestCode == REQUEST_CODE && grantResults[1] == PackageManager.PERMISSION_GRANTED){
+        if(requestCode == REQUEST_CODE && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED){
             selectPdf();
         }
 
@@ -151,9 +172,26 @@ public class Sign_Up extends AppCompatActivity {
     //private User myUser;
 
     public void onclickbtnSignUp(View v){
+        if(editInfo){
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
+            Query query = ref.child("User").orderByChild("phonenumber").equalTo(phoneNo.getText().toString());
+
+            query.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    for (DataSnapshot user: dataSnapshot.getChildren()) {
+                        user.getRef().removeValue();
+                    }
+                }
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    Log.i("Error: ", "onCancelled", databaseError.toException());
+                }
+            });
+        }
         Uri myFileUri = uploadFile();
 
-      //  addNotification();
+        //  addNotification();
         addNotification();
         User myUser = createUser();
 
@@ -161,18 +199,13 @@ public class Sign_Up extends AppCompatActivity {
             // if you have selected a file to upload
             // uploading 2 files .... 1 with info and other is the selected file
             if(myFileUri != null){
-
                 uploadFiletoDatabase(pdfUri, myUser,myFileUri);
             }
         } else {
-            // if you have not selected a file to upload
             if(myFileUri != null){
-
-                uploadFiletoDatabase(null ,myUser,myFileUri); // ONLY uploading the info file
+                uploadFiletoDatabase(null, myUser, myFileUri); // ONLY uploading the info file
             }
-
         }
-
     }
 
     private void movetoDashboard(User myUser){

@@ -34,7 +34,7 @@ public class Notify extends Service {
                 .setSmallIcon(R.drawable.ic_launcher_background)
                 .setContentIntent(pendingIntent)
                 .build();
-        startForeground(1, notification);
+        startForeground(2, notification);
         //do heavy work on a background thread
         //stopSelf();
         return START_REDELIVER_INTENT;

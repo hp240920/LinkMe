@@ -54,6 +54,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 public class Sign_Up extends AppCompatActivity {
 
@@ -67,6 +68,7 @@ public class Sign_Up extends AppCompatActivity {
     FirebaseStorage storage;
     String displayName = null;
     boolean editInfo = false;
+    String oldUri = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -180,7 +182,9 @@ public class Sign_Up extends AppCompatActivity {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     for (DataSnapshot user: dataSnapshot.getChildren()) {
+                        //oldUri = "Objects.requireNonNull(user.getValue(User.class)).getFiles1();";
                         user.getRef().removeValue();
+                        editInfo = false;
                     }
                 }
                 @Override
@@ -196,8 +200,6 @@ public class Sign_Up extends AppCompatActivity {
         User myUser = createUser();
 
         if (pdfUri != null) {
-            // if you have selected a file to upload
-            // uploading 2 files .... 1 with info and other is the selected file
             if(myFileUri != null){
                 uploadFiletoDatabase(pdfUri, myUser,myFileUri);
             }
@@ -325,7 +327,7 @@ public class Sign_Up extends AppCompatActivity {
     }
 
 
-    private void uploadFiletoDatabase(final Uri pdfUriFile,final User myUser, final Uri myFileUri){
+    private void uploadFiletoDatabase(final Uri pdfUriFile, final User myUser, final Uri myFileUri){
 
         final ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
@@ -400,8 +402,6 @@ public class Sign_Up extends AppCompatActivity {
                         }
                         System.out.println(uri.toString());
                     }
-
-
                 });
 
             }
@@ -410,7 +410,7 @@ public class Sign_Up extends AppCompatActivity {
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(Sign_Up.this, "File2 not uploaded !!", Toast.LENGTH_LONG).show();
+                        Toast.makeText(Sign_Up.this, "File2 not uploaded!!", Toast.LENGTH_LONG).show();
                         progressDialog.dismiss();
                     }
                 })
@@ -424,9 +424,8 @@ public class Sign_Up extends AppCompatActivity {
                 });
 
 
-
-
         if(pdfUriFile != null) {
+            editInfo = false;
 
             final ProgressDialog progressDialog1 = new ProgressDialog(this);
             progressDialog1.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
@@ -468,6 +467,24 @@ public class Sign_Up extends AppCompatActivity {
                         }
                     });
         }
-    }
 
+        if(pdfUriFile == null && false){
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
+            Query query = ref.child("User").orderByChild("phonenumber").equalTo(phoneNo.getText().toString());
+
+            query.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    for (DataSnapshot user: dataSnapshot.getChildren()) {
+                        user.getRef().child("files1").setValue(oldUri);
+                        editInfo = false;
+                    }
+                }
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    Log.i("Error: ", "onCancelled", databaseError.toException());
+                }
+            });
+        }
+    }
 }

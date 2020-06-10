@@ -214,6 +214,11 @@ public class MainActivity extends AppCompatActivity {
                                 createSharedPref(currentUser);
                                 startActivity(intent);
                             }
+
+                            @Override
+                            public void OncallBackKey(String key) {
+
+                            }
                         }, fAuth.getCurrentUser().getPhoneNumber());
 
 

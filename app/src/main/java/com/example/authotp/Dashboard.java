@@ -72,6 +72,15 @@ public class Dashboard extends AppCompatActivity {
                 Log.i("Selected :","delete files");
                 deleteFiles();
                 return true;
+            case R.id.call_log:
+                Log.i("Selected :", "call log");
+                onCallLog();
+                return true;
+            case R.id.search_nearby:
+                Log.i("Selected :", "Search nearby");
+                onSearchNearby();
+                return true;
+
             case R.id.about_us:
                 Log.i("Selected :","about us");
                 return true;
@@ -82,6 +91,17 @@ public class Dashboard extends AppCompatActivity {
             default:
                 return false;
         }
+    }
+
+    private void onSearchNearby() {
+
+        Intent intent = new Intent(this,SearchNearby.class);
+        startActivity(intent);
+    }
+
+    private void onCallLog(){
+        Intent intent = new Intent(this, call_log.class);
+        startActivity(intent);
     }
 
     private void deleteFiles() {

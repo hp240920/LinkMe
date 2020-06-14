@@ -118,4 +118,17 @@ public class User {
         this.website = website;
         this.email = email;
     }
+
+    public User(String name, String phonenumber){
+        this.Name = name;
+        this.phonenumber = phonenumber;
+    }
+
+    public String getCalllogUserString(User user) {
+        String output = user.getPhonenumber();
+        if(user.getName()!=null){
+            output+=user.getName();
+        }
+        return output;
+    }
 }

@@ -187,33 +187,6 @@
                 android:hint="github url..."
                 android:inputType="textPersonName" />
 
-            <TextView
-                android:id="@+id/textView9"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="15px"
-                android:layout_marginTop="30px"
-                android:layout_marginRight="15px"
-                android:text="File Attachment:  "
-                android:textSize="18sp" />
-
-            <TextView
-                android:id="@+id/fileName"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="15px"
-                android:layout_marginRight="15px"
-                android:hint="file name..."
-                android:textSize="19sp" />
-
-            <Button
-                android:id="@+id/btnSelectFile"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="15px"
-                android:layout_marginRight="15px"
-                android:onClick="onClickbtnSelect"
-                android:text="Select File" />
         </LinearLayout>
     </ScrollView>
 

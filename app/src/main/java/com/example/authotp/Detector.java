@@ -117,18 +117,21 @@ private String getlastCall(Context context){
     public void notificationOut(Context context, String incomingNumber, String my_phone) {
         // Builds your notification
 
-        Intent notificationIntent = new Intent(context, Conformation.class);
+        Intent notificationIntent = new Intent(context, selectFile.class);
         notificationIntent.putExtra("phoneNum", incomingNumber);
         notificationIntent.putExtra("myPhone", my_phone);
         notificationIntent.putExtra("notification_id", 0);
         PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, FLAG_CANCEL_CURRENT);
 
+        /*
         Intent broadcastIntent = new Intent(context, NotificationAction.class);
         broadcastIntent.putExtra("phoneNum",incomingNumber);
         broadcastIntent.putExtra("myPhone", my_phone);
         broadcastIntent.putExtra("notification_id", 0);
         PendingIntent actionIntent = PendingIntent.getBroadcast(context,
                 0, broadcastIntent, 0);
+         */
+
 
         Intent intent = new Intent(context, CancelNotification.class);
         //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -141,7 +144,7 @@ private String getlastCall(Context context){
                 .setContentText("Do you want to share your details with " + incomingNumber)
                 .setContentIntent(contentIntent)
                 .setAutoCancel(true)
-                .addAction(R.mipmap.ic_launcher, "Send", actionIntent)
+                .addAction(R.mipmap.ic_launcher, "Send", contentIntent)
                 .addAction(R.drawable.ic_launcher_foreground, "Dismiss", dismissIntent);
 
         // Add as notification
@@ -164,18 +167,21 @@ private String getlastCall(Context context){
     public void notificationIn(Context context, String incomingNumber, String my_phone) {
         // Builds your notification
 
-        Intent notificationIntent = new Intent(context, Conformation.class);
+        Intent notificationIntent = new Intent(context, selectFile.class);
         notificationIntent.putExtra("phoneNum", incomingNumber);
         notificationIntent.putExtra("myPhone", my_phone);
         notificationIntent.putExtra("notification_id", 0);
         PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, FLAG_CANCEL_CURRENT);
 
-        Intent broadcastIntent = new Intent(context, NotificationAction.class);
+        /*
+           Intent broadcastIntent = new Intent(context, NotificationAction.class);
         broadcastIntent.putExtra("phoneNum",incomingNumber);
         broadcastIntent.putExtra("myPhone", my_phone);
        // broadcastIntent.putExtra("notification_id", 0);
         PendingIntent actionIntent = PendingIntent.getBroadcast(context,
                 0, broadcastIntent, FLAG_CANCEL_CURRENT);
+         */
+
 
         Intent intent = new Intent(context, CancelNotification.class);
         //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -188,7 +194,7 @@ private String getlastCall(Context context){
                 .setContentText("Do you want to share your details with " + incomingNumber)
                 .setContentIntent(contentIntent)
                 .setAutoCancel(true)
-                .addAction(R.mipmap.ic_launcher, "Send", actionIntent)
+                .addAction(R.mipmap.ic_launcher, "Send", contentIntent)
                 .addAction(R.drawable.ic_launcher_foreground, "Dismiss", dismissIntent);
 
         // Add as notification

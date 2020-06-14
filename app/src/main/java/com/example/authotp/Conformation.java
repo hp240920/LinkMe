@@ -10,8 +10,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -25,15 +27,13 @@ public class Conformation extends AppCompatActivity {
         setContentView(R.layout.activity_conformation);
 
         display = findViewById(R.id.message);
-        //Intent intent = getIntent();
-        String send_to = User.lastestNumber;
-        SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
-        String my_phone  = sharedPreferences.getString("phone","");
-        int notificationId = 0;
-        NotificationManager manager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
-        assert manager != null;
-        manager.cancel(notificationId);
-        sendInfo(my_phone,send_to);
+        Intent intent = getIntent();
+       String my_phone = intent.getStringExtra("myPhone");
+        String send_to = intent.getStringExtra("sendTo");
+        String uri1 = intent.getStringExtra("uri1");
+        String uri2 = intent.getStringExtra("uri2");
+        String key = "";
+        sendInfo(my_phone,send_to,uri1,uri2);
         display.setText("Message Successfully sent to :" + send_to + " :) .......");
     }
 
@@ -41,17 +41,19 @@ public class Conformation extends AppCompatActivity {
       finish();
     }
 
-    private void sendInfo(String my_phone, String send_to) {
+    private void sendInfo(String my_phone, String send_to, String uri1, String uri2) {
 
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         DatabaseReference databaseReference = firebaseDatabase.getReference().child("Message");
 
+        DatabaseReference keyref = databaseReference.push();
+        String key = keyref.getKey();
 
-        Message message = new Message(my_phone, send_to, false);
-        databaseReference.push().setValue(message).addOnFailureListener(new OnFailureListener() {
+        Message message = new Message(my_phone, send_to, false,uri1,uri2,key);
+        databaseReference.child(key).setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
-            public void onFailure(@NonNull Exception e) {
-                display.setText(e.getLocalizedMessage());
+            public void onSuccess(Void aVoid) {
+                Toast.makeText(getApplicationContext(),"SENT",Toast.LENGTH_SHORT).show();
             }
         });
     }

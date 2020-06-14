@@ -82,8 +82,8 @@ public class Sign_Up extends AppCompatActivity {
         snap = findViewById(R.id.snap);
         linkedin = findViewById(R.id.linkedin);
         github = findViewById(R.id.github);
-        fileName = findViewById(R.id.fileName);
-        btnSelect = findViewById(R.id.btnSelectFile);
+       // fileName = findViewById(R.id.fileName);
+        //btnSelect = findViewById(R.id.btnSelectFile);
         btnSignUp = findViewById(R.id.btnSignUp);
 
         Intent intent  = getIntent();
@@ -126,7 +126,8 @@ public class Sign_Up extends AppCompatActivity {
     }
 
 
-    public void onClickbtnSelect(View v){
+    /*
+      public void onClickbtnSelect(View v){
 
         if (ContextCompat.checkSelfPermission(Sign_Up.this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             selectPdf();
@@ -134,6 +135,8 @@ public class Sign_Up extends AppCompatActivity {
             ActivityCompat.requestPermissions(Sign_Up.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
         }
     }
+     */
+
 
     private void selectPdf() {
         Intent intent = new Intent();
@@ -219,18 +222,7 @@ public class Sign_Up extends AppCompatActivity {
 
            @Override
            public void OncallBackKey(String key) {
-
-               if (pdfUri != null) {
-                   // if you have selected a file to upload
-                   // uploading 2 files .... 1 with info and other is the selected file
-                   if(myFileUri != null){
-                       uploadFiletoDatabase(pdfUri, myUser,myFileUri,key);
-                   }
-               } else {
-                   if(myFileUri != null){
-                       uploadFiletoDatabase(null, myUser, myFileUri,key); // ONLY uploading the info file
-                   }
-               }
+               uploadUser(myUser,key);
            }
        },myUser.getPhonenumber());
 
@@ -290,10 +282,14 @@ public class Sign_Up extends AppCompatActivity {
         String userGit = github.getText().toString();
         String userLinkedIn = linkedin.getText().toString();
         String userFile1 = "";
+
+        /*
         if(pdfUri.toString().substring(0,5).equals("https")){
-            userFile1 = pdfUri.toString();
+         userFile1 = pdfUri.toString();
             pdfUri = null;
         }
+         */
+
 
         String userFile2 = "";
         //ArrayList<User> arrFiles = new ArrayList<>();
@@ -362,6 +358,18 @@ public class Sign_Up extends AppCompatActivity {
         return myFileUri;
     }
 
+    private void uploadUser(final User myUser,String key){
+
+        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("User");
+        final DatabaseReference keyref;
+        if(key ==  null){
+            keyref = databaseReference.push();
+            key = keyref.getKey();
+        }else {
+            keyref = databaseReference.child(key);
+        }
+        keyref.setValue(myUser);
+    }
 
     private void uploadFiletoDatabase(final Uri pdfUriFile,final User myUser, final Uri myFileUri, String key){
 

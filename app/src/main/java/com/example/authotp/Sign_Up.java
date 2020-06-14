@@ -22,6 +22,7 @@ import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.ContactsContract;
 import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.View;
@@ -57,7 +58,7 @@ import java.util.List;
 
 public class Sign_Up extends AppCompatActivity {
 
-    EditText name, phoneNo, insta, snap, linkedin, github;
+    EditText name, phoneNo, insta, snap, linkedin, github, website, email;
     TextView fileName;
     Button btnSelect , btnSignUp;
     final int REQUEST_CODE = 9;
@@ -75,6 +76,8 @@ public class Sign_Up extends AppCompatActivity {
         setTitle("Your Information");
         name = findViewById(R.id.fullName);
         phoneNo = findViewById(R.id.phoneNo);
+        email = findViewById(R.id.email);
+        website = findViewById(R.id.website);
         insta = findViewById(R.id.insta);
         snap = findViewById(R.id.snap);
         linkedin = findViewById(R.id.linkedin);
@@ -99,10 +102,14 @@ public class Sign_Up extends AppCompatActivity {
     }
 
     private void setFields(Intent intent){
-        String userName, userInsta, userSnap, userLinkedin, userGit,file1 = null;
+        String userName, userInsta, userSnap, userLinkedin, userGit, file1, userEmail, userWebsite = null;
         editInfo = true;
         userName = intent.getStringExtra("name");
         name.setText(userName);
+        userEmail = intent.getStringExtra("email");
+        email.setText(userEmail);
+        userWebsite = intent.getStringExtra("website");
+        website.setText(userWebsite);
         userInsta = intent.getStringExtra("insta");
         insta.setText(userInsta);
         userSnap = intent.getStringExtra("snap");
@@ -259,15 +266,15 @@ public class Sign_Up extends AppCompatActivity {
 
     private void createSharedPref(User myUser) {
         SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
-
         sharedPreferences.edit().putString("name",myUser.getName()).apply();
         sharedPreferences.edit().putString("phone",myUser.getPhonenumber()).apply();
         SharePreHelper.setName(myUser.getPhonenumber());
+        sharedPreferences.edit().putString("email", myUser.getEmail()).apply();
+        sharedPreferences.edit().putString("website", myUser.getWebsite()).apply();
         sharedPreferences.edit().putString("insta",myUser.getInstagram()).apply();
         sharedPreferences.edit().putString("snap",myUser.getSnapchat()).apply();
         sharedPreferences.edit().putString("github",myUser.getGitHub()).apply();
         sharedPreferences.edit().putString("linkedIn",myUser.getLinkedIn()).apply();
-
         sharedPreferences.edit().putString("file1",myUser.getFiles1()).apply();
         sharedPreferences.edit().putString("file2",myUser.getFiles2()).apply();
     }
@@ -277,20 +284,22 @@ public class Sign_Up extends AppCompatActivity {
         String username = name.getText().toString();
         String userPhone = phoneNo.getText().toString();
         String userInsta = insta.getText().toString();
+        String emailId = email.getText().toString();
+        String uri = website.getText().toString();
         String userSnap = snap.getText().toString();
         String userGit = github.getText().toString();
         String userLinkedIn = linkedin.getText().toString();
         String userFile1 = "";
         if(pdfUri.toString().substring(0,5).equals("https")){
-            userFile1 =pdfUri.toString();
+            userFile1 = pdfUri.toString();
             pdfUri = null;
         }
 
         String userFile2 = "";
         //ArrayList<User> arrFiles = new ArrayList<>();
 
-        User newUser = new User(username,userInsta,userSnap,userGit,userLinkedIn, userFile1,userFile2,userPhone);
-        return newUser;
+        User user_info = new User(username,userInsta,userSnap,userGit,userLinkedIn, userFile1,userFile2,userPhone, emailId, uri);
+        return user_info;
     }
 
     private Uri uploadFile() {
@@ -298,6 +307,8 @@ public class Sign_Up extends AppCompatActivity {
             String details = "";
             details += "Name :" + name.getText().toString();
             details += "\nPhone Number :" + phoneNo.getText().toString();
+            details += "\nEmail: " + email.getText().toString();
+            details += "\nWebsite :" + website.getText().toString();
             details += "\nInstagram :" + insta.getText().toString();
             details += "\nSnapchat :" + snap.getText().toString();
             details += "\nLinkedIn :" + linkedin.getText().toString();
@@ -458,9 +469,6 @@ public class Sign_Up extends AppCompatActivity {
                         progressDialog.setProgress(currentProgress);
                     }
                 });
-
-
-
 
         if(pdfUriFile != null ) {
 

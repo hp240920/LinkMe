@@ -57,7 +57,6 @@ public class Dashboard extends AppCompatActivity {
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.dashboard_menu, menu);
         return super.onCreateOptionsMenu(menu);
-
     }
 
     @Override
@@ -69,6 +68,10 @@ public class Dashboard extends AppCompatActivity {
                 Log.i("Selected :","edit info");
                 EditInfo();
                 return true;
+            case R.id.delete_files:
+                Log.i("Selected :","delete files");
+                deleteFiles();
+                return true;
             case R.id.about_us:
                 Log.i("Selected :","about us");
                 return true;
@@ -79,6 +82,12 @@ public class Dashboard extends AppCompatActivity {
             default:
                 return false;
         }
+    }
+
+    private void deleteFiles() {
+        Intent intent = new Intent(this, deleteFiles.class);
+        intent.putExtra("phone", currentUser.getPhonenumber());
+        startActivity(intent);
     }
 
     private void EditInfo() {
@@ -96,6 +105,8 @@ public class Dashboard extends AppCompatActivity {
         intent.putExtra("name", currentUser.getName());
         intent.putExtra("insta", currentUser.getInstagram());
         intent.putExtra("snap", currentUser.getSnapchat());
+        intent.putExtra("email", currentUser.getEmail());
+        intent.putExtra("website", currentUser.getWebsite());
         intent.putExtra("linkedin", currentUser.getLinkedIn());
         intent.putExtra("git", currentUser.getGitHub());
         intent.putExtra("phoneNo", currentUser.getPhonenumber());
@@ -125,7 +136,9 @@ public class Dashboard extends AppCompatActivity {
         setContentView(R.layout.activity_dashboard);
         setTitle("Dashboard");
 
-        if (ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.SYSTEM_ALERT_WINDOW) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.SYSTEM_ALERT_WINDOW) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(Dashboard.this,
                     new String[]{Manifest.permission.READ_PHONE_STATE, Manifest.permission.SYSTEM_ALERT_WINDOW, Manifest.permission.READ_CALL_LOG},
                     1);
@@ -305,6 +318,8 @@ public class Dashboard extends AppCompatActivity {
     private void getSharedPref(SharedPreferences sharedPreferences){
         currentUser.setName(sharedPreferences.getString("name",""));
         currentUser.setPhonenumber(sharedPreferences.getString("phone",""));
+        currentUser.setEmail(sharedPreferences.getString("email", ""));
+        currentUser.setWebsite(sharedPreferences.getString("website", ""));
         currentUser.setInstagram(sharedPreferences.getString("insta",""));
         currentUser.setSnapchat(sharedPreferences.getString("snap",""));
         currentUser.setGitHub(sharedPreferences.getString("github",""));

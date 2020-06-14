@@ -1,5 +1,8 @@
 package com.example.authotp;
+import android.provider.ContactsContract;
+
 import java.lang.reflect.Array;
+import java.net.URI;
 import java.util.ArrayList;
 
 public class User {
@@ -8,6 +11,8 @@ public class User {
     public static String lastestNumber= "";
 
     private String Name;
+    private String email;
+    private String website;
     private String Instagram;
     private String Snapchat;
     private String GitHub;
@@ -16,6 +21,21 @@ public class User {
     private String Files2;
     private String phonenumber;
     //ArrayList<User> arrfiles = new ArrayList<>();
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getWebsite() {
+        return website;
+    }
+
+    public void setWebsite(String website) {
+        this.website = website;
+    }
 
     public String getFiles1() {
         return Files1;
@@ -86,7 +106,7 @@ public class User {
     }
 
 
-    public User(String name, String Instagram, String Snapchat, String Github, String LinkedIn, String File1, String File2, String phonenumber){
+    public User(String name, String Instagram, String Snapchat, String Github, String LinkedIn, String File1, String File2, String phonenumber, String email, String website){
         this.Name = name;
         this.Instagram = Instagram;
         this.Snapchat = Snapchat;
@@ -95,5 +115,7 @@ public class User {
         this.Files1 = File1;
         this.Files2 = File2;
         this.phonenumber = phonenumber;
+        this.website = website;
+        this.email = email;
     }
 }

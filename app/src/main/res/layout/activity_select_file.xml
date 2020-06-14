@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:app="http://schemas.android.com/apk/res-auto"
+xmlns:tools="http://schemas.android.com/tools"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+tools:context=".deleteFiles">
+
+    <TextView
+        android:id="@+id/folderName"
+        android:layout_width="327dp"
+        android:layout_height="39dp"
+        android:layout_marginStart="42dp"
+        android:layout_marginTop="28dp"
+        android:layout_marginEnd="42dp"
+        android:foregroundGravity="center"
+        android:gravity="center"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/folderName2"
+        android:layout_width="178dp"
+        android:layout_height="42dp"
+        android:text="Personal Info File:"
+        android:textSize="20sp"
+        tools:layout_editor_absoluteX="22dp"
+        tools:layout_editor_absoluteY="97dp" />
+
+    <TableLayout
+        android:layout_width="374dp"
+        android:layout_height="63dp"
+        tools:layout_editor_absoluteX="22dp"
+        tools:layout_editor_absoluteY="139dp">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="30px"
+            android:layout_marginBottom="30px">
+
+            <CheckBox
+                android:layout_width="332dp"
+                android:layout_height="match_parent"
+                android:hint="No Extra File" />
+        </TableRow>
+
+    </TableLayout>
+
+    <TextView
+        android:id="@+id/textView13"
+        android:layout_width="174dp"
+        android:layout_height="41dp"
+        android:text="Other FIles:"
+        android:textSize="20sp"
+        tools:layout_editor_absoluteX="22dp"
+        tools:layout_editor_absoluteY="246dp" />
+
+    <TableLayout
+        android:id="@+id/tableLayout"
+        android:layout_width="367dp"
+        android:layout_height="299dp"
+        android:layout_marginStart="23dp"
+        android:layout_marginEnd="23dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_editor_absoluteY="287dp">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="30px"
+            android:layout_marginBottom="30px">
+
+            <CheckBox
+                android:layout_width="332dp"
+                android:layout_height="match_parent"
+                android:hint="No Extra File" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="30px"
+            android:layout_marginBottom="30px">
+
+            <CheckBox
+                android:layout_width="332dp"
+                android:layout_height="match_parent"
+                android:hint="No Extra File" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="30px"
+            android:layout_marginBottom="30px">
+
+            <CheckBox
+                android:layout_width="332dp"
+                android:layout_height="match_parent"
+                android:hint="No Extra File" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="30px"
+            android:layout_marginBottom="30px">
+
+            <CheckBox
+                android:layout_width="332dp"
+                android:layout_height="match_parent"
+                android:hint="No Extra File" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="30px"
+            android:layout_marginBottom="30px">
+
+            <CheckBox
+                android:layout_width="332dp"
+                android:layout_height="match_parent"
+                android:hint="No Extra File" />
+        </TableRow>
+
+    </TableLayout>
+
+    <Button
+        android:id="@+id/selectFile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="161dp"
+        android:layout_marginEnd="162dp"
+        android:onClick="onDelete"
+        android:text="Select"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_editor_absoluteY="630dp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

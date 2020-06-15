@@ -243,7 +243,7 @@ public class MainActivity extends AppCompatActivity {
         sharedPreferences.edit().putString("github",myUser.getGitHub()).apply();
         sharedPreferences.edit().putString("linkedIn",myUser.getLinkedIn()).apply();
 
-        sharedPreferences.edit().putString("file1",myUser.getFiles1()).apply();
-        sharedPreferences.edit().putString("file2",myUser.getFiles2()).apply();
+       // sharedPreferences.edit().putString("file1",myUser.getFiles1()).apply();
+      //  sharedPreferences.edit().putString("file2",myUser.getFiles2()).apply();
     }
 }

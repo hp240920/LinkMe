@@ -118,11 +118,11 @@ public class Sign_Up extends AppCompatActivity {
         linkedin.setText(userLinkedin);
         userGit = intent.getStringExtra("git");
         github.setText(userGit);
-        file1 = intent.getStringExtra("file1");
-        Uri uri = Uri.parse(file1);
-        pdfUri= uri;
-        String filename = uri.getLastPathSegment();
-        fileName.setText(filename);
+        //file1 = intent.getStringExtra("file1");
+        //Uri uri = Uri.parse(file1);
+        //pdfUri= uri;
+        //String filename = uri.getLastPathSegment();
+       // fileName.setText(filename);
     }
 
 
@@ -267,8 +267,8 @@ public class Sign_Up extends AppCompatActivity {
         sharedPreferences.edit().putString("snap",myUser.getSnapchat()).apply();
         sharedPreferences.edit().putString("github",myUser.getGitHub()).apply();
         sharedPreferences.edit().putString("linkedIn",myUser.getLinkedIn()).apply();
-        sharedPreferences.edit().putString("file1",myUser.getFiles1()).apply();
-        sharedPreferences.edit().putString("file2",myUser.getFiles2()).apply();
+      //  sharedPreferences.edit().putString("file1",myUser.getFiles1()).apply();
+       // sharedPreferences.edit().putString("file2",myUser.getFiles2()).apply();
     }
 
     private User createUser(){
@@ -369,6 +369,7 @@ public class Sign_Up extends AppCompatActivity {
             keyref = databaseReference.child(key);
         }
         keyref.setValue(myUser);
+        movetoDashboard(myUser);
     }
 
     private void uploadFiletoDatabase(final Uri pdfUriFile,final User myUser, final Uri myFileUri, String key){
@@ -448,7 +449,7 @@ public class Sign_Up extends AppCompatActivity {
                 storageReference2.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                     @Override
                     public void onSuccess(Uri uri) {
-                        myUser.setFiles2(uri.toString());
+                       // myUser.setFiles2(uri.toString());
                         databaseReference.child(finalkey).child("files2").setValue(uri.toString());
                         if(pdfUriFile == null ){
                             movetoDashboard(myUser);
@@ -497,7 +498,7 @@ public class Sign_Up extends AppCompatActivity {
                     storageReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                         @Override
                         public void onSuccess(Uri uri) {
-                            myUser.setFiles1(uri.toString());
+                           // myUser.setFiles1(uri.toString());
                             databaseReference.child(finalkey).child("files1").setValue(uri.toString());
                             System.out.println(uri.toString());
                             movetoDashboard(myUser);

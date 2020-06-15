@@ -9,17 +9,22 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.app.DownloadManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.Gravity;
@@ -47,6 +52,15 @@ import com.google.firebase.storage.StorageReference;
 
 import org.w3c.dom.Text;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLConnection;
+
+import static android.app.DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR;
 import static android.os.Environment.DIRECTORY_DOWNLOADS;
 
 public class Dashboard extends AppCompatActivity {
@@ -130,7 +144,6 @@ public class Dashboard extends AppCompatActivity {
         intent.putExtra("linkedin", currentUser.getLinkedIn());
         intent.putExtra("git", currentUser.getGitHub());
         intent.putExtra("phoneNo", currentUser.getPhonenumber());
-        intent.putExtra("file1",currentUser.getFiles1());
         startActivity(intent);
     }
 
@@ -251,7 +264,7 @@ public class Dashboard extends AppCompatActivity {
                 for(DataSnapshot messageSnapshot : dataSnapshot.getChildren()){
                     if(messageSnapshot.exists()){
                         Message newMessage = messageSnapshot.getValue(Message.class);
-                        writeTextView(newMessage.getFrom(),scrollView);
+                        writeTextView(newMessage.getFrom(),scrollView,newMessage.getKey());
                     }
 
                 }
@@ -264,12 +277,13 @@ public class Dashboard extends AppCompatActivity {
 
     }
 
-    private void writeTextView(String phone, ScrollView scrollView){
+    private void writeTextView(String phone, ScrollView scrollView, String key){
 
         System.out.println(phone);
         LinearLayout linearLayout = findViewById(R.id.scrollViewLinearLayout);
         TextView textView = new TextView(this);
         textView.setText(phone);
+        textView.setTag(key);
         textView.setOnClickListener(onClickListener);
         linearLayout.addView(textView,0);
     }
@@ -280,26 +294,32 @@ public class Dashboard extends AppCompatActivity {
             if(view instanceof TextView){
                 TextView tv = (TextView)view;
                 String selectedUserNumber = tv.getText().toString();
-                getFileFromNumber(selectedUserNumber);
+                String key = tv.getTag().toString();
+                getFileFromNumber(selectedUserNumber ,key);
                 Toast.makeText(getApplicationContext(), selectedUserNumber, Toast.LENGTH_SHORT).show();
             }
         }
     };
 
-    private void getFileFromNumber(String selectedUserNumber) {
+    private void getFileFromNumber(String selectedUserNumber, String key) {
 
-        DatabaseReference dbref = firebaseDatabase.getReference().child("User");
+        DatabaseReference dbref = firebaseDatabase.getReference().child("Message");
 
-        Query query = dbref.orderByChild("phonenumber").equalTo(selectedUserNumber);
+        Query query = dbref.orderByChild("key").equalTo(key);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for(DataSnapshot userSnapshot : dataSnapshot.getChildren()){
-                    if(userSnapshot.exists()){
-                        String file1 = userSnapshot.getValue(User.class).getFiles1();
-                        String file2 = userSnapshot.getValue(User.class).getFiles2();
-                        System.out.println("  File 1 "+ file1 + "  File 2 "+ file2);
-                        downloadfiles(file1,file2);
+                for(DataSnapshot messageSnapshot : dataSnapshot.getChildren()){
+                    if(messageSnapshot.exists()){
+                        String file1 = messageSnapshot.getValue(Message.class).getFile1();
+                        String file2 = messageSnapshot.getValue(Message.class).getFile2();
+                        String phoneNumber = messageSnapshot.getValue(Message.class).getFrom();
+                        if(file1!=null){
+                            downloadfiles(file1,phoneNumber);
+                        }
+                        if(file2!=null){
+                            downloadfiles(file2,phoneNumber);
+                        }
                     }
                 }
             }
@@ -310,8 +330,12 @@ public class Dashboard extends AppCompatActivity {
         });
     }
 
-    private void downloadfiles(String file1, String file2) {
+    private void downloadfiles(String file1, String phoneNumber) {
 
+        File filepath = new File(Environment.getExternalStorageDirectory() + "/MYAPP");
+        if(!filepath.exists()){
+            filepath.mkdir();
+        }
        // StorageReference storageReference = FirebaseStorage.getInstance().getReferenceFromUrl(file2);
 
         DownloadManager downloadManager = (DownloadManager) getApplicationContext().
@@ -320,10 +344,11 @@ public class Dashboard extends AppCompatActivity {
         DownloadManager.Request request = new DownloadManager.Request(uri);
 
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-        request.setDestinationInExternalFilesDir(getApplicationContext(), DIRECTORY_DOWNLOADS, "Try123.pdf");
+        request.setDestinationInExternalPublicDir( "/MYAPP/", uri.getLastPathSegment());
 
         downloadManager.enqueue(request);
 
+        /*
         DownloadManager downloadManager1 = (DownloadManager) getApplicationContext().
                 getSystemService(Context.DOWNLOAD_SERVICE);
         Uri uri1 = Uri.parse(file2);
@@ -333,6 +358,8 @@ public class Dashboard extends AppCompatActivity {
         request1.setDestinationInExternalFilesDir(getApplicationContext(), DIRECTORY_DOWNLOADS, "Try1.pdf");
 
         downloadManager1.enqueue(request1);
+
+         */
     }
 
     private void getSharedPref(SharedPreferences sharedPreferences){
@@ -344,8 +371,8 @@ public class Dashboard extends AppCompatActivity {
         currentUser.setSnapchat(sharedPreferences.getString("snap",""));
         currentUser.setGitHub(sharedPreferences.getString("github",""));
         currentUser.setLinkedIn(sharedPreferences.getString("linkedIn",""));
-        currentUser.setFiles1(sharedPreferences.getString("file1",""));
-        currentUser.setFiles2(sharedPreferences.getString("file2",""));
+      //  currentUser.setFiles1(sharedPreferences.getString("file1",""));
+        //currentUser.setFiles2(sharedPreferences.getString("file2",""));
     }
 
     private void notification2(String num) {
@@ -374,4 +401,7 @@ public class Dashboard extends AppCompatActivity {
         }
         manager.notify(1, builder.build());
     }
+
+
+
 }

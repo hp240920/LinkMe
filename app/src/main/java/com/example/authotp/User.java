@@ -17,8 +17,8 @@ public class User {
     private String Snapchat;
     private String GitHub;
     private String LinkedIn;
-    private String Files1;  // User selected file
-    private String Files2;
+    //private String Files1;  // User selected file
+    //private String Files2;
     private String phonenumber;
     //ArrayList<User> arrfiles = new ArrayList<>();
     public String getEmail() {
@@ -37,6 +37,7 @@ public class User {
         this.website = website;
     }
 
+    /*
     public String getFiles1() {
         return Files1;
     }
@@ -52,6 +53,8 @@ public class User {
     public void setFiles2(String files2) {
         Files2 = files2;
     }
+     */
+
 
     public String getPhonenumber() {
         return phonenumber;
@@ -112,8 +115,8 @@ public class User {
         this.Snapchat = Snapchat;
         this.GitHub = Github;
         this.LinkedIn = LinkedIn;
-        this.Files1 = File1;
-        this.Files2 = File2;
+        //this.Files1 = File1;
+        //this.Files2 = File2;
         this.phonenumber = phonenumber;
         this.website = website;
         this.email = email;

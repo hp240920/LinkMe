@@ -170,8 +170,8 @@ public class deleteFiles extends AppCompatActivity {
         currentUser.setSnapchat(sharedPreferences.getString("snap",""));
         currentUser.setGitHub(sharedPreferences.getString("github",""));
         currentUser.setLinkedIn(sharedPreferences.getString("linkedIn",""));
-        currentUser.setFiles1(sharedPreferences.getString("file1",""));
-        currentUser.setFiles2(sharedPreferences.getString("file2",""));
+       // currentUser.setFiles1(sharedPreferences.getString("file1",""));
+        //currentUser.setFiles2(sharedPreferences.getString("file2",""));
         return currentUser;
     }
 

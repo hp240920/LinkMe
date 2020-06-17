@@ -1,11 +1,14 @@
 package com.example.authotp;
 import android.provider.ContactsContract;
 
+import androidx.annotation.NonNull;
+
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.net.URI;
 import java.util.ArrayList;
 
-public class User {
+public class User implements Serializable {
 
 
     public static String lastestNumber= "";
@@ -129,9 +132,15 @@ public class User {
 
     public String getCalllogUserString(User user) {
         String output = user.getPhonenumber();
-        if(user.getName()!=null){
-            output+=user.getName();
+        if(user.getName() != null){
+            output += user.getName();
         }
         return output;
+    }
+
+    @NonNull
+    public String toString(){
+        return this.Name + ", " + this.phonenumber + ", " + this.email + ", " + this.website
+                + ", " + this.Instagram + ", " + this.Snapchat + ", " + this.GitHub + ", " + this.LinkedIn;
     }
 }

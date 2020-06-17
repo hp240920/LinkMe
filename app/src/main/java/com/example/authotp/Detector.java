@@ -30,8 +30,6 @@ import static android.app.PendingIntent.FLAG_CANCEL_CURRENT;
 
 public class Detector extends BroadcastReceiver{
 
-    boolean in_out = false;
-
     @SuppressLint("UnsafeProtectedBroadcastReceiver")
     public void onReceive(final Context context, Intent intent) {
 

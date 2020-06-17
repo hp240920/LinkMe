@@ -295,7 +295,10 @@ public class Dashboard extends AppCompatActivity {
                 TextView tv = (TextView)view;
                 String selectedUserNumber = tv.getText().toString();
                 String key = tv.getTag().toString();
-                getFileFromNumber(selectedUserNumber ,key);
+                //getFileFromNumber(selectedUserNumber ,key);
+                Intent intent = new Intent(getApplicationContext(), SaveInfo.class);
+                intent.putExtra("key", key);
+                startActivity(intent);
                 Toast.makeText(getApplicationContext(), selectedUserNumber, Toast.LENGTH_SHORT).show();
             }
         }
@@ -379,7 +382,7 @@ public class Dashboard extends AppCompatActivity {
         // Builds your notification
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher_round)
-                .setContentTitle("John's Android Studio Tutorials")
+                .setContentTitle("AuthOPT Incoming")
                 .setContentText("Message from " + num);
 
         // Creates the intent needed to show the notification

@@ -116,6 +116,7 @@ public class SearchNearby extends AppCompatActivity {
                 opponentEndpointId, Payload.fromBytes(details.getBytes(UTF_8)));
         Toast.makeText(this,"sending Information",Toast.LENGTH_LONG).show();
     }
+
     private User getSharedPref(SharedPreferences sharedPreferences){
         User currentUser = new User();
         currentUser.setName(sharedPreferences.getString("name",""));
@@ -224,6 +225,7 @@ public class SearchNearby extends AppCompatActivity {
             // opponentName = textView.getText().toString();
         }
     };
+
     private final PayloadCallback payloadCallback =
             new PayloadCallback() {
                 @Override

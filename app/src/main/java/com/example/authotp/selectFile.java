@@ -105,8 +105,8 @@ public class selectFile extends AppCompatActivity {
            Intent intent = new Intent(this,Conformation.class);
            intent.putExtra("myPhone",myPhoneNumber);
            intent.putExtra("sendTo",send_to);
-           intent.putExtra("info","www.google.com");
-           intent.putExtra("uri2",uri);
+           //intent.putExtra("info","");
+           intent.putExtra("uri", uri);
            startActivity(intent);
        }
        else{

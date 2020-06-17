@@ -41,7 +41,7 @@ public class Conformation extends AppCompatActivity {
         Intent intent = getIntent();
         my_phone = intent.getStringExtra("myPhone");
         send_to = intent.getStringExtra("sendTo");
-        uri = intent.getStringExtra("uri2");
+        uri = intent.getStringExtra("uri");
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         DatabaseReference databaseReference = firebaseDatabase.getReference("User");
         //final String[] uri = {""};

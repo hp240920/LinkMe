@@ -10,23 +10,30 @@
         android:id="@+id/textView4"
         android:layout_width="match_parent"
         android:layout_height="62dp"
-        android:layout_marginTop="43dp"
-        android:layout_marginBottom="109dp"
+        android:layout_marginTop="48dp"
+        android:layout_marginBottom="116dp"
         android:gravity="center"
-        android:text="You are ready and will see new messages below !!"
-        app:layout_constraintBottom_toTopOf="@+id/tableLayout"
+        android:text="Messages and Files"
+        app:layout_constraintBottom_toTopOf="@+id/scrollView3"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TableLayout
-        android:id="@+id/tableLayout"
+    <ScrollView
+        android:id="@+id/scrollView3"
         android:layout_width="411dp"
-        android:layout_height="432dp"
-        android:layout_marginEnd="3dp"
-        android:layout_marginBottom="16dp"
+        android:layout_height="503dp"
+        android:layout_marginBottom="2dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TableLayout
+            android:id="@+id/tableLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="3dp"
+            android:layout_marginBottom="16dp" />
+    </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

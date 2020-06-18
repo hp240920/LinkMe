@@ -9,7 +9,10 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.CallLog;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,7 +28,7 @@ public class call_log extends AppCompatActivity {
 
     private void displayRecentCalls() {
 
-        LinearLayout linearLayout = findViewById(R.id.linearLayout_callLog);
+        //TableLayout tableLayout = findViewById(R.id.tableLayout);
 
         try {
 
@@ -44,7 +47,7 @@ public class call_log extends AppCompatActivity {
             //c.moveToFirst();
 
             int counter=0;
-                while (c.moveToNext() && counter<10){
+                while (c.moveToNext() && counter < 15){
 
                     int intNum = c.getColumnIndex(CallLog.Calls.NUMBER);
                     int intname = c.getColumnIndex(CallLog.Calls.CACHED_NAME);
@@ -59,8 +62,8 @@ public class call_log extends AppCompatActivity {
                     int type = Integer.parseInt(c.getString(c.getColumnIndex(CallLog.Calls.TYPE)));// for call
 
                     User user = new User(name,num);
-                    String display = user.getCalllogUserString(user)+  "\n" + "******************************************************\n";
-                    writeTextView(display,linearLayout);
+                    String display = user.getCalllogUserString(user);
+                    writeTextView(display);
                     counter++;
 
                 }
@@ -73,14 +76,26 @@ public class call_log extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-    private void writeTextView(String toDisplay, LinearLayout linearLayout){
-
+    private void writeTextView(String toDisplay){
         System.out.println(toDisplay);
-
         TextView textView = new TextView(this);
         textView.setText(toDisplay);
         textView.setOnClickListener(onClickListener);
-        linearLayout.addView(textView);
+        TableLayout ll = (TableLayout) findViewById(R.id.tableLayout_callLog);
+        ll.setColumnStretchable(0, true);
+        ll.setColumnStretchable(1, true);
+        ll.setColumnStretchable(2, true);
+        TableRow row= new TableRow(this);
+        TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT);
+        row.setLayoutParams(lp);
+        Button addBtn = new Button(this);
+        addBtn.setText("Save Info");
+        Button downloadBtn = new Button(this);
+        downloadBtn.setText("Download File");
+        row.addView(textView);
+        row.addView(addBtn);
+        row.addView(downloadBtn);
+        ll.addView(row);
     }
     private View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
@@ -88,8 +103,6 @@ public class call_log extends AppCompatActivity {
             if(view instanceof TextView){
                 TextView tv = (TextView)view;
                 String selectedUserNumber = tv.getText().toString();
-               // getFileFromNumber(selectedUserNumber);
-                // Move to the select file which you want to send ....!! here
                 Toast.makeText(getApplicationContext(), selectedUserNumber, Toast.LENGTH_SHORT).show();
             }
         }

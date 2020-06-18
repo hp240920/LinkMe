@@ -33,13 +33,19 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.common.collect.Table;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -64,6 +70,8 @@ import static android.app.DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR;
 import static android.os.Environment.DIRECTORY_DOWNLOADS;
 
 public class Dashboard extends AppCompatActivity {
+
+    //String key = "";
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -259,8 +267,10 @@ public class Dashboard extends AppCompatActivity {
         query.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                LinearLayout linearLayout = findViewById(R.id.scrollViewLinearLayout);
-                linearLayout.removeAllViews();
+                //LinearLayout linearLayout = findViewById(R.id.scrollViewLinearLayout);
+                //linearLayout.removeAllViews();
+                TableLayout tableLayout = findViewById(R.id.tableLayout);
+                tableLayout.removeAllViews();
                 for(DataSnapshot messageSnapshot : dataSnapshot.getChildren()){
                     if(messageSnapshot.exists()){
                         Message newMessage = messageSnapshot.getValue(Message.class);
@@ -277,15 +287,151 @@ public class Dashboard extends AppCompatActivity {
 
     }
 
-    private void writeTextView(String phone, ScrollView scrollView, String key){
+    private void writeTextView(String phone, ScrollView scrollView, final String key){
 
-        System.out.println(phone);
-        LinearLayout linearLayout = findViewById(R.id.scrollViewLinearLayout);
-        TextView textView = new TextView(this);
-        textView.setText(phone);
-        textView.setTag(key);
-        textView.setOnClickListener(onClickListener);
-        linearLayout.addView(textView,0);
+        TableLayout ll = (TableLayout) findViewById(R.id.tableLayout);
+        ll.setColumnStretchable(0, true);
+        ll.setColumnStretchable(1, true);
+        ll.setColumnStretchable(2, true);
+        TableRow row= new TableRow(this);
+        TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT);
+        row.setLayoutParams(lp);
+        //CheckBox checkBox = new CheckBox(this);
+        TextView space = new TextView(this);
+        space.setText("  ");
+        Button addBtn = new Button(this);
+        addBtn.setText("Save Info");
+        addBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+                DatabaseReference dbref = firebaseDatabase.getReference().child("Message");
+
+                Query query = dbref.orderByChild("key").equalTo(key);
+                query.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        for(DataSnapshot messageSnapshot : dataSnapshot.getChildren()){
+                            if(messageSnapshot.exists()){
+                                String file1 = messageSnapshot.getValue(Message.class).getFile1();
+                                //String file2 = messageSnapshot.getValue(Message.class).getFile2();
+                                //String phoneNumber = messageSnapshot.getValue(Message.class).getFrom();
+                                if(file1 != null){
+                                    saveToContact(file1);
+                                }
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                    }
+                });
+            }
+        });
+        Button downloadBtn = new Button(this);
+        downloadBtn.setText("Download File");
+        downloadBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+                DatabaseReference dbref = firebaseDatabase.getReference().child("Message");
+
+                Query query = dbref.orderByChild("key").equalTo(key);
+                query.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        for(DataSnapshot messageSnapshot : dataSnapshot.getChildren()){
+                            if(messageSnapshot.exists()){
+                                //String file1 = messageSnapshot.getValue(Message.class).getFile1();
+                                String file2 = messageSnapshot.getValue(Message.class).getFile2();
+                                //String phoneNumber = messageSnapshot.getValue(Message.class).getFrom();
+                                if(file2!=null){
+                                    downloadFile(file2);
+                                }
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                    }
+                });
+            }
+        });
+        TextView number = new TextView(this);
+        number.setText(phone);
+        number.setTag(key);
+        //checkBox.setText("hello");
+        //row.addView(checkBox);
+        row.addView(number);
+        //row.addView(space);
+        row.addView(addBtn);
+        //row.addView(space);
+        row.addView(downloadBtn);
+        ll.addView(row, 0);
+        //System.out.println(phone);
+       // LinearLayout linearLayout = findViewById(R.id.scrollViewLinearLayout);
+        //TextView textView = new TextView(this);
+        //textView.setText(phone);
+        //textView.setTag(key);
+        //textView.setOnClickListener(onClickListener);
+        //linearLayout.addView(textView,0);
+    }
+
+    private void downloadFile(String file2) {
+
+        File filepath = new File(Environment.getExternalStorageDirectory() + "/MYAPP");
+        if(!filepath.exists()){
+            filepath.mkdir();
+        }
+        // StorageReference storageReference = FirebaseStorage.getInstance().getReferenceFromUrl(file2);
+
+        DownloadManager downloadManager = (DownloadManager) getApplicationContext().
+                getSystemService(Context.DOWNLOAD_SERVICE);
+        Uri uri = Uri.parse(file2);
+        DownloadManager.Request request = new DownloadManager.Request(uri);
+
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        request.setDestinationInExternalPublicDir( "/MYAPP/", uri.getLastPathSegment());
+
+        downloadManager.enqueue(request);
+
+        /*
+        DownloadManager downloadManager1 = (DownloadManager) getApplicationContext().
+                getSystemService(Context.DOWNLOAD_SERVICE);
+        Uri uri1 = Uri.parse(file2);
+        DownloadManager.Request request1 = new DownloadManager.Request(uri1);
+
+        request1.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        request1.setDestinationInExternalFilesDir(getApplicationContext(), DIRECTORY_DOWNLOADS, "Try1.pdf");
+
+        downloadManager1.enqueue(request1);
+
+         */
+    }
+
+    private void saveToContact(String file1) {
+        System.out.println(file1);
+        String[] information = file1.split(", ");
+        String name = information[0];
+        String phoneNumber = information[1];
+        String email = information[2];
+        String website = information[3];
+        String insta = information[4];
+        String snap = information[5];
+        String gitHub = information[6];
+        String linkedin = information[7];
+        String notes = "Website: " + website + "\nInstagram: "
+                + insta + "\nSnapChat: " + snap + "\nGithub: " + gitHub + "\nLinkedIn: " + linkedin;
+
+        Intent intent = new Intent(ContactsContract.Intents.Insert.ACTION);
+        intent.setType(ContactsContract.RawContacts.CONTENT_TYPE);
+        intent.putExtra(ContactsContract.Intents.Insert.EMAIL,email);
+        intent.putExtra(ContactsContract.Intents.Insert.PHONE,phoneNumber);
+        intent.putExtra(ContactsContract.Intents.Insert.NAME,name);
+        intent.putExtra(ContactsContract.Intents.Insert.NOTES, notes);
+        startActivity(intent);
     }
 
     private View.OnClickListener onClickListener = new View.OnClickListener() {

@@ -6,30 +6,27 @@
     android:layout_height="match_parent"
     tools:context=".Dashboard">
 
-    <ScrollView
-        android:id="@+id/scrollView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView4">
-
-        <LinearLayout
-            android:id="@+id/scrollViewLinearLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:clickable="true"
-            android:orientation="vertical" />
-    </ScrollView>
-
     <TextView
         android:id="@+id/textView4"
         android:layout_width="match_parent"
         android:layout_height="62dp"
         android:layout_marginTop="43dp"
+        android:layout_marginBottom="109dp"
         android:gravity="center"
         android:text="You are ready and will see new messages below !!"
+        app:layout_constraintBottom_toTopOf="@+id/tableLayout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TableLayout
+        android:id="@+id/tableLayout"
+        android:layout_width="411dp"
+        android:layout_height="432dp"
+        android:layout_marginEnd="3dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

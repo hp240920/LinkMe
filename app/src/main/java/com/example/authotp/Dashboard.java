@@ -15,6 +15,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -293,7 +294,7 @@ public class Dashboard extends AppCompatActivity {
         Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,null,null, null);
         while (phones.moveToNext())
         {
-            String phoneNum = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)).replace(" ", "");
+            String phoneNum = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)).replace(" ", "").replace("-","");
             if(phoneNum.equals(phone)){
                 name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
                 System.out.println("Hello There I am here! " + name);
@@ -438,7 +439,37 @@ public class Dashboard extends AppCompatActivity {
         String notes = "Website: " + website + "\nInstagram: "
                 + insta + "\nSnapChat: " + snap + "\nGithub: " + gitHub + "\nLinkedIn: " + linkedin;
 
-        Cursor mCursor = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,  "NUMBER = " + phoneNumber,null, null);
+
+        boolean isExisting = false;
+
+        Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
+        Cursor cursor = getApplicationContext().getContentResolver().query(uri, null, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
+        while(cursor.moveToNext()){
+            isExisting = true;
+            long idContact = cursor.getLong(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID));
+            Intent i = new Intent(Intent.ACTION_EDIT);
+            Uri contactUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, idContact);
+
+
+           // i.setData(contactUri);
+            //i.setType(ContactsContract.Contacts.CONTENT_ITEM_TYPE);
+            i.putExtra("finishActivityOnSaveCompleted", true);
+            //i.setType(ContactsContract.RawContacts.CONTENT_TYPE);
+            i.putExtra(ContactsContract.Intents.Insert.EMAIL_ISPRIMARY,email);
+            i.putExtra(ContactsContract.Intents.Insert.PHONE_ISPRIMARY,phoneNumber);
+            //i.putExtra(ContactsContract.Intents.Insert.NAME,name);
+            i.putExtra(ContactsContract.Intents.Insert.NOTES, notes);
+
+            i.setDataAndType(contactUri, ContactsContract.Contacts.CONTENT_ITEM_TYPE);
+            startActivity(i);
+
+        }
+
+
+
+
+        /*
+          Cursor mCursor = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,  "NUMBER = " + phoneNumber,null, null);
         mCursor.moveToFirst();
         int lookupKeyIndex;
         int idIndex;
@@ -463,15 +494,19 @@ public class Dashboard extends AppCompatActivity {
         editIntent.putExtra(ContactsContract.Intents.Insert.NOTES, notes);
         editIntent.setDataAndType(selectedContactUri, ContactsContract.Contacts.CONTENT_ITEM_TYPE);
         startActivity(editIntent);
-        /*
-        Intent intent = new Intent(ContactsContract.Intents.Insert.ACTION);
-        intent.setType(ContactsContract.RawContacts.CONTENT_TYPE);
-        intent.putExtra(ContactsContract.Intents.Insert.EMAIL,email);
-        intent.putExtra(ContactsContract.Intents.Insert.PHONE,phoneNumber);
-        intent.putExtra(ContactsContract.Intents.Insert.NAME,name);
-        intent.putExtra(ContactsContract.Intents.Insert.NOTES, notes);
-        startActivity(intent);
-        */
+         */
+
+
+
+        if(isExisting == false){
+            Intent intent = new Intent(ContactsContract.Intents.Insert.ACTION);
+            intent.setType(ContactsContract.RawContacts.CONTENT_TYPE);
+            intent.putExtra(ContactsContract.Intents.Insert.EMAIL,email);
+            intent.putExtra(ContactsContract.Intents.Insert.PHONE,phoneNumber);
+            intent.putExtra(ContactsContract.Intents.Insert.NAME,name);
+            intent.putExtra(ContactsContract.Intents.Insert.NOTES, notes);
+            startActivity(intent);
+        }
     }
 
     private View.OnClickListener onClickListener = new View.OnClickListener() {

@@ -107,7 +107,8 @@ public class selectFile extends AppCompatActivity {
            intent.putExtra("sendTo",send_to);
            //intent.putExtra("info","");
            intent.putExtra("uri", uri);
-           startActivity(intent);
+           sendBroadcast(intent);
+           finish();
        }
        else{
            Toast.makeText(this,"ERROR",Toast.LENGTH_SHORT).show();

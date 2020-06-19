@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.app.NotificationManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -24,21 +25,16 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
-public class Conformation extends AppCompatActivity {
+public class Conformation extends BroadcastReceiver {
 
     String my_phone = "";
     String send_to = "";
     String uri = "";
     //String uri = "";
 
-    @SuppressLint("SetTextI18n")
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_conformation);
 
-        TextView display = findViewById(R.id.message);
-        Intent intent = getIntent();
+    @Override
+    public void onReceive(final Context context, Intent intent) {
         my_phone = intent.getStringExtra("myPhone");
         send_to = intent.getStringExtra("sendTo");
         uri = intent.getStringExtra("uri");
@@ -62,7 +58,7 @@ public class Conformation extends AppCompatActivity {
                             databaseReference.child(key).setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void aVoid) {
-                                    Toast.makeText(getApplicationContext(),"SENT",Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(context,"SENT",Toast.LENGTH_SHORT).show();
                                 }
                             });
                         }
@@ -75,12 +71,10 @@ public class Conformation extends AppCompatActivity {
 
             }
         });
-        display.setText("Message successfully sent to :" + send_to + " :) .......");
+        //display.setText("Message successfully sent to :" + send_to + " :) .......");
     }
 
-    public void onBackPressed() {
-      finish();
-    }
+
 /*
     private void sendInfo(String my_phone, String send_to, String uri1, String uri2) {
 

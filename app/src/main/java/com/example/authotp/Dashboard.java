@@ -19,6 +19,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -274,7 +275,7 @@ public class Dashboard extends AppCompatActivity {
                 for(DataSnapshot messageSnapshot : dataSnapshot.getChildren()){
                     if(messageSnapshot.exists()){
                         Message newMessage = messageSnapshot.getValue(Message.class);
-                        writeTextView(newMessage.getFrom(),scrollView,newMessage.getKey());
+                        writeTextView(newMessage.getFrom(), newMessage.getKey());
                     }
 
                 }
@@ -287,8 +288,19 @@ public class Dashboard extends AppCompatActivity {
 
     }
 
-    private void writeTextView(String phone, ScrollView scrollView, final String key){
-
+    private void writeTextView(String phone, final String key){
+        String name = "";
+        Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,null,null, null);
+        while (phones.moveToNext())
+        {
+            String phoneNum = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)).replace(" ", "");
+            if(phoneNum.equals(phone)){
+                name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+                System.out.println("Hello There I am here! " + name);
+            }
+            //phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+        }
+        phones.close();
         TableLayout ll = (TableLayout) findViewById(R.id.tableLayout);
         ll.setColumnStretchable(0, true);
         ll.setColumnStretchable(1, true);
@@ -296,9 +308,6 @@ public class Dashboard extends AppCompatActivity {
         TableRow row= new TableRow(this);
         TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT);
         row.setLayoutParams(lp);
-        //CheckBox checkBox = new CheckBox(this);
-        TextView space = new TextView(this);
-        space.setText("  ");
         Button addBtn = new Button(this);
         addBtn.setText("Save Info");
         addBtn.setOnClickListener(new View.OnClickListener() {
@@ -360,7 +369,11 @@ public class Dashboard extends AppCompatActivity {
             }
         });
         TextView number = new TextView(this);
-        number.setText(phone);
+        if(name.equals("")){
+            number.setText(phone);
+        }else{
+            number.setText(name);
+        }
         number.setTag(key);
         //checkBox.setText("hello");
         //row.addView(checkBox);
@@ -425,6 +438,32 @@ public class Dashboard extends AppCompatActivity {
         String notes = "Website: " + website + "\nInstagram: "
                 + insta + "\nSnapChat: " + snap + "\nGithub: " + gitHub + "\nLinkedIn: " + linkedin;
 
+        Cursor mCursor = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,  "NUMBER = " + phoneNumber,null, null);
+        mCursor.moveToFirst();
+        int lookupKeyIndex;
+        int idIndex;
+        String currentLookupKey;
+        long currentId;
+        Uri selectedContactUri;
+
+        // Gets the lookup key column index
+        lookupKeyIndex = mCursor.getColumnIndex(ContactsContract.Contacts.LOOKUP_KEY);
+        // Gets the lookup key value
+        currentLookupKey = mCursor.getString(lookupKeyIndex);
+        // Gets the _ID column index
+        idIndex = mCursor.getColumnIndex(ContactsContract.Contacts._ID);
+        currentId = mCursor.getLong(idIndex);
+        selectedContactUri =
+                ContactsContract.Contacts.getLookupUri(currentId, currentLookupKey);
+
+        Intent editIntent = new Intent(Intent.ACTION_EDIT);
+        editIntent.putExtra(ContactsContract.Intents.Insert.EMAIL,email);
+       // editIntent.putExtra(ContactsContract.Intents.Insert.PHONE,phoneNumber);
+       // editIntent.putExtra(ContactsContract.Intents.Insert.NAME,name);
+        editIntent.putExtra(ContactsContract.Intents.Insert.NOTES, notes);
+        editIntent.setDataAndType(selectedContactUri, ContactsContract.Contacts.CONTENT_ITEM_TYPE);
+        startActivity(editIntent);
+        /*
         Intent intent = new Intent(ContactsContract.Intents.Insert.ACTION);
         intent.setType(ContactsContract.RawContacts.CONTENT_TYPE);
         intent.putExtra(ContactsContract.Intents.Insert.EMAIL,email);
@@ -432,6 +471,7 @@ public class Dashboard extends AppCompatActivity {
         intent.putExtra(ContactsContract.Intents.Insert.NAME,name);
         intent.putExtra(ContactsContract.Intents.Insert.NOTES, notes);
         startActivity(intent);
+        */
     }
 
     private View.OnClickListener onClickListener = new View.OnClickListener() {

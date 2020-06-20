@@ -440,6 +440,10 @@ public class Dashboard extends AppCompatActivity {
                 + insta + "\nSnapChat: " + snap + "\nGithub: " + gitHub + "\nLinkedIn: " + linkedin;
 
 
+        Intent intent123 = new Intent(this, CheckContacts.class);
+        intent123.putExtra("phone_no", phoneNumber);
+        startActivity(intent123);
+        /*
         boolean isExisting = false;
 
         Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
@@ -448,10 +452,8 @@ public class Dashboard extends AppCompatActivity {
             isExisting = true;
             long idContact = cursor.getLong(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID));
             Intent i = new Intent(Intent.ACTION_EDIT);
-            Uri contactUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, idContact);
-
-
-           // i.setData(contactUri);
+            Uri contactUri = ContentUris.withAppendedId(ContactsContract.Data.CONTENT_URI, idContact);
+            i.setData(contactUri);
             //i.setType(ContactsContract.Contacts.CONTENT_ITEM_TYPE);
             i.putExtra("finishActivityOnSaveCompleted", true);
             //i.setType(ContactsContract.RawContacts.CONTENT_TYPE);
@@ -465,8 +467,7 @@ public class Dashboard extends AppCompatActivity {
 
         }
 
-
-
+*/
 
         /*
           Cursor mCursor = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,  "NUMBER = " + phoneNumber,null, null);
@@ -497,7 +498,7 @@ public class Dashboard extends AppCompatActivity {
          */
 
 
-
+/*
         if(isExisting == false){
             Intent intent = new Intent(ContactsContract.Intents.Insert.ACTION);
             intent.setType(ContactsContract.RawContacts.CONTENT_TYPE);
@@ -507,6 +508,8 @@ public class Dashboard extends AppCompatActivity {
             intent.putExtra(ContactsContract.Intents.Insert.NOTES, notes);
             startActivity(intent);
         }
+
+ */
     }
 
     private View.OnClickListener onClickListener = new View.OnClickListener() {

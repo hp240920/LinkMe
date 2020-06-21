@@ -15,6 +15,7 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.WRITE_CONTACTS"/>
 
     <application
         android:name=".App"
@@ -24,13 +25,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".CheckContacts"></activity>
         <activity android:name=".SaveInfo" />
         <activity android:name=".SearchNearby" />
         <activity android:name=".selectFile" />
         <activity android:name=".deleteFiles" />
         <activity android:name=".call_log" />
-        <activity android:name=".Conformation" />
         <activity android:name=".Sign_Up" />
         <activity android:name=".Dashboard" />
         <activity android:name=".MainActivity">
@@ -50,6 +49,7 @@
         </receiver>
         <receiver android:name=".NotificationAction" />
         <receiver android:name=".CancelNotification" />
+        <receiver android:name=".Conformation"></receiver>
 
         <service android:name=".Notify" />
     </application>

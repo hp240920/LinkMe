@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -62,8 +63,8 @@ public class call_log extends AppCompatActivity {
                     int type = Integer.parseInt(c.getString(c.getColumnIndex(CallLog.Calls.TYPE)));// for call
 
                     User user = new User(name,num);
-                    String display = user.getCalllogUserString(user);
-                    writeTextView(display);
+                    //String display = user.getCalllogUserString(user);
+                    writeTextView(user);
                     counter++;
 
                 }
@@ -76,34 +77,39 @@ public class call_log extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-    private void writeTextView(String toDisplay){
+    private void writeTextView(User toDisplay){
         System.out.println(toDisplay);
         TextView textView = new TextView(this);
-        textView.setText(toDisplay);
-        textView.setOnClickListener(onClickListener);
+        textView.setText(toDisplay.getCalllogUserString(toDisplay));
+        //textView.setOnClickListener(onClickListener);
         TableLayout ll = (TableLayout) findViewById(R.id.tableLayout_callLog);
         ll.setColumnStretchable(0, true);
         ll.setColumnStretchable(1, true);
-        ll.setColumnStretchable(2, true);
+       // ll.setColumnStretchable(2, true);
         TableRow row= new TableRow(this);
         TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT);
         row.setLayoutParams(lp);
         Button addBtn = new Button(this);
-        addBtn.setText("Save Info");
-        Button downloadBtn = new Button(this);
-        downloadBtn.setText("Download File");
+        addBtn.setText("SEND INFO");
+        addBtn.setOnClickListener(onClickListener);
+        addBtn.setTag(toDisplay.getPhonenumber());
+       // Button downloadBtn = new Button(this);
+        //downloadBtn.setText("Download File");
         row.addView(textView);
         row.addView(addBtn);
-        row.addView(downloadBtn);
+        //row.addView(downloadBtn);
         ll.addView(row);
     }
     private View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            if(view instanceof TextView){
-                TextView tv = (TextView)view;
-                String selectedUserNumber = tv.getText().toString();
+            if(view instanceof Button){
+                Button btn = (Button) view;
+                String selectedUserNumber = btn.getTag().toString();
                 Toast.makeText(getApplicationContext(), selectedUserNumber, Toast.LENGTH_SHORT).show();
+                Intent selectFile = new Intent(call_log.this, com.example.authotp.selectFile.class);
+                User.lastestNumber = selectedUserNumber;
+                startActivity(selectFile);
             }
         }
     };

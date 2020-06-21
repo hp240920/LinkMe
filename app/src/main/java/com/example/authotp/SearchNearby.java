@@ -232,8 +232,9 @@ public class SearchNearby extends AppCompatActivity {
                 public void onPayloadReceived(String endpointId, final Payload payload) {
                     Log.i("TAG", "On payload Received");
 
+                    String name = new String(payload.asBytes(), UTF_8).split(", ")[0];
                     AlertDialog.Builder builder = new AlertDialog.Builder(SearchNearby.this);
-                    builder.setMessage("Do you want to save the contact of "+ endpointId)
+                    builder.setMessage("Do you want to save the contact of "+ name)
                             .setCancelable(false)
                             .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                                 @Override

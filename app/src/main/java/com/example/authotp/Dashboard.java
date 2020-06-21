@@ -15,18 +15,24 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.content.ContentProviderOperation;
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.OperationApplicationException;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.Gravity;
@@ -38,6 +44,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TableLayout;
@@ -67,6 +74,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 
 import static android.app.DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR;
 import static android.os.Environment.DIRECTORY_DOWNLOADS;
@@ -303,15 +311,29 @@ public class Dashboard extends AppCompatActivity {
         }
         phones.close();
         TableLayout ll = (TableLayout) findViewById(R.id.tableLayout);
+
+        //ll.isColumnShrinkable(0);
         ll.setColumnStretchable(0, true);
-        ll.setColumnStretchable(1, true);
-        ll.setColumnStretchable(2, true);
+        ll.setColumnStretchable(1, false);
+        ll.setColumnStretchable(2, false);
         TableRow row= new TableRow(this);
-        TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT);
+
+        TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,TableRow.LayoutParams.MATCH_PARENT,0.15f);
         row.setLayoutParams(lp);
-        Button addBtn = new Button(this);
-        addBtn.setText("Save Info");
-        addBtn.setOnClickListener(new View.OnClickListener() {
+
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(),R.drawable.save_symbol);
+
+        int height = (bitmap.getHeight() * 128 / bitmap.getWidth());
+        Bitmap scale = Bitmap.createScaledBitmap(bitmap, 128,height, true);
+
+
+        ImageButton saveButton = new ImageButton(this);
+        saveButton.setImageBitmap(scale);
+        //saveButton.setImageResource(R.drawable.save_symbol);
+        //saveButton.setScaleType(ImageView.ScaleType.FIT_XY);
+        //Button addBtn = new Button(this);
+        //addBtn.setText("Save Info");
+        saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
@@ -339,8 +361,18 @@ public class Dashboard extends AppCompatActivity {
                 });
             }
         });
-        Button downloadBtn = new Button(this);
-        downloadBtn.setText("Download File");
+
+        Bitmap bitmapDownload = BitmapFactory.decodeResource(getResources(),R.drawable.download_img);
+
+        int height1 = (bitmapDownload.getHeight() * 128 / bitmapDownload.getWidth());
+        Bitmap scale1 = bitmapDownload.createScaledBitmap(bitmapDownload, 128,height1, true);
+
+
+        ImageButton downloadBtn = new ImageButton(this);
+        //downloadBtn.setImageResource(R.drawable.save_symbol);
+        downloadBtn.setImageBitmap(scale1);
+       // Button downloadBtn = new Button(this);
+        //downloadBtn.setText("Download File");
         downloadBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -370,6 +402,13 @@ public class Dashboard extends AppCompatActivity {
             }
         });
         TextView number = new TextView(this);
+
+
+
+        number.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        number.setGravity(Gravity.CENTER);
+        number.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,TableRow.LayoutParams.MATCH_PARENT,0.6f));
+       // row.getChildAt(0).setLayoutParams();
         if(name.equals("")){
             number.setText(phone);
         }else{
@@ -380,9 +419,10 @@ public class Dashboard extends AppCompatActivity {
         //row.addView(checkBox);
         row.addView(number);
         //row.addView(space);
-        row.addView(addBtn);
+        row.addView(saveButton);
         //row.addView(space);
         row.addView(downloadBtn);
+
         ll.addView(row, 0);
         //System.out.println(phone);
        // LinearLayout linearLayout = findViewById(R.id.scrollViewLinearLayout);
@@ -440,10 +480,139 @@ public class Dashboard extends AppCompatActivity {
                 + insta + "\nSnapChat: " + snap + "\nGithub: " + gitHub + "\nLinkedIn: " + linkedin;
 
 
+
+
+        boolean isExisting = false;
+
+        Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
+        Cursor cursor = getApplicationContext().getContentResolver().query(uri, null, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
+
+         if(cursor.moveToFirst()) {
+             isExisting = true;
+             long idContact = cursor.getLong(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID));
+             Uri contactUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, idContact);
+             Intent i = new Intent(Intent.ACTION_EDIT,contactUri);
+
+             ArrayList<ContentValues> data = new ArrayList<ContentValues>();
+
+             ContentValues row2 = new ContentValues();
+             row2.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
+             row2.put(ContactsContract.CommonDataKinds.Email.TYPE, ContactsContract.CommonDataKinds.Email.TYPE_CUSTOM);
+             row2.put(ContactsContract.CommonDataKinds.Email.LABEL, "Instagram");
+             row2.put(ContactsContract.CommonDataKinds.Email.ADDRESS, insta);
+             data.add(row2);
+
+             ContentValues row3 = new ContentValues();
+             row3.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
+             row3.put(ContactsContract.CommonDataKinds.Email.TYPE, ContactsContract.CommonDataKinds.Email.TYPE_CUSTOM);
+             row3.put(ContactsContract.CommonDataKinds.Email.LABEL, "Snapchat");
+             row3.put(ContactsContract.CommonDataKinds.Email.ADDRESS, snap);
+             data.add(row3);
+
+             ContentValues row4 = new ContentValues();
+             row4.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
+             row4.put(ContactsContract.CommonDataKinds.Email.TYPE, ContactsContract.CommonDataKinds.Email.TYPE_CUSTOM);
+             row4.put(ContactsContract.CommonDataKinds.Email.LABEL, "GitHub");
+             row4.put(ContactsContract.CommonDataKinds.Email.ADDRESS, gitHub);
+             data.add(row4);
+
+             ContentValues row5 = new ContentValues();
+             row5.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
+             row5.put(ContactsContract.CommonDataKinds.Email.TYPE, ContactsContract.CommonDataKinds.Email.TYPE_CUSTOM);
+             row5.put(ContactsContract.CommonDataKinds.Email.LABEL, "LinkedIn");
+             row5.put(ContactsContract.CommonDataKinds.Email.ADDRESS, linkedin);
+             data.add(row5);
+
+             ContentValues row6 = new ContentValues();
+             row6.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
+             row6.put(ContactsContract.CommonDataKinds.Email.TYPE, ContactsContract.CommonDataKinds.Email.TYPE_CUSTOM);
+             row6.put(ContactsContract.CommonDataKinds.Email.LABEL, "Website");
+             row6.put(ContactsContract.CommonDataKinds.Email.ADDRESS, website);
+             data.add(row6);
+
+
+             i.setData(contactUri);
+             i.putExtra("finishActivityOnSaveCompleted", true);
+
+             i.putExtra(ContactsContract.Intents.Insert.PHONE_ISPRIMARY,phoneNumber);
+             i.putExtra(ContactsContract.Intents.Insert.EMAIL_ISPRIMARY,email);
+             //i.putExtra(ContactsContract.Intents.Insert.NOTES, notes);
+
+             i.putParcelableArrayListExtra(ContactsContract.Intents.Insert.DATA, data);
+
+             startActivity(i);
+            }
+
+
+
+         if(isExisting == false){
+             /*
+               Intent intent = new Intent(ContactsContract.Intents.Insert.ACTION);
+            intent.setType(ContactsContract.RawContacts.CONTENT_TYPE);
+            intent.putExtra(ContactsContract.Intents.Insert.EMAIL,email);
+            intent.putExtra(ContactsContract.Intents.Insert.PHONE,phoneNumber);
+            intent.putExtra(ContactsContract.Intents.Insert.NAME,name);
+            intent.putExtra(ContactsContract.Intents.Insert.NOTES, notes);
+             //intent.putExtra(ContactsContract.CommonDataKinds.BaseTypes.TYPE_CUSTOM, notes);
+             //intent.putExtra(ContactsContract.Intents.Insert)
+              */
+
+
+             ArrayList<ContentValues> data = new ArrayList<ContentValues>();
+
+             ContentValues row2 = new ContentValues();
+             row2.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
+             row2.put(ContactsContract.CommonDataKinds.Email.TYPE, ContactsContract.CommonDataKinds.Email.TYPE_CUSTOM);
+             row2.put(ContactsContract.CommonDataKinds.Email.LABEL, "Instagram");
+             row2.put(ContactsContract.CommonDataKinds.Email.ADDRESS, insta);
+             data.add(row2);
+
+             ContentValues row3 = new ContentValues();
+             row3.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
+             row3.put(ContactsContract.CommonDataKinds.Email.TYPE, ContactsContract.CommonDataKinds.Email.TYPE_CUSTOM);
+             row3.put(ContactsContract.CommonDataKinds.Email.LABEL, "Snapchat");
+             row3.put(ContactsContract.CommonDataKinds.Email.ADDRESS, snap);
+             data.add(row3);
+
+             ContentValues row4 = new ContentValues();
+             row4.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
+             row4.put(ContactsContract.CommonDataKinds.Email.TYPE, ContactsContract.CommonDataKinds.Email.TYPE_CUSTOM);
+             row4.put(ContactsContract.CommonDataKinds.Email.LABEL, "GitHub");
+             row4.put(ContactsContract.CommonDataKinds.Email.ADDRESS, gitHub);
+             data.add(row4);
+
+             ContentValues row5 = new ContentValues();
+             row5.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
+             row5.put(ContactsContract.CommonDataKinds.Email.TYPE, ContactsContract.CommonDataKinds.Email.TYPE_CUSTOM);
+             row5.put(ContactsContract.CommonDataKinds.Email.LABEL, "LinkedIn");
+             row5.put(ContactsContract.CommonDataKinds.Email.ADDRESS, linkedin);
+             data.add(row5);
+
+             ContentValues row6 = new ContentValues();
+             row6.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
+             row6.put(ContactsContract.CommonDataKinds.Email.TYPE, ContactsContract.CommonDataKinds.Email.TYPE_CUSTOM);
+             row6.put(ContactsContract.CommonDataKinds.Email.LABEL, "Website");
+             row6.put(ContactsContract.CommonDataKinds.Email.ADDRESS, website);
+             data.add(row6);
+
+             Intent intent_demo = new Intent(Intent.ACTION_INSERT, ContactsContract.Contacts.CONTENT_URI);
+             intent_demo.putExtra(ContactsContract.Intents.Insert.NAME, name);
+             intent_demo.putExtra(ContactsContract.Intents.Insert.EMAIL, email);
+             intent_demo.putExtra(ContactsContract.Intents.Insert.PHONE, phoneNumber);
+             intent_demo.putParcelableArrayListExtra(ContactsContract.Intents.Insert.DATA, data);
+             startActivity(intent_demo);
+
+        }
+
+
+        /*
         Intent intent123 = new Intent(this, CheckContacts.class);
         intent123.putExtra("phone_no", phoneNumber);
         startActivity(intent123);
-        /*
+
+
+
+
         boolean isExisting = false;
 
         Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
@@ -454,10 +623,10 @@ public class Dashboard extends AppCompatActivity {
             Intent i = new Intent(Intent.ACTION_EDIT);
             Uri contactUri = ContentUris.withAppendedId(ContactsContract.Data.CONTENT_URI, idContact);
             i.setData(contactUri);
-            //i.setType(ContactsContract.Contacts.CONTENT_ITEM_TYPE);
+            i.setType(ContactsContract.Contacts.CONTENT_ITEM_TYPE);
             i.putExtra("finishActivityOnSaveCompleted", true);
             //i.setType(ContactsContract.RawContacts.CONTENT_TYPE);
-            i.putExtra(ContactsContract.Intents.Insert.EMAIL_ISPRIMARY,email);
+            //i.putExtra(String.valueOf(ContactsContract.CommonDataKinds.Email.IS_PRIMARY),email);
             i.putExtra(ContactsContract.Intents.Insert.PHONE_ISPRIMARY,phoneNumber);
             //i.putExtra(ContactsContract.Intents.Insert.NAME,name);
             i.putExtra(ContactsContract.Intents.Insert.NOTES, notes);
@@ -465,11 +634,35 @@ public class Dashboard extends AppCompatActivity {
             i.setDataAndType(contactUri, ContactsContract.Contacts.CONTENT_ITEM_TYPE);
             startActivity(i);
 
+
+         */
+
+
+
         }
 
-*/
+
+
+
+
 
         /*
+
+
+        ArrayList < ContentProviderOperation > ops = new ArrayList< ContentProviderOperation >();
+
+        ops.add(ContentProviderOperation.
+                newInsert(ContactsContract.Data.CONTENT_URI)
+                .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                .withValue(ContactsContract.Data.MIMETYPE,
+                        ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
+                .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, phoneNumber)
+                .withValue(ContactsContract.CommonDataKinds.Phone.TYPE,
+                        ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE)
+                .build());
+
+
+
           Cursor mCursor = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,  "NUMBER = " + phoneNumber,null, null);
         mCursor.moveToFirst();
         int lookupKeyIndex;
@@ -510,7 +703,7 @@ public class Dashboard extends AppCompatActivity {
         }
 
  */
-    }
+
 
     private View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override

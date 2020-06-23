@@ -132,6 +132,14 @@ public class SearchNearby extends AppCompatActivity {
         return currentUser;
     }
 
+
+    @Override
+    public void onBackPressed() {
+        connectionsClient.stopAllEndpoints();
+        finish();
+
+    }
+
     private static final Strategy STRATEGY = Strategy.P2P_CLUSTER; // need to check if this the best choice
     private String opponentEndpointId;
 
@@ -141,7 +149,7 @@ public class SearchNearby extends AppCompatActivity {
                 @Override
                 public void onEndpointFound(String endpointId, DiscoveredEndpointInfo info) {
                     Toast.makeText(getApplicationContext(),"endpoint found, connecting",Toast.LENGTH_LONG).show();
-                    //Log.i("TAG", "onEndpointFound: endpoint found, connecting");
+                    Log.i("TAG", "onEndpointFound: endpoint found, connecting");
 
                     //viewConnections(endpointId,info);
                     connectionsClient.requestConnection(etName.getText().toString(), endpointId, connectionLifecycleCallback);

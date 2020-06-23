@@ -493,43 +493,7 @@ public class Dashboard extends AppCompatActivity {
              Uri contactUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, idContact);
              Intent i = new Intent(Intent.ACTION_EDIT,contactUri);
 
-             ArrayList<ContentValues> data = new ArrayList<ContentValues>();
-
-             ContentValues row2 = new ContentValues();
-             row2.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
-             row2.put(ContactsContract.CommonDataKinds.Email.TYPE, ContactsContract.CommonDataKinds.Email.TYPE_CUSTOM);
-             row2.put(ContactsContract.CommonDataKinds.Email.LABEL, "Instagram");
-             row2.put(ContactsContract.CommonDataKinds.Email.ADDRESS, insta);
-             data.add(row2);
-
-             ContentValues row3 = new ContentValues();
-             row3.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
-             row3.put(ContactsContract.CommonDataKinds.Email.TYPE, ContactsContract.CommonDataKinds.Email.TYPE_CUSTOM);
-             row3.put(ContactsContract.CommonDataKinds.Email.LABEL, "Snapchat");
-             row3.put(ContactsContract.CommonDataKinds.Email.ADDRESS, snap);
-             data.add(row3);
-
-             ContentValues row4 = new ContentValues();
-             row4.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
-             row4.put(ContactsContract.CommonDataKinds.Email.TYPE, ContactsContract.CommonDataKinds.Email.TYPE_CUSTOM);
-             row4.put(ContactsContract.CommonDataKinds.Email.LABEL, "GitHub");
-             row4.put(ContactsContract.CommonDataKinds.Email.ADDRESS, gitHub);
-             data.add(row4);
-
-             ContentValues row5 = new ContentValues();
-             row5.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
-             row5.put(ContactsContract.CommonDataKinds.Email.TYPE, ContactsContract.CommonDataKinds.Email.TYPE_CUSTOM);
-             row5.put(ContactsContract.CommonDataKinds.Email.LABEL, "LinkedIn");
-             row5.put(ContactsContract.CommonDataKinds.Email.ADDRESS, linkedin);
-             data.add(row5);
-
-             ContentValues row6 = new ContentValues();
-             row6.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
-             row6.put(ContactsContract.CommonDataKinds.Email.TYPE, ContactsContract.CommonDataKinds.Email.TYPE_CUSTOM);
-             row6.put(ContactsContract.CommonDataKinds.Email.LABEL, "Website");
-             row6.put(ContactsContract.CommonDataKinds.Email.ADDRESS, website);
-             data.add(row6);
-
+             ArrayList<ContentValues> data = setLabels(insta,snap,gitHub,linkedin,website);
 
              i.setData(contactUri);
              i.putExtra("finishActivityOnSaveCompleted", true);
@@ -558,42 +522,7 @@ public class Dashboard extends AppCompatActivity {
               */
 
 
-             ArrayList<ContentValues> data = new ArrayList<ContentValues>();
-
-             ContentValues row2 = new ContentValues();
-             row2.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
-             row2.put(ContactsContract.CommonDataKinds.Email.TYPE, ContactsContract.CommonDataKinds.Email.TYPE_CUSTOM);
-             row2.put(ContactsContract.CommonDataKinds.Email.LABEL, "Instagram");
-             row2.put(ContactsContract.CommonDataKinds.Email.ADDRESS, insta);
-             data.add(row2);
-
-             ContentValues row3 = new ContentValues();
-             row3.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
-             row3.put(ContactsContract.CommonDataKinds.Email.TYPE, ContactsContract.CommonDataKinds.Email.TYPE_CUSTOM);
-             row3.put(ContactsContract.CommonDataKinds.Email.LABEL, "Snapchat");
-             row3.put(ContactsContract.CommonDataKinds.Email.ADDRESS, snap);
-             data.add(row3);
-
-             ContentValues row4 = new ContentValues();
-             row4.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
-             row4.put(ContactsContract.CommonDataKinds.Email.TYPE, ContactsContract.CommonDataKinds.Email.TYPE_CUSTOM);
-             row4.put(ContactsContract.CommonDataKinds.Email.LABEL, "GitHub");
-             row4.put(ContactsContract.CommonDataKinds.Email.ADDRESS, gitHub);
-             data.add(row4);
-
-             ContentValues row5 = new ContentValues();
-             row5.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
-             row5.put(ContactsContract.CommonDataKinds.Email.TYPE, ContactsContract.CommonDataKinds.Email.TYPE_CUSTOM);
-             row5.put(ContactsContract.CommonDataKinds.Email.LABEL, "LinkedIn");
-             row5.put(ContactsContract.CommonDataKinds.Email.ADDRESS, linkedin);
-             data.add(row5);
-
-             ContentValues row6 = new ContentValues();
-             row6.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
-             row6.put(ContactsContract.CommonDataKinds.Email.TYPE, ContactsContract.CommonDataKinds.Email.TYPE_CUSTOM);
-             row6.put(ContactsContract.CommonDataKinds.Email.LABEL, "Website");
-             row6.put(ContactsContract.CommonDataKinds.Email.ADDRESS, website);
-             data.add(row6);
+             ArrayList<ContentValues> data = setLabels(insta,snap,gitHub,linkedin,website);
 
              Intent intent_demo = new Intent(Intent.ACTION_INSERT, ContactsContract.Contacts.CONTENT_URI);
              intent_demo.putExtra(ContactsContract.Intents.Insert.NAME, name);
@@ -604,42 +533,48 @@ public class Dashboard extends AppCompatActivity {
 
         }
 
+    }
 
-        /*
-        Intent intent123 = new Intent(this, CheckContacts.class);
-        intent123.putExtra("phone_no", phoneNumber);
-        startActivity(intent123);
+    private ArrayList<ContentValues> setLabels(String insta,String snap, String gitHub, String linkedin, String website){
+        ArrayList<ContentValues> data = new ArrayList<ContentValues>();
 
+        ContentValues row2 = new ContentValues();
+        row2.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
+        row2.put(ContactsContract.CommonDataKinds.Email.TYPE, ContactsContract.CommonDataKinds.Email.TYPE_CUSTOM);
+        row2.put(ContactsContract.CommonDataKinds.Email.LABEL, "Instagram");
+        row2.put(ContactsContract.CommonDataKinds.Email.ADDRESS, insta);
+        data.add(row2);
 
+        ContentValues row3 = new ContentValues();
+        row3.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
+        row3.put(ContactsContract.CommonDataKinds.Email.TYPE, ContactsContract.CommonDataKinds.Email.TYPE_CUSTOM);
+        row3.put(ContactsContract.CommonDataKinds.Email.LABEL, "Snapchat");
+        row3.put(ContactsContract.CommonDataKinds.Email.ADDRESS, snap);
+        data.add(row3);
 
+        ContentValues row4 = new ContentValues();
+        row4.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
+        row4.put(ContactsContract.CommonDataKinds.Email.TYPE, ContactsContract.CommonDataKinds.Email.TYPE_CUSTOM);
+        row4.put(ContactsContract.CommonDataKinds.Email.LABEL, "GitHub");
+        row4.put(ContactsContract.CommonDataKinds.Email.ADDRESS, gitHub);
+        data.add(row4);
 
-        boolean isExisting = false;
+        ContentValues row5 = new ContentValues();
+        row5.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
+        row5.put(ContactsContract.CommonDataKinds.Email.TYPE, ContactsContract.CommonDataKinds.Email.TYPE_CUSTOM);
+        row5.put(ContactsContract.CommonDataKinds.Email.LABEL, "LinkedIn");
+        row5.put(ContactsContract.CommonDataKinds.Email.ADDRESS, linkedin);
+        data.add(row5);
 
-        Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
-        Cursor cursor = getApplicationContext().getContentResolver().query(uri, null, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
-        while(cursor.moveToNext()){
-            isExisting = true;
-            long idContact = cursor.getLong(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID));
-            Intent i = new Intent(Intent.ACTION_EDIT);
-            Uri contactUri = ContentUris.withAppendedId(ContactsContract.Data.CONTENT_URI, idContact);
-            i.setData(contactUri);
-            i.setType(ContactsContract.Contacts.CONTENT_ITEM_TYPE);
-            i.putExtra("finishActivityOnSaveCompleted", true);
-            //i.setType(ContactsContract.RawContacts.CONTENT_TYPE);
-            //i.putExtra(String.valueOf(ContactsContract.CommonDataKinds.Email.IS_PRIMARY),email);
-            i.putExtra(ContactsContract.Intents.Insert.PHONE_ISPRIMARY,phoneNumber);
-            //i.putExtra(ContactsContract.Intents.Insert.NAME,name);
-            i.putExtra(ContactsContract.Intents.Insert.NOTES, notes);
+        ContentValues row6 = new ContentValues();
+        row6.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
+        row6.put(ContactsContract.CommonDataKinds.Email.TYPE, ContactsContract.CommonDataKinds.Email.TYPE_CUSTOM);
+        row6.put(ContactsContract.CommonDataKinds.Email.LABEL, "Website");
+        row6.put(ContactsContract.CommonDataKinds.Email.ADDRESS, website);
+        data.add(row6);
 
-            i.setDataAndType(contactUri, ContactsContract.Contacts.CONTENT_ITEM_TYPE);
-            startActivity(i);
-
-
-         */
-
-
-
-        }
+        return data;
+    }
 
 
 

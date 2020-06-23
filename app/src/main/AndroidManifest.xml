@@ -23,16 +23,26 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
+
+
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".SaveInfo" />
-        <activity android:name=".SearchNearby" />
-        <activity android:name=".selectFile" />
-        <activity android:name=".deleteFiles" />
-        <activity android:name=".call_log" />
-        <activity android:name=".Sign_Up" />
-        <activity android:name=".Dashboard" />
-        <activity android:name=".MainActivity">
+        <activity android:name=".SearchNearby"
+            android:configChanges="orientation|screenSize"/>
+        <activity android:name=".selectFile"
+            android:configChanges="orientation|screenSize"/>
+        <activity android:name=".deleteFiles"
+            android:configChanges="orientation|screenSize"/>
+        <activity android:name=".call_log"
+            android:configChanges="orientation|screenSize"/>
+        <activity android:name=".Sign_Up"
+            android:configChanges="orientation|screenSize"/>
+        <activity android:name=".Dashboard"
+            android:configChanges="orientation|screenSize"/>
+        <activity android:name=".MainActivity"
+            android:configChanges="orientation|screenSize">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

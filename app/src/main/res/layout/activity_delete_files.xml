@@ -1,9 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
+    android:scrollbars="vertical"
     android:layout_height="match_parent"
+    android:layout_width="fill_parent">
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
     tools:context=".deleteFiles">
 
     <TextView
@@ -98,33 +105,40 @@
 
     </TableLayout>
 
-    <Button
-        android:id="@+id/deleteFile"
-        android:layout_width="400px"
+    <LinearLayout
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="22dp"
-        android:layout_marginTop="47dp"
-        android:layout_marginEnd="61dp"
-        android:layout_marginBottom="161dp"
-        android:onClick="onDelete"
-        android:text="Delete"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/btnUpload"
-        app:layout_constraintHorizontal_bias="0.58"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tableLayout" />
+        android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/btnUpload"
-        android:layout_width="400px"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="47dp"
-        android:layout_marginEnd="22dp"
-        android:onClick="onUpload"
-        android:text="Upload"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/deleteFile"
-        app:layout_constraintTop_toBottomOf="@+id/tableLayout" />
+        <Button
+            android:id="@+id/btnUpload"
+            android:layout_width="400px"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="47dp"
+            android:layout_marginEnd="22dp"
+            android:onClick="onUpload"
+            android:text="Upload"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/deleteFile"
+            app:layout_constraintTop_toBottomOf="@+id/tableLayout" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <Button
+            android:id="@+id/deleteFile"
+            android:layout_width="400px"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="22dp"
+            android:layout_marginTop="47dp"
+            android:layout_marginEnd="61dp"
+            android:layout_marginBottom="161dp"
+            android:onClick="onDelete"
+            android:text="Delete"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btnUpload"
+            app:layout_constraintHorizontal_bias="0.58"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tableLayout" />
+    </LinearLayout>
+
+</LinearLayout>
+</ScrollView>

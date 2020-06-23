@@ -133,7 +133,7 @@ public class User implements Serializable {
     public String getCalllogUserString(User user) {
         String output = user.getPhonenumber();
         if(user.getName() != null){
-            output += user.getName();
+            output += "  " + user.getName();
         }
         return output;
     }

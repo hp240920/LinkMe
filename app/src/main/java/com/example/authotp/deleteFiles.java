@@ -51,6 +51,11 @@ public class deleteFiles extends AppCompatActivity {
         file3 = findViewById(R.id.file3);
         file4 = findViewById(R.id.file4);
         file5 = findViewById(R.id.file5);
+        updateFileView();
+    }
+
+
+    private void updateFileView(){
         firebaseStorage = FirebaseStorage.getInstance();
         StorageReference storageReference = firebaseStorage.getReference().child("files/" + folder_name);
         storageReference.listAll()
@@ -58,6 +63,11 @@ public class deleteFiles extends AppCompatActivity {
                     @Override
                     public void onSuccess(ListResult listResult) {
                         int count = 0;
+                        file1.setText("");
+                        file2.setText("");
+                        file3.setText("");
+                        file4.setText("");
+                        file5.setText("");
                         for (StorageReference item : listResult.getItems()) {
                             if(count >= 5){
                                 break;
@@ -112,12 +122,19 @@ public class deleteFiles extends AppCompatActivity {
                             //int count = 0;
                             for (StorageReference item : listResult.getItems()) {
                                 if(item.getName().equals(checkBoxId.get(count))){
-                                    item.delete();
-                                    Toast.makeText(getApplicationContext(), "Deleted!", Toast.LENGTH_SHORT).show();
+                                    item.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            uncheckAll();
+                                            Toast.makeText(getApplicationContext(), "Deleted!", Toast.LENGTH_SHORT).show();
+                                            updateFileView();
+                                        }
+                                    });
+
                                 }
                             }
-                            finish();
-                            startActivity(getIntent());
+
+
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
@@ -129,6 +146,14 @@ public class deleteFiles extends AppCompatActivity {
         }
         //checkBoxId.clear();
 
+    }
+
+    private void uncheckAll() {
+        file1.setChecked(false);
+        file2.setChecked(false);
+        file3.setChecked(false);
+        file4.setChecked(false);
+        file5.setChecked(false);
     }
 
     private static final int INTENT_CODE_SELECTFILE = 10;
@@ -193,8 +218,7 @@ public class deleteFiles extends AppCompatActivity {
                 progressDialog.dismiss();
                 Toast.makeText(getApplicationContext(),"File successfully Uploaded",Toast.LENGTH_SHORT).show();
                 // Restart the activity
-                finish();
-                startActivity(getIntent());
+                updateFileView();
             }
         })
                 .addOnFailureListener(new OnFailureListener() {

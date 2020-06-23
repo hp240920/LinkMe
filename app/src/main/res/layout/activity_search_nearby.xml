@@ -1,34 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:scrollbars="vertical"
+    android:layout_height="match_parent"
+    android:layout_width="fill_parent">
+
+<LinearLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".SearchNearby">
 
-    <EditText
-        android:id="@+id/etName"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="33dp"
-        android:editable="true"
-        android:ems="10"
-        android:hint="Enter your name here"
-        android:inputType="textPersonName"
-        app:layout_constraintStart_toEndOf="@+id/textView11"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:orientation="horizontal">
 
-    <TextView
-        android:id="@+id/textView11"
-        android:layout_width="101dp"
-        android:layout_height="28dp"
-        android:layout_marginStart="29dp"
-        android:layout_marginTop="40dp"
-        android:editable="false"
-        android:text="Your Name :"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <TextView
+            android:id="@+id/textView11"
+            android:layout_width="101dp"
+            android:layout_height="28dp"
+            android:layout_marginStart="29dp"
+            android:layout_marginTop="50px"
+            android:editable="false"
+            android:text="Your Name :"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <EditText
+            android:id="@+id/etName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="50px"
+            android:editable="true"
+            android:ems="10"
+            android:hint="Enter your name here"
+            android:inputType="textPersonName"
+            app:layout_constraintStart_toEndOf="@+id/textView11"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </LinearLayout>
 
     <Button
         android:id="@+id/btnHost"
@@ -40,15 +54,35 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/etName" />
 
-    <Button
-        android:id="@+id/btnFind"
-        android:layout_width="268dp"
-        android:layout_height="150px"
-        android:layout_marginTop="30dp"
-        android:onClick="startSearch"
-        android:text="Find Connections"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnHost" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnFind"
+            android:layout_width="268dp"
+            android:layout_height="150px"
+            android:layout_marginTop="30dp"
+            android:layout_weight="1"
+            android:onClick="startSearch"
+            android:text="Find Connections"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnHost" />
+
+        <Button
+            android:id="@+id/btnSendInfo"
+            android:layout_width="wrap_content"
+            android:layout_height="150px"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginEnd="25dp"
+            android:onClick="onSendInfo"
+            android:text="Send Info"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/btnFind"
+            app:layout_constraintTop_toBottomOf="@+id/btnHost" />
+    </LinearLayout>
 
     <ScrollView
         android:layout_width="match_parent"
@@ -66,16 +100,5 @@
         </LinearLayout>
     </ScrollView>
 
-    <Button
-        android:id="@+id/btnSendInfo"
-        android:layout_width="wrap_content"
-        android:layout_height="150px"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="25dp"
-        android:onClick="onSendInfo"
-        android:text="Send Info"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/btnFind"
-        app:layout_constraintTop_toBottomOf="@+id/btnHost" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>
+</ScrollView>

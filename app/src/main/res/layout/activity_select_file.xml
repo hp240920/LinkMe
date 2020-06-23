@@ -1,10 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-xmlns:app="http://schemas.android.com/apk/res-auto"
-xmlns:tools="http://schemas.android.com/tools"
-android:layout_width="match_parent"
-android:layout_height="match_parent"
-tools:context=".selectFile">
+
+
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:scrollbars="vertical"
+    android:layout_height="match_parent"
+    android:layout_width="fill_parent">
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    tools:context=".selectFile">
 
     <TextView
         android:id="@+id/folderName"
@@ -21,50 +30,16 @@ tools:context=".selectFile">
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/folderName2"
-        android:layout_width="178dp"
-        android:layout_height="42dp"
-        android:layout_marginStart="22dp"
-        android:layout_marginTop="30dp"
-        android:text="Personal Info File:"
-        android:textSize="20sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/folderName" />
-
-    <TableLayout
-        android:id="@+id/tableLayout2"
-        android:layout_width="374dp"
-        android:layout_height="63dp"
-        android:layout_marginStart="22dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/folderName2">
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="30px"
-            android:layout_marginBottom="30px">
-
-            <CheckBox
-                android:id="@+id/personalFile"
-                android:layout_width="332dp"
-                android:layout_height="match_parent"
-                android:hint="No Extra File" />
-        </TableRow>
-
-    </TableLayout>
-
-    <TextView
         android:id="@+id/textView13"
         android:layout_width="174dp"
         android:layout_height="41dp"
         android:layout_marginStart="22dp"
-        android:layout_marginTop="44dp"
+        android:layout_marginTop="50dp"
         android:text="Other Files :"
         android:textSize="20sp"
         app:layout_constraintBottom_toTopOf="@+id/tableLayout"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tableLayout2" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TableLayout
         android:id="@+id/tableLayout"
@@ -133,12 +108,13 @@ tools:context=".selectFile">
 
     <Button
         android:id="@+id/selectFile"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="161dp"
-        android:layout_marginTop="44dp"
-        android:layout_marginEnd="162dp"
-        android:layout_marginBottom="53dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginLeft="50dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginRight="50dp"
+        android:layout_marginBottom="50dp"
         android:onClick="onSend"
         android:text="Send"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -147,4 +123,6 @@ tools:context=".selectFile">
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tableLayout" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+</LinearLayout>
+</ScrollView>

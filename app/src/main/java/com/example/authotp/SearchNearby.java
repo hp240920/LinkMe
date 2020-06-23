@@ -58,6 +58,9 @@ public class SearchNearby extends AppCompatActivity {
         linearLayout = findViewById(R.id.linearLayout_searchNearby);
         sendInfo.setEnabled(false);
 
+        SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
+        String userName = sharedPreferences.getString("name","");
+        etName.setText(userName);
     }
     public void makeConnection(View v) {
         startAdvertising();

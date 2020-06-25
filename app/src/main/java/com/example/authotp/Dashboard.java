@@ -279,16 +279,16 @@ public class Dashboard extends AppCompatActivity {
         query.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                //LinearLayout linearLayout = findViewById(R.id.scrollViewLinearLayout);
-                //linearLayout.removeAllViews();
+                System.out.println("hello there");
                 TableLayout tableLayout = findViewById(R.id.tableLayout);
                 tableLayout.removeAllViews();
+                System.out.println("hello there 123");
                 for(DataSnapshot messageSnapshot : dataSnapshot.getChildren()){
+                    System.out.println("hello there 123");
                     if(messageSnapshot.exists()){
                         Message newMessage = messageSnapshot.getValue(Message.class);
                         writeTextView(newMessage.getFrom(), newMessage.getKey());
                     }
-
                 }
             }
             @Override
@@ -323,7 +323,7 @@ public class Dashboard extends AppCompatActivity {
         TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,TableRow.LayoutParams.MATCH_PARENT,0.15f);
         row.setLayoutParams(lp);
 
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(),R.drawable.save_symbol);
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.save_symbol);
 
         int height = (bitmap.getHeight() * 128 / bitmap.getWidth());
         Bitmap scale = Bitmap.createScaledBitmap(bitmap, 128,height, true);
@@ -364,7 +364,7 @@ public class Dashboard extends AppCompatActivity {
             }
         });
 
-        Bitmap bitmapDownload = BitmapFactory.decodeResource(getResources(),R.drawable.download_img);
+        Bitmap bitmapDownload = BitmapFactory.decodeResource(getResources(), R.drawable.download_img);
 
         int height1 = (bitmapDownload.getHeight() * 128 / bitmapDownload.getWidth());
         Bitmap scale1 = bitmapDownload.createScaledBitmap(bitmapDownload, 128,height1, true);

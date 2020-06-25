@@ -8,7 +8,9 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.animation.Animator;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DownloadManager;
 import android.app.NotificationChannel;
@@ -19,6 +21,7 @@ import android.content.ContentProviderOperation;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.OperationApplicationException;
 import android.content.SharedPreferences;
@@ -26,7 +29,10 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.media.Image;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -36,6 +42,7 @@ import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -64,17 +71,20 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.squareup.picasso.Picasso;
 
 import org.w3c.dom.Text;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Objects;
 
 import static android.app.DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR;
 import static android.os.Environment.DIRECTORY_DOWNLOADS;
@@ -221,7 +231,9 @@ public class Dashboard extends AppCompatActivity {
             ContextCompat.startForegroundService(this, serviceIntent);
             check_notification();
         }
+      //  loadProfile.start();
     }
+
 
     @Override
     public void onBackPressed() {
@@ -270,6 +282,7 @@ public class Dashboard extends AppCompatActivity {
         });
     }
 
+    ArrayList<String> dashboardUserNumbers = new ArrayList<>();
     private void updateScrollView() {
         final ScrollView scrollView = findViewById(R.id.scrollView);
 
@@ -287,9 +300,11 @@ public class Dashboard extends AppCompatActivity {
                     System.out.println("hello there 123");
                     if(messageSnapshot.exists()){
                         Message newMessage = messageSnapshot.getValue(Message.class);
+                        dashboardUserNumbers.add(newMessage.getFrom());
                         writeTextView(newMessage.getFrom(), newMessage.getKey());
                     }
                 }
+
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -298,6 +313,7 @@ public class Dashboard extends AppCompatActivity {
         });
 
     }
+
 
     private void writeTextView(String phone, final String key){
         String name = "";
@@ -314,10 +330,32 @@ public class Dashboard extends AppCompatActivity {
         phones.close();
         TableLayout ll = (TableLayout) findViewById(R.id.tableLayout);
 
-        //ll.isColumnShrinkable(0);
+
+
         ll.setColumnStretchable(0, true);
-        ll.setColumnStretchable(1, false);
+        final ImageView profile_pic = new ImageView(this);
+        profile_pic.setImageResource(R.drawable.flag_norway);
+        TableRow.LayoutParams profilePicLayoutParam = new TableRow.LayoutParams(100, 100,0.10f);
+        profilePicLayoutParam.gravity = Gravity.CENTER;
+        profile_pic.setLayoutParams(profilePicLayoutParam);
+
+        StorageReference profileRef = firebaseStorage.getReference().child("Profiles/" +phone+"/" + "profile.jpg");
+        profileRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+            @Override
+            public void onSuccess(Uri uri) {
+                Picasso.get().load(uri).into(profile_pic);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                System.out.println("Failed");
+            }
+        });
+
+        //ll.isColumnShrinkable(0);
+        ll.setColumnStretchable(1, true);
         ll.setColumnStretchable(2, false);
+        ll.setColumnStretchable(3, false);
         TableRow row= new TableRow(this);
 
         TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,TableRow.LayoutParams.MATCH_PARENT,0.15f);
@@ -378,6 +416,29 @@ public class Dashboard extends AppCompatActivity {
         downloadBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                //Display alert box with various options
+
+                CharSequence options[] = new CharSequence[] {"Call", "SMS", "Email"};
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(Dashboard.this);
+                builder.setCancelable(false);
+                builder.setTitle("Select your option:");
+                builder.setItems(options, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // the user clicked on options[which]
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //the user clicked on Cancel
+                    }
+                });
+                builder.show();
+
+
                 FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
                 DatabaseReference dbref = firebaseDatabase.getReference().child("Message");
 
@@ -419,6 +480,8 @@ public class Dashboard extends AppCompatActivity {
         number.setTag(key);
         //checkBox.setText("hello");
         //row.addView(checkBox);
+        row.addView(profile_pic);
+
         row.addView(number);
         //row.addView(space);
         row.addView(saveButton);
@@ -434,6 +497,15 @@ public class Dashboard extends AppCompatActivity {
         //textView.setOnClickListener(onClickListener);
         //linearLayout.addView(textView,0);
     }
+
+    private Animator currentAnimator;
+
+    // The system "short" animation time duration, in milliseconds. This
+    // duration is ideal for subtle animations or animations that occur
+    // very frequently.
+    private int shortAnimationDuration;
+
+
 
     private void downloadFile(String file2) {
 

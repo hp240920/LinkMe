@@ -77,6 +77,7 @@ public class Sign_Up extends AppCompatActivity {
     FirebaseAuth fAuth;
     String displayName = null;
     boolean editInfo = false;
+    private String phoneNumber;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,6 +105,7 @@ public class Sign_Up extends AppCompatActivity {
         }
 
         phoneNo.setText(phone);
+        phoneNumber = phone;
         phoneNo.setEnabled(false);
 
 
@@ -112,7 +114,7 @@ public class Sign_Up extends AppCompatActivity {
         database = FirebaseDatabase.getInstance();
         storage = FirebaseStorage.getInstance();
 
-        StorageReference profileRef = storage.getReference().child("Profiles/" + Objects.requireNonNull(fAuth.getCurrentUser()).getUid() + "profile.jpg");
+        StorageReference profileRef = storage.getReference().child("Profiles/" + Objects.requireNonNull(phone+"/" + "profile.jpg"));
         profileRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
             public void onSuccess(Uri uri) {
@@ -128,6 +130,9 @@ public class Sign_Up extends AppCompatActivity {
             }
         });
     }
+
+
+
 
     private void setFields(Intent intent){
         String userName, userInsta, userSnap, userLinkedin, userGit, file1, userEmail, userWebsite = null;
@@ -212,7 +217,7 @@ public class Sign_Up extends AppCompatActivity {
     }
 
     private void uploadProfileToFirebase(Uri imageUri) {
-        final StorageReference profileRef = storage.getReference().child("Profiles/" + Objects.requireNonNull(fAuth.getCurrentUser()).getUid() + "profile.jpg");
+        final StorageReference profileRef = storage.getReference().child("Profiles/" + Objects.requireNonNull(phoneNumber+"/" + "profile.jpg"));
         profileRef.putFile(imageUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {

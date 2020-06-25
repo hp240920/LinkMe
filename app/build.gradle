@@ -42,4 +42,5 @@ dependencies {
     //noinspection GradleCompatible,GradleCompatible
     implementation 'com.android.support:preference-v7:26.1.0'
     implementation 'com.squareup.picasso:picasso:2.71828'
+    implementation 'com.google.firebase:firebase-functions:19.0.2'
 }

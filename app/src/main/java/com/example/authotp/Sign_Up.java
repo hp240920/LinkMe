@@ -9,6 +9,7 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
@@ -23,11 +24,13 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.ContactsContract;
+import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,6 +38,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -46,6 +50,7 @@ import com.google.firebase.storage.ListResult;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -55,17 +60,21 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 public class Sign_Up extends AppCompatActivity {
 
     EditText name, phoneNo, insta, snap, linkedin, github, website, email;
     TextView fileName;
+    ImageView profile_pic;
+    Button edit_profile;
     Button btnSelect , btnSignUp;
     final int REQUEST_CODE = 9;
     final int INTENT_CODE_SELECTFILE = 86;
     private Uri pdfUri;
     FirebaseDatabase database;
     FirebaseStorage storage;
+    FirebaseAuth fAuth;
     String displayName = null;
     boolean editInfo = false;
 
@@ -85,6 +94,8 @@ public class Sign_Up extends AppCompatActivity {
        // fileName = findViewById(R.id.fileName);
         //btnSelect = findViewById(R.id.btnSelectFile);
         btnSignUp = findViewById(R.id.btnSignUp);
+        edit_profile = findViewById(R.id.change_profile);
+        profile_pic = findViewById(R.id.profile);
 
         Intent intent  = getIntent();
         String phone = intent.getStringExtra("phoneNo");
@@ -97,8 +108,25 @@ public class Sign_Up extends AppCompatActivity {
 
 
         // Firebase connection
+        fAuth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance();
         storage = FirebaseStorage.getInstance();
+
+        StorageReference profileRef = storage.getReference().child("Profiles/" + Objects.requireNonNull(fAuth.getCurrentUser()).getUid() + "profile.jpg");
+        profileRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+            @Override
+            public void onSuccess(Uri uri) {
+                Picasso.get().load(uri).into(profile_pic);
+            }
+        });
+
+        edit_profile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent pick_profile = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(pick_profile, 404);
+            }
+        });
     }
 
     private void setFields(Intent intent){
@@ -175,7 +203,36 @@ public class Sign_Up extends AppCompatActivity {
         else{
             Toast.makeText(this,"Please select a file",Toast.LENGTH_SHORT).show();
         }
+
+        if(requestCode == 404 && resultCode == Activity.RESULT_OK){
+            Uri imageUri = data.getData();
+            //profile_pic.setImageURI(imageUri);
+            uploadProfileToFirebase(imageUri);
+        }
     }
+
+    private void uploadProfileToFirebase(Uri imageUri) {
+        final StorageReference profileRef = storage.getReference().child("Profiles/" + Objects.requireNonNull(fAuth.getCurrentUser()).getUid() + "profile.jpg");
+        profileRef.putFile(imageUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                Toast.makeText(getApplicationContext(), "Uploaded", Toast.LENGTH_SHORT).show();
+                profileRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        Picasso.get().load(uri).into(profile_pic);
+                    }
+                });
+            }
+        })
+        .addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getApplicationContext(), "Error!!!", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 

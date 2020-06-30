@@ -1,13 +1,18 @@
 package com.example.authotp;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.util.Log;
@@ -32,6 +37,8 @@ import com.google.android.gms.nearby.connection.PayloadCallback;
 import com.google.android.gms.nearby.connection.PayloadTransferUpdate;
 import com.google.android.gms.nearby.connection.Strategy;
 
+import java.util.ArrayList;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class SearchNearby extends AppCompatActivity {
@@ -44,6 +51,7 @@ public class SearchNearby extends AppCompatActivity {
     EditText etName;
     Boolean isAdvertising;
     LinearLayout linearLayout;
+    private static int ON_REQUEST_CONTACT = 5;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,7 +122,8 @@ public class SearchNearby extends AppCompatActivity {
         SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
         User currentUser = getSharedPref(sharedPreferences);
 
-        String details = currentUser.getName() + ", "+ currentUser.getPhonenumber() + ", "+ currentUser.getEmail() +", "+ currentUser.getWebsite();
+        String details = currentUser.getName() + ", "+ currentUser.getPhonenumber() + ", "+ currentUser.getEmail() +", "+ currentUser.getWebsite() + ", "
+                + currentUser.getInstagram() + ", "+ currentUser.getSnapchat() + ", "+ currentUser.getGitHub() + ", "+ currentUser.getLinkedIn();
         connectionsClient.sendPayload(
                 opponentEndpointId, Payload.fromBytes(details.getBytes(UTF_8)));
         Toast.makeText(this,"sending Information",Toast.LENGTH_LONG).show();
@@ -274,8 +283,9 @@ public class SearchNearby extends AppCompatActivity {
             };
 
     private void getInfo(Payload payload){
-        String recieved = new String(payload.asBytes(), UTF_8);
-        String[] inforamtion = recieved.split(", ");
+
+        String received = new String(payload.asBytes(), UTF_8);
+        String[] inforamtion = received.split(", ");
         String name = inforamtion[0];
         String phoneNumber = inforamtion[1];
         String email = inforamtion[2];
@@ -289,7 +299,130 @@ public class SearchNearby extends AppCompatActivity {
         intent.putExtra(ContactsContract.Intents.Insert.NOTES,website);
         startActivity(intent);
 
-        Toast.makeText(getApplicationContext()," Recieved Text is "+recieved,Toast.LENGTH_LONG).show();
+        Toast.makeText(getApplicationContext()," Recieved Text is "+received,Toast.LENGTH_LONG).show();
     }
+
+
+    private void saveToContact(String file1) {
+        System.out.println(file1);
+        String[] information = file1.split(", ");
+        String name = information[0];
+        String phoneNumber = information[1];
+        String email = information[2];
+        String website = information[3];
+        String insta = information[4];
+        String snap = information[5];
+        String gitHub = information[6];
+        String linkedin = information[7];
+        String notes = "Website: " + website + "\nInstagram: "
+                + insta + "\nSnapChat: " + snap + "\nGithub: " + gitHub + "\nLinkedIn: " + linkedin;
+
+
+
+
+        boolean isExisting = false;
+
+        Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
+        Cursor cursor = getApplicationContext().getContentResolver().query(uri, null, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
+
+        if(cursor.moveToFirst()) {
+            isExisting = true;
+            long idContact = cursor.getLong(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID));
+            Uri contactUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, idContact);
+            Intent i = new Intent(Intent.ACTION_EDIT,contactUri);
+
+            ArrayList<ContentValues> data = setLabels(insta,snap,gitHub,linkedin,website);
+
+            i.setData(contactUri);
+            i.putExtra("finishActivityOnSaveCompleted", true);
+
+            i.putExtra(ContactsContract.Intents.Insert.PHONE_ISPRIMARY,phoneNumber);
+            i.putExtra(ContactsContract.Intents.Insert.EMAIL_ISPRIMARY,email);
+            //i.putExtra(ContactsContract.Intents.Insert.NOTES, notes);
+
+            i.putParcelableArrayListExtra(ContactsContract.Intents.Insert.DATA, data);
+
+            startActivityForResult(i,ON_REQUEST_CONTACT);
+        }
+
+
+
+        if(isExisting == false){
+             /*
+               Intent intent = new Intent(ContactsContract.Intents.Insert.ACTION);
+            intent.setType(ContactsContract.RawContacts.CONTENT_TYPE);
+            intent.putExtra(ContactsContract.Intents.Insert.EMAIL,email);
+            intent.putExtra(ContactsContract.Intents.Insert.PHONE,phoneNumber);
+            intent.putExtra(ContactsContract.Intents.Insert.NAME,name);
+            intent.putExtra(ContactsContract.Intents.Insert.NOTES, notes);
+             //intent.putExtra(ContactsContract.CommonDataKinds.BaseTypes.TYPE_CUSTOM, notes);
+             //intent.putExtra(ContactsContract.Intents.Insert)
+              */
+
+
+            ArrayList<ContentValues> data = setLabels(insta,snap,gitHub,linkedin,website);
+
+            Intent intent_demo = new Intent(Intent.ACTION_INSERT, ContactsContract.Contacts.CONTENT_URI);
+            intent_demo.putExtra(ContactsContract.Intents.Insert.NAME, name);
+            intent_demo.putExtra(ContactsContract.Intents.Insert.EMAIL, email);
+            intent_demo.putExtra(ContactsContract.Intents.Insert.PHONE, phoneNumber);
+            intent_demo.putParcelableArrayListExtra(ContactsContract.Intents.Insert.DATA, data);
+            startActivityForResult(intent_demo,ON_REQUEST_CONTACT);
+
+        }
+
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode == ON_REQUEST_CONTACT){
+            System.out.println("Contact Saved ");
+        }
+    }
+
+    private ArrayList<ContentValues> setLabels(String insta, String snap, String gitHub, String linkedin, String website){
+        ArrayList<ContentValues> data = new ArrayList<ContentValues>();
+
+        ContentValues row2 = new ContentValues();
+        row2.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
+        row2.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_CUSTOM);
+        row2.put(ContactsContract.CommonDataKinds.Website.LABEL, "Instagram");
+        row2.put(ContactsContract.CommonDataKinds.Website.URL, insta);
+        data.add(row2);
+
+        ContentValues row3 = new ContentValues();
+        row3.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
+        row3.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_CUSTOM);
+        row3.put(ContactsContract.CommonDataKinds.Website.LABEL, "Snapchat");
+        row3.put(ContactsContract.CommonDataKinds.Website.URL, snap);
+        data.add(row3);
+
+        ContentValues row4 = new ContentValues();
+        row4.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
+        row4.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_CUSTOM);
+        row4.put(ContactsContract.CommonDataKinds.Website.LABEL, "GitHub");
+        row4.put(ContactsContract.CommonDataKinds.Website.URL, gitHub);
+        data.add(row4);
+
+        ContentValues row5 = new ContentValues();
+        row5.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
+        row5.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_CUSTOM);
+        row5.put(ContactsContract.CommonDataKinds.Website.LABEL, "LinkedIn");
+        row5.put(ContactsContract.CommonDataKinds.Website.URL, linkedin);
+        data.add(row5);
+
+        ContentValues row6 = new ContentValues();
+        row6.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
+        row6.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_CUSTOM);
+        row6.put(ContactsContract.CommonDataKinds.Website.LABEL, "Website");
+        row6.put(ContactsContract.CommonDataKinds.Website.URL, website);
+        data.add(row6);
+
+        return data;
+    }
+
 
 }

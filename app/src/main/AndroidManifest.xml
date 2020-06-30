@@ -27,7 +27,6 @@
 
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".SaveInfo" />
         <activity android:name=".SearchNearby"
             android:configChanges="orientation|screenSize"/>
         <activity android:name=".selectFile"
@@ -60,7 +59,6 @@
         <receiver android:name=".NotificationAction" />
         <receiver android:name=".CancelNotification" />
         <receiver android:name=".Conformation"></receiver>
-
         <service android:name=".Notify" />
     </application>
 

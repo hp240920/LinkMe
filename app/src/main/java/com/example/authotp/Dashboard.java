@@ -29,8 +29,10 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.Image;
 import android.net.Uri;
@@ -192,6 +194,7 @@ public class Dashboard extends AppCompatActivity {
     FirebaseDatabase firebaseDatabase;
     FirebaseStorage firebaseStorage;
     Intent serviceIntent;
+    Dialog popUpDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -213,6 +216,9 @@ public class Dashboard extends AppCompatActivity {
 
         currentUser = new User();
         getSharedPref(sharedPreferences);
+
+
+        popUpDialog = new Dialog(this);
 
 
         // Getting Firebase Database and Storage
@@ -315,7 +321,7 @@ public class Dashboard extends AppCompatActivity {
     }
 
 
-    private void writeTextView(String phone, final String key){
+    private void writeTextView(final String phone, final String key){
         String name = "";
         Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,null,null, null);
         while (phones.moveToNext())
@@ -334,23 +340,12 @@ public class Dashboard extends AppCompatActivity {
 
         ll.setColumnStretchable(0, true);
         final ImageView profile_pic = new ImageView(this);
-        profile_pic.setImageResource(R.drawable.flag_norway);
+        profile_pic.setImageResource(R.drawable.flag_india);
         TableRow.LayoutParams profilePicLayoutParam = new TableRow.LayoutParams(100, 100,0.10f);
         profilePicLayoutParam.gravity = Gravity.CENTER;
         profile_pic.setLayoutParams(profilePicLayoutParam);
 
-        StorageReference profileRef = firebaseStorage.getReference().child("Profiles/" +phone+"/" + "profile.jpg");
-        profileRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-            @Override
-            public void onSuccess(Uri uri) {
-                Picasso.get().load(uri).into(profile_pic);
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                System.out.println("Failed");
-            }
-        });
+        openPopUpWhenClicked(phone,profile_pic);
 
         //ll.isColumnShrinkable(0);
         ll.setColumnStretchable(1, true);
@@ -498,14 +493,34 @@ public class Dashboard extends AppCompatActivity {
         //linearLayout.addView(textView,0);
     }
 
-    private Animator currentAnimator;
+    private void openPopUpWhenClicked(final String phone, ImageView profile_pic){
 
-    // The system "short" animation time duration, in milliseconds. This
-    // duration is ideal for subtle animations or animations that occur
-    // very frequently.
-    private int shortAnimationDuration;
+        profile_pic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                popUpDialog.setContentView(R.layout.popup_window);
+                popUpDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                popUpDialog.show();
+
+                StorageReference profileRef = firebaseStorage.getReference().child("Profiles/" +phone+"/" + "profile.jpg");
+                profileRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        final ImageView popUpImg = popUpDialog.findViewById(R.id.popUpImage);
+                        Picasso.get().load(uri).into(popUpImg);
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        System.out.println("Failed");
+                    }
+                });
 
 
+            }
+        });
+    }
 
     private void downloadFile(String file2) {
 
@@ -730,21 +745,6 @@ public class Dashboard extends AppCompatActivity {
  */
 
 
-    private View.OnClickListener onClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            if(view instanceof TextView){
-                TextView tv = (TextView)view;
-                String selectedUserNumber = tv.getText().toString();
-                String key = tv.getTag().toString();
-                //getFileFromNumber(selectedUserNumber ,key);
-                Intent intent = new Intent(getApplicationContext(), SaveInfo.class);
-                intent.putExtra("key", key);
-                startActivity(intent);
-                Toast.makeText(getApplicationContext(), selectedUserNumber, Toast.LENGTH_SHORT).show();
-            }
-        }
-    };
 
     private void getFileFromNumber(String selectedUserNumber, String key) {
 

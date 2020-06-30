@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         setContentView(R.layout.activity_main);
+        setTitle("Log In/Sign Up");
         phone = findViewById(R.id.getNumber);
         next = findViewById(R.id.signUp);
         login = findViewById(R.id.logIn);

@@ -108,7 +108,6 @@ public class Sign_Up extends AppCompatActivity {
         phoneNumber = phone;
         phoneNo.setEnabled(false);
 
-
         // Firebase connection
         fAuth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance();

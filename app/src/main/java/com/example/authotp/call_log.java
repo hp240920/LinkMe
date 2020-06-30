@@ -23,7 +23,7 @@ public class call_log extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_call_log);
-
+        setTitle("Call Log");
         displayRecentCalls();
     }
 

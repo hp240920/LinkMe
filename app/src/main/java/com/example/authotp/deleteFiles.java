@@ -41,6 +41,7 @@ public class deleteFiles extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_delete_files);
+        setTitle("Manage File(s)");
         phone_folder = findViewById(R.id.folder_name);
         Intent intent = getIntent();
         folder_name = intent.getStringExtra("phone");

@@ -49,7 +49,7 @@ public class SearchNearby extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_nearby);
-
+        setTitle("Search Nearby");
         connection = findViewById(R.id.btnHost);
         findConnection = findViewById(R.id.btnFind);
         etName = findViewById(R.id.etName);

@@ -30,6 +30,7 @@ public class SaveInfo extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_save_info);
+        setTitle("Save Information");
         Intent intent = getIntent();
         key = intent.getStringExtra("key");
     }

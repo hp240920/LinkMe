@@ -67,7 +67,7 @@ public class Sign_Up extends AppCompatActivity {
     EditText name, phoneNo, insta, snap, linkedin, github, website, email;
     TextView fileName;
     ImageView profile_pic;
-    Button edit_profile;
+    Button edit_profile, delete_profile;
     Button btnSelect , btnSignUp;
     final int REQUEST_CODE = 9;
     final int INTENT_CODE_SELECTFILE = 86;
@@ -78,6 +78,7 @@ public class Sign_Up extends AppCompatActivity {
     String displayName = null;
     boolean editInfo = false;
     private String phoneNumber;
+    String phone;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,9 +98,10 @@ public class Sign_Up extends AppCompatActivity {
         btnSignUp = findViewById(R.id.btnSignUp);
         edit_profile = findViewById(R.id.change_profile);
         profile_pic = findViewById(R.id.profile);
+        delete_profile = findViewById(R.id.delete_profile);
 
         Intent intent  = getIntent();
-        String phone = intent.getStringExtra("phoneNo");
+        phone = intent.getStringExtra("phoneNo");
         if(intent.getBooleanExtra("check", false)){
             setFields(intent);
         }
@@ -113,7 +115,7 @@ public class Sign_Up extends AppCompatActivity {
         database = FirebaseDatabase.getInstance();
         storage = FirebaseStorage.getInstance();
 
-        StorageReference profileRef = storage.getReference().child("Profiles/" + Objects.requireNonNull(phone+"/" + "profile.jpg"));
+        StorageReference profileRef = storage.getReference().child("Profiles/" + Objects.requireNonNull(phone + "/" + "profile.jpg"));
         profileRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
             public void onSuccess(Uri uri) {
@@ -126,6 +128,16 @@ public class Sign_Up extends AppCompatActivity {
             public void onClick(View view) {
                 Intent pick_profile = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 startActivityForResult(pick_profile, 404);
+            }
+        });
+
+        delete_profile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                StorageReference profileRef = storage.getReference().child("Profiles/" + Objects.requireNonNull(phone + "/" + "profile.jpg"));
+                profileRef.delete();
+                finish();
+                startActivity(getIntent());
             }
         });
     }

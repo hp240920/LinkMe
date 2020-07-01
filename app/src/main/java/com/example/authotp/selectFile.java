@@ -43,6 +43,11 @@ public class selectFile extends AppCompatActivity {
         file3 = findViewById(R.id.rb3);
         file4 = findViewById(R.id.rb4);
         file5 = findViewById(R.id.rb5);
+        file1.setEnabled(false);
+        file2.setEnabled(false);
+        file3.setEnabled(false);
+        file4.setEnabled(false);
+        file5.setEnabled(false);
         rbGroup = findViewById(R.id.rbGroup);
         FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
         //Intent intent = getIntent();
@@ -72,18 +77,23 @@ public class selectFile extends AppCompatActivity {
 
                             if(count == 0){
                                 file1.setText(item.getName());
+                                file1.setEnabled(true);
                                 file1.setTag(0);
                             }else if(count == 1){
                                 file2.setText(item.getName());
+                                file2.setEnabled(true);
                                 file2.setTag(1);
                             }else if(count == 2){
                                 file3.setText(item.getName());
+                                file3.setEnabled(true);
                                 file3.setTag(2);
                             }else if(count == 3){
                                 file4.setText(item.getName());
+                                file4.setEnabled(true);
                                 file4.setTag(3);
                             }else{
                                 file5.setText(item.getName());
+                                file5.setEnabled(true);
                                 file5.setTag(4);
                             }
                             count++;

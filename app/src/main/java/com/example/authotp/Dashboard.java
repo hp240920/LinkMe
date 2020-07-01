@@ -335,12 +335,9 @@ public class Dashboard extends AppCompatActivity {
         }
         phones.close();
         TableLayout ll = (TableLayout) findViewById(R.id.tableLayout);
-
-
-
         ll.setColumnStretchable(0, true);
         final ImageView profile_pic = new ImageView(this);
-        profile_pic.setImageResource(R.drawable.flag_india);
+        profile_pic.setImageResource(R.drawable.default_dp);
         TableRow.LayoutParams profilePicLayoutParam = new TableRow.LayoutParams(100, 100,0.10f);
         profilePicLayoutParam.gravity = Gravity.CENTER;
         profile_pic.setLayoutParams(profilePicLayoutParam);
@@ -498,10 +495,8 @@ public class Dashboard extends AppCompatActivity {
         profile_pic.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 popUpDialog.setContentView(R.layout.popup_window);
                 popUpDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                popUpDialog.show();
 
                 StorageReference profileRef = firebaseStorage.getReference().child("Profiles/" +phone+"/" + "profile.jpg");
                 profileRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
@@ -509,6 +504,7 @@ public class Dashboard extends AppCompatActivity {
                     public void onSuccess(Uri uri) {
                         final ImageView popUpImg = popUpDialog.findViewById(R.id.popUpImage);
                         Picasso.get().load(uri).into(popUpImg);
+                        popUpDialog.show();
                     }
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override

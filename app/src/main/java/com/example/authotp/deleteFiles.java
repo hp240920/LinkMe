@@ -69,6 +69,11 @@ public class deleteFiles extends AppCompatActivity {
                         file3.setText("");
                         file4.setText("");
                         file5.setText("");
+                        file1.setEnabled(false);
+                        file2.setEnabled(false);
+                        file3.setEnabled(false);
+                        file4.setEnabled(false);
+                        file5.setEnabled(false);
                         for (StorageReference item : listResult.getItems()) {
                             if(count >= 5){
                                 break;
@@ -76,14 +81,19 @@ public class deleteFiles extends AppCompatActivity {
                             System.out.println("Item: " + item.getName());
                             if(count == 0){
                                 file1.setText(item.getName());
+                                file1.setEnabled(true);
                             }else if(count == 1){
                                 file2.setText(item.getName());
+                                file2.setEnabled(true);
                             }else if(count == 2){
                                 file3.setText(item.getName());
+                                file3.setEnabled(true);
                             }else if(count == 3){
                                 file4.setText(item.getName());
+                                file4.setEnabled(true);
                             }else{
                                 file5.setText(item.getName());
+                                file5.setEnabled(true);
                             }
                             count++;
                         }
@@ -134,8 +144,6 @@ public class deleteFiles extends AppCompatActivity {
 
                                 }
                             }
-
-
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {

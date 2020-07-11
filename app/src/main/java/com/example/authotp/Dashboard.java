@@ -96,6 +96,8 @@ public class Dashboard extends AppCompatActivity {
     //String key = "";
     ProgressDialog loadImage;
     private static int ON_REQUEST_CONTACT = 5;
+    private long total_messages;
+    private long counter = 0;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -306,6 +308,7 @@ public class Dashboard extends AppCompatActivity {
                 TableLayout tableLayout = findViewById(R.id.tableLayout);
                 tableLayout.removeAllViews();
                 System.out.println("hello there 123");
+                total_messages = dataSnapshot.getChildrenCount();
                 for(DataSnapshot messageSnapshot : dataSnapshot.getChildren()){
                     System.out.println("hello there 123");
                     if(messageSnapshot.exists()){
@@ -314,6 +317,7 @@ public class Dashboard extends AppCompatActivity {
                         writeTextView(newMessage.getFrom(), newMessage.getKey());
                     }
                 }
+
 
             }
             @Override
@@ -343,17 +347,21 @@ public class Dashboard extends AppCompatActivity {
         final ImageView profile_pic = new ImageView(this);
         profile_pic.setImageResource(R.drawable.ic_baseline_account_circle_24);
         StorageReference profileRef = firebaseStorage.getReference().child("Profiles/" +phone+"/" + "profile.jpg");
-        profileRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+        profileRef.getDownloadUrl().addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                System.out.println("Failed");
+            }
+        }).addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
             public void onSuccess(Uri uri) {
                 Picasso.get().load(uri).into(profile_pic);
                 //loadImage.dismiss();
-            }
-        })
-                .addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                System.out.println("Failed");
+
+                counter++;
+                if(counter == total_messages){
+                    loadImage.dismiss();
+                }
             }
         });
         //loadImage.dismiss();

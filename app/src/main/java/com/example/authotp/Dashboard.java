@@ -94,7 +94,7 @@ import static android.os.Environment.DIRECTORY_DOWNLOADS;
 public class Dashboard extends AppCompatActivity {
 
     //String key = "";
-
+    ProgressDialog loadImage;
     private static int ON_REQUEST_CONTACT = 5;
 
     @Override
@@ -227,8 +227,12 @@ public class Dashboard extends AppCompatActivity {
         firebaseStorage =FirebaseStorage.getInstance();
 
         // update the scroll view
+        loadImage = new ProgressDialog(Dashboard.this);
+        loadImage.setTitle("Processing");
+        loadImage.setMessage("Please Wait...");
+        loadImage.show();
         updateScrollView();
-
+        //loadImage.dismiss();
         // check for Notification and start Service
 
         if(serviceIntent == null){
@@ -337,12 +341,27 @@ public class Dashboard extends AppCompatActivity {
         TableLayout ll = (TableLayout) findViewById(R.id.tableLayout);
         ll.setColumnStretchable(0, true);
         final ImageView profile_pic = new ImageView(this);
-        profile_pic.setImageResource(R.drawable.default_dp);
+        profile_pic.setImageResource(R.drawable.ic_baseline_account_circle_24);
+        StorageReference profileRef = firebaseStorage.getReference().child("Profiles/" +phone+"/" + "profile.jpg");
+        profileRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+            @Override
+            public void onSuccess(Uri uri) {
+                Picasso.get().load(uri).into(profile_pic);
+                //loadImage.dismiss();
+            }
+        })
+                .addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                System.out.println("Failed");
+            }
+        });
+        //loadImage.dismiss();
         TableRow.LayoutParams profilePicLayoutParam = new TableRow.LayoutParams(100, 100,0.10f);
         profilePicLayoutParam.gravity = Gravity.CENTER;
         profile_pic.setLayoutParams(profilePicLayoutParam);
 
-        openPopUpWhenClicked(phone,profile_pic);
+        openPopUpWhenClicked(phone, profile_pic);
 
         //ll.isColumnShrinkable(0);
         ll.setColumnStretchable(1, true);
@@ -488,6 +507,7 @@ public class Dashboard extends AppCompatActivity {
         //textView.setTag(key);
         //textView.setOnClickListener(onClickListener);
         //linearLayout.addView(textView,0);
+        //oadImage.dismiss();
     }
 
     private void openPopUpWhenClicked(final String phone, ImageView profile_pic){
@@ -512,8 +532,6 @@ public class Dashboard extends AppCompatActivity {
                         System.out.println("Failed");
                     }
                 });
-
-
             }
         });
     }

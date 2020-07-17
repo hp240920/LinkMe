@@ -15,5 +15,11 @@
         android:layout_marginTop="10dp"
         android:layout_marginRight="10dp"
         android:layout_marginBottom="10dp"
+        android:visibility="visible"
         app:srcCompat="@drawable/flag_american_samoa" />
+
+    <ListView
+        android:id="@+id/list_of_files"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 </RelativeLayout>

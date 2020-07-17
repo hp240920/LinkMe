@@ -48,6 +48,12 @@ public class selectFile extends AppCompatActivity {
         file3.setEnabled(false);
         file4.setEnabled(false);
         file5.setEnabled(false);
+        final RadioButton[] files = new RadioButton[5];
+        files[0] = file1;
+        files[1] = file2;
+        files[2] = file3;
+        files[3] = file4;
+        files[4] = file5;
         rbGroup = findViewById(R.id.rbGroup);
         FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
         //Intent intent = getIntent();
@@ -60,6 +66,7 @@ public class selectFile extends AppCompatActivity {
                     @Override
                     public void onSuccess(ListResult listResult) {
                         int count = 0;
+                        //int size = listResult.getItems().size();
                         for (StorageReference item : listResult.getItems()) {
                             if(count >= 5){
                                 break;
@@ -75,6 +82,12 @@ public class selectFile extends AppCompatActivity {
 
                             System.out.println("Item: " + item.getName());
 
+                            files[count].setText(item.getName());
+                            files[count].setEnabled(true);
+                            files[count].setTag(count);
+                            files[count].setVisibility(View.VISIBLE);
+
+                            /*
                             if(count == 0){
                                 file1.setText(item.getName());
                                 file1.setEnabled(true);
@@ -96,6 +109,9 @@ public class selectFile extends AppCompatActivity {
                                 file5.setEnabled(true);
                                 file5.setTag(4);
                             }
+                             */
+
+
                             count++;
                         }
                     }

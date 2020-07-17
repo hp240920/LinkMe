@@ -34,7 +34,7 @@
         android:layout_width="174dp"
         android:layout_height="41dp"
         android:layout_marginStart="22dp"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="25dp"
         android:text="Select a file:"
         android:textSize="20sp"
         app:layout_constraintBottom_toTopOf="@+id/tableLayout"
@@ -44,7 +44,7 @@
     <TableLayout
         android:id="@+id/tableLayout"
         android:layout_width="367dp"
-        android:layout_height="299dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="23dp"
         android:layout_marginEnd="23dp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -52,14 +52,14 @@
         app:layout_constraintTop_toBottomOf="@+id/textView13">
 
         <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginTop="30px"
             android:layout_marginBottom="30px">
 
             <RadioGroup
                 android:id="@+id/rbGroup"
-                android:layout_width="356dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
 
                 <RadioButton
@@ -68,7 +68,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="20px"
                     android:layout_marginTop="50px"
-                    android:hint="No Extra File" />
+                    android:hint="No Extra File"
+                    android:visibility="gone" />
 
                 <RadioButton
                     android:id="@+id/rb2"
@@ -76,7 +77,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="20px"
                     android:layout_marginTop="50px"
-                    android:hint="No Extra File" />
+                    android:hint="No Extra File"
+                    android:visibility="gone" />
 
                 <RadioButton
                     android:id="@+id/rb3"
@@ -84,7 +86,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="20px"
                     android:layout_marginTop="50px"
-                    android:hint="No Extra File" />
+                    android:hint="No Extra File"
+                    android:visibility="gone" />
 
                 <RadioButton
                     android:id="@+id/rb4"
@@ -92,7 +95,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="20px"
                     android:layout_marginTop="50px"
-                    android:hint="No Extra File" />
+                    android:hint="No Extra File"
+                    android:visibility="gone" />
 
                 <RadioButton
                     android:id="@+id/rb5"
@@ -100,7 +104,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="20px"
                     android:layout_marginTop="50px"
-                    android:hint="No Extra File" />
+                    android:hint="No Extra File"
+                    android:visibility="gone" />
             </RadioGroup>
         </TableRow>
 

@@ -39,10 +39,8 @@ public class Detector extends BroadcastReceiver{
             String state = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
             String incomingNumber = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
 
-
             SharedPreferences sharedPreferences = context.getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
             String myNumber  = sharedPreferences.getString("phone","");
-
 
             User.lastestNumber = incomingNumber;
 

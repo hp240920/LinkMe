@@ -171,7 +171,7 @@ public class deleteFiles extends AppCompatActivity {
     public void onUpload(View v){
 
         Intent intent = new Intent();
-        intent.setType("application/pdf");
+        intent.setType("*/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(intent,INTENT_CODE_SELECTFILE);
     }

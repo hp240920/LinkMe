@@ -10,6 +10,7 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.animation.Animator;
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DownloadManager;
@@ -50,17 +51,21 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.authotp.Threads.GetCurrentUserThread;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.common.collect.Table;
@@ -86,6 +91,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import static android.app.DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR;
@@ -98,6 +104,8 @@ public class Dashboard extends AppCompatActivity {
     private static int ON_REQUEST_CONTACT = 5;
     private long total_messages;
     private long counter = 0;
+    Thread getCurrentUser;
+    GetCurrentUserThread userThread;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -142,7 +150,6 @@ public class Dashboard extends AppCompatActivity {
     }
 
     private void onSearchNearby() {
-
         Intent intent = new Intent(this,SearchNearby.class);
         startActivity(intent);
     }
@@ -154,31 +161,31 @@ public class Dashboard extends AppCompatActivity {
 
     private void deleteFiles() {
         Intent intent = new Intent(this, deleteFiles.class);
-        intent.putExtra("phone", currentUser.getPhonenumber());
+        intent.putExtra("phone", userThread.getPhonenumber());
         startActivity(intent);
     }
 
     private void EditInfo() {
-        //this gotta be fix... few corner cases check...
-        /*
-        SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.clear();
-        editor.apply();
-         */
 
-        //SharePreHelper.setName(null);
-        Intent intent = new Intent(this, Sign_Up.class);
-        intent.putExtra("check", true);
-        intent.putExtra("name", currentUser.getName());
-        intent.putExtra("insta", currentUser.getInstagram());
-        intent.putExtra("snap", currentUser.getSnapchat());
-        intent.putExtra("email", currentUser.getEmail());
-        intent.putExtra("website", currentUser.getWebsite());
-        intent.putExtra("linkedin", currentUser.getLinkedIn());
-        intent.putExtra("git", currentUser.getGitHub());
-        intent.putExtra("phoneNo", currentUser.getPhonenumber());
-        startActivity(intent);
+
+        if(!getCurrentUser.isAlive()){
+            User currentUser = userThread.getCurrentUser();
+            Intent intent = new Intent(this, Sign_Up.class);
+            intent.putExtra("check", true);
+            intent.putExtra("name", currentUser.getName());
+            intent.putExtra("insta", currentUser.getInstagram());
+            intent.putExtra("snap", currentUser.getSnapchat());
+            intent.putExtra("email", currentUser.getEmail());
+            intent.putExtra("website", currentUser.getWebsite());
+            intent.putExtra("linkedin", currentUser.getLinkedIn());
+            intent.putExtra("git", currentUser.getGitHub());
+            intent.putExtra("phoneNo", currentUser.getPhonenumber());
+            startActivity(intent);
+        }
+        else {
+            Toast.makeText(this,"ERROR",Toast.LENGTH_SHORT).show();
+        }
+
     }
 
     // removing shared pref and going to main Activity
@@ -192,7 +199,7 @@ public class Dashboard extends AppCompatActivity {
         startActivity(intent);
     }
 
-    private User currentUser;
+    //private User currentUser;
     FirebaseDatabase firebaseDatabase;
     FirebaseStorage firebaseStorage;
     Intent serviceIntent;
@@ -212,38 +219,54 @@ public class Dashboard extends AppCompatActivity {
                     1);
         }
 
-        // Get all the values from Shared Prefrences;
+        // Get all the values from Shared Prefrences for a background thread;
+         userThread = new GetCurrentUserThread(Dashboard.this);
+         getCurrentUser = new Thread(userThread);
+         getCurrentUser.start();
+
+        /*
         SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
-
-
         currentUser = new User();
         getSharedPref(sharedPreferences);
+         */
 
 
+
+        // Custom popup window created for profile pic and display a list of file of a particular user.
         popUpDialog = new Dialog(this);
 
 
         // Getting Firebase Database and Storage
-
         firebaseDatabase = FirebaseDatabase.getInstance();
         firebaseStorage =FirebaseStorage.getInstance();
 
         // update the scroll view
-        loadImage = new ProgressDialog(Dashboard.this);
-        loadImage.setTitle("Processing");
-        loadImage.setMessage("Please Wait...");
-        loadImage.show();
+
+        //loadImage = new ProgressDialog(Dashboard.this);
+        //loadImage.setTitle("Processing");
+        //loadImage.setMessage("Please Wait...");
+        //loadImage.show();
         updateScrollView();
         //loadImage.dismiss();
-        // check for Notification and start Service
 
-        if(serviceIntent == null){
+        // check if service is not started if not then start a service
+        if(!isMyServiceRunning(Notify.class)){
             serviceIntent = new Intent(this, com.example.authotp.Notify.class);
             serviceIntent.putExtra("inputExtra", "AuthOTP");
             ContextCompat.startForegroundService(this, serviceIntent);
-            check_notification();
+            //check_notification();
         }
       //  loadProfile.start();
+    }
+
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
 
@@ -265,7 +288,7 @@ public class Dashboard extends AppCompatActivity {
                 boolean check = message.isCheck();
                 String toNumber = message.getTo();
                 //count++;
-                if(!check && toNumber.equals(currentUser.getPhonenumber())) {
+                if(!check && toNumber.equals(userThread.getPhonenumber())) {
                     notification2(message.getFrom());
                     assert key != null;
                     database.getReference("Message").child(key).child("check").setValue(true);
@@ -294,25 +317,25 @@ public class Dashboard extends AppCompatActivity {
         });
     }
 
-    ArrayList<String> dashboardUserNumbers = new ArrayList<>();
+
+
+    final ArrayList<String> dashboardUserNumbers = new ArrayList<>();
     private void updateScrollView() {
-        final ScrollView scrollView = findViewById(R.id.scrollView);
-
         DatabaseReference dbref = firebaseDatabase.getReference().child("Message");
-
-        Query query = dbref.orderByChild("to").equalTo(currentUser.getPhonenumber());
+        Query query = dbref.orderByChild("to").equalTo(userThread.getPhonenumber());
         query.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                System.out.println("hello there");
-                TableLayout tableLayout = findViewById(R.id.tableLayout);
-                tableLayout.removeAllViews();
-                System.out.println("hello there 123");
+                //System.out.println("hello there 123");
                 total_messages = dataSnapshot.getChildrenCount();
+                //Log.i("Total messages :",Integer.toString((int) total_messages));
                 for(DataSnapshot messageSnapshot : dataSnapshot.getChildren()){
-                    System.out.println("hello there 123");
+                    //System.out.println("hello there 123");
                     if(messageSnapshot.exists()){
                         Message newMessage = messageSnapshot.getValue(Message.class);
+                        if(dashboardUserNumbers.contains(newMessage.getFrom())){
+                            continue;
+                        }
                         dashboardUserNumbers.add(newMessage.getFrom());
                         writeTextView(newMessage.getFrom(), newMessage.getKey());
                     }
@@ -326,42 +349,36 @@ public class Dashboard extends AppCompatActivity {
 
     }
 
+    private void writeTextView (final String phone, final String key){
 
-    private void writeTextView(final String phone, final String key){
-        String name = "";
-        Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,null,null, null);
-        while (phones.moveToNext())
-        {
-            String phoneNum = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)).replace(" ", "").replace("-","");
-            if(phoneNum.equals(phone)){
-                name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-                System.out.println("Hello There I am here! " + name);
-            }
-            //phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-        }
-        phones.close();
         TableLayout ll = (TableLayout) findViewById(R.id.tableLayout);
         ll.setColumnStretchable(0, true);
         final ImageView profile_pic = new ImageView(this);
         profile_pic.setImageResource(R.drawable.ic_baseline_account_circle_24);
-        StorageReference profileRef = firebaseStorage.getReference().child("Profiles/" +phone+"/" + "profile.jpg");
-        profileRef.getDownloadUrl().addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                System.out.println("Failed");
-            }
-        }).addOnSuccessListener(new OnSuccessListener<Uri>() {
-            @Override
-            public void onSuccess(Uri uri) {
-                Picasso.get().load(uri).into(profile_pic);
-                //loadImage.dismiss();
 
-                counter++;
-                if(counter == total_messages){
-                    loadImage.dismiss();
-                }
+
+        new Thread(){
+            @Override
+            public void run() {
+                super.run();
+                StorageReference profileRef = firebaseStorage.getReference().child("Profiles/" +phone+"/" + "profile.jpg");
+                profileRef.getDownloadUrl().addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        System.out.println("Failed");
+                    }
+                }).addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        Picasso.get().load(uri).into(profile_pic);
+                        //loadImage.dismiss();
+                        counter++;
+
+                    }
+                });
             }
-        });
+        }.start();
+
         //loadImage.dismiss();
         TableRow.LayoutParams profilePicLayoutParam = new TableRow.LayoutParams(100, 100,0.10f);
         profilePicLayoutParam.gravity = Gravity.CENTER;
@@ -373,17 +390,14 @@ public class Dashboard extends AppCompatActivity {
         ll.setColumnStretchable(1, true);
         ll.setColumnStretchable(2, false);
         ll.setColumnStretchable(3, false);
-        TableRow row= new TableRow(this);
+        final TableRow row= new TableRow(this);
 
         TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,TableRow.LayoutParams.MATCH_PARENT,0.15f);
         row.setLayoutParams(lp);
 
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.save_symbol);
-
         int height = (bitmap.getHeight() * 128 / bitmap.getWidth());
         Bitmap scale = Bitmap.createScaledBitmap(bitmap, 128,height, true);
-
-
         ImageButton saveButton = new ImageButton(this);
         saveButton.setImageBitmap(scale);
         //saveButton.setImageResource(R.drawable.save_symbol);
@@ -403,8 +417,7 @@ public class Dashboard extends AppCompatActivity {
                         for(DataSnapshot messageSnapshot : dataSnapshot.getChildren()){
                             if(messageSnapshot.exists()){
                                 String file1 = messageSnapshot.getValue(Message.class).getFile1();
-                                //String file2 = messageSnapshot.getValue(Message.class).getFile2();
-                                //String phoneNumber = messageSnapshot.getValue(Message.class).getFrom();
+
                                 if(file1 != null){
                                     saveToContact(file1);
                                 }
@@ -420,14 +433,13 @@ public class Dashboard extends AppCompatActivity {
         });
 
         Bitmap bitmapDownload = BitmapFactory.decodeResource(getResources(), R.drawable.download_img);
-
         int height1 = (bitmapDownload.getHeight() * 128 / bitmapDownload.getWidth());
         Bitmap scale1 = bitmapDownload.createScaledBitmap(bitmapDownload, 128,height1, true);
-
-
-        ImageButton downloadBtn = new ImageButton(this);
-        //downloadBtn.setImageResource(R.drawable.save_symbol);
+        final ImageButton downloadBtn = new ImageButton(this);
         downloadBtn.setImageBitmap(scale1);
+        downloadBtn.setTag(phone);
+
+
        // Button downloadBtn = new Button(this);
         //downloadBtn.setText("Download File");
         downloadBtn.setOnClickListener(new View.OnClickListener() {
@@ -436,64 +448,86 @@ public class Dashboard extends AppCompatActivity {
 
                 //Display alert box with various options
 
-                CharSequence options[] = new CharSequence[] {"Call", "SMS", "Email"};
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(Dashboard.this);
-                builder.setCancelable(false);
-                builder.setTitle("Select your option:");
-                builder.setItems(options, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        // the user clicked on options[which]
-                    }
-                });
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        //the user clicked on Cancel
-                    }
-                });
-                builder.show();
-
-
+                final List<String> options = new ArrayList<>();
+                final List<Uri> tags = new ArrayList<>();
                 FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
                 DatabaseReference dbref = firebaseDatabase.getReference().child("Message");
+                Query query = dbref.orderByChild("to").equalTo(userThread.getPhonenumber());
+                query.addValueEventListener(new ValueEventListener(){
 
-                Query query = dbref.orderByChild("key").equalTo(key);
-                query.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        for(DataSnapshot messageSnapshot : dataSnapshot.getChildren()){
-                            if(messageSnapshot.exists()){
-                                //String file1 = messageSnapshot.getValue(Message.class).getFile1();
-                                String file2 = messageSnapshot.getValue(Message.class).getFile2();
-                                //String phoneNumber = messageSnapshot.getValue(Message.class).getFrom();
-                                if(file2!=null){
-                                    downloadFile(file2);
-                                }
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        int limit = 0;
+                        for(DataSnapshot values : snapshot.getChildren()){
+                            if(limit ==5){
+                                break;
+                            }
+                            Message message = values.getValue(Message.class);
+                            if(message.getFrom().equals(downloadBtn.getTag())){
+                                Uri uri = Uri.parse(message.getFile2());
+                                options.add(uri.getLastPathSegment());
+                                tags.add(uri);
+                                limit++;
                             }
                         }
+
+
+                        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(Dashboard.this, android.R.layout.simple_list_item_1, options );
+                        popUpDialog.setContentView(R.layout.popup_window);
+                        popUpDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                        ImageView profilepic = popUpDialog.findViewById(R.id.popUpImage);
+                        profilepic.setVisibility(View.GONE);
+                        ListView lv = popUpDialog.findViewById(R.id.list_of_files);
+                        lv.setAdapter(arrayAdapter);
+                        popUpDialog.show();
+                        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                                String to_download = tags.get(i).toString();
+                                downloadFile(to_download);
+                            }
+                        });
                     }
 
                     @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                    public void onCancelled(@NonNull DatabaseError error) {
+
                     }
                 });
             }
         });
-        TextView number = new TextView(this);
 
 
-
+        final TextView number = new TextView(this);
         number.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
         number.setGravity(Gravity.CENTER);
         number.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,TableRow.LayoutParams.MATCH_PARENT,0.6f));
-       // row.getChildAt(0).setLayoutParams();
-        if(name.equals("")){
-            number.setText(phone);
-        }else{
-            number.setText(name);
-        }
+
+        // thread to insert name if present in contacts
+        new Thread() {
+            @Override
+            public void run() {
+                super.run();
+                String name = "";
+                Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
+                while (phones.moveToNext()) {
+                    String phoneNum = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)).replace(" ", "").replace("-", "");
+                    if (phoneNum.equals(phone)) {
+                        name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+                        TextView tvNumber = (TextView) row.getChildAt(1);
+                        tvNumber.setText(name);
+                        break;
+                        //System.out.println("Hello There I am here! " + name);
+                    }
+                    //phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                }
+                phones.close();
+
+
+            }
+        }.start();
+
+        number.setText(phone);
         number.setTag(key);
         //checkBox.setText("hello");
         //row.addView(checkBox);
@@ -504,16 +538,8 @@ public class Dashboard extends AppCompatActivity {
         row.addView(saveButton);
         //row.addView(space);
         row.addView(downloadBtn);
-
         ll.addView(row, 0);
-        //System.out.println(phone);
-       // LinearLayout linearLayout = findViewById(R.id.scrollViewLinearLayout);
-        //TextView textView = new TextView(this);
-        //textView.setText(phone);
-        //textView.setTag(key);
-        //textView.setOnClickListener(onClickListener);
-        //linearLayout.addView(textView,0);
-        //oadImage.dismiss();
+
     }
 
     private void openPopUpWhenClicked(final String phone, ImageView profile_pic){
@@ -557,21 +583,8 @@ public class Dashboard extends AppCompatActivity {
 
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
         request.setDestinationInExternalPublicDir( "/MYAPP/", uri.getLastPathSegment());
-
         downloadManager.enqueue(request);
 
-        /*
-        DownloadManager downloadManager1 = (DownloadManager) getApplicationContext().
-                getSystemService(Context.DOWNLOAD_SERVICE);
-        Uri uri1 = Uri.parse(file2);
-        DownloadManager.Request request1 = new DownloadManager.Request(uri1);
-
-        request1.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-        request1.setDestinationInExternalFilesDir(getApplicationContext(), DIRECTORY_DOWNLOADS, "Try1.pdf");
-
-        downloadManager1.enqueue(request1);
-
-         */
     }
 
     private void saveToContact(String file1) {
@@ -827,7 +840,8 @@ public class Dashboard extends AppCompatActivity {
          */
     }
 
-    private void getSharedPref(SharedPreferences sharedPreferences){
+    /*
+     private void getSharedPref(SharedPreferences sharedPreferences){
         currentUser.setName(sharedPreferences.getString("name",""));
         currentUser.setPhonenumber(sharedPreferences.getString("phone",""));
         currentUser.setEmail(sharedPreferences.getString("email", ""));
@@ -836,9 +850,11 @@ public class Dashboard extends AppCompatActivity {
         currentUser.setSnapchat(sharedPreferences.getString("snap",""));
         currentUser.setGitHub(sharedPreferences.getString("github",""));
         currentUser.setLinkedIn(sharedPreferences.getString("linkedIn",""));
-      //  currentUser.setFiles1(sharedPreferences.getString("file1",""));
+      //currentUser.setFiles1(sharedPreferences.getString("file1",""));
         //currentUser.setFiles2(sharedPreferences.getString("file2",""));
     }
+     */
+
 
     private void notification2(String num) {
         // Builds your notification

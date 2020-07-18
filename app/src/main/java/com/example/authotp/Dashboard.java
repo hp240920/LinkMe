@@ -317,8 +317,6 @@ public class Dashboard extends AppCompatActivity {
                         writeTextView(newMessage.getFrom(), newMessage.getKey());
                     }
                 }
-
-
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {

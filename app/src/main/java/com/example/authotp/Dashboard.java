@@ -19,6 +19,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.ContentProviderOperation;
+import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
@@ -41,6 +42,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.util.Log;
@@ -254,9 +256,15 @@ public class Dashboard extends AppCompatActivity {
             serviceIntent = new Intent(this, com.example.authotp.Notify.class);
             serviceIntent.putExtra("inputExtra", "AuthOTP");
             ContextCompat.startForegroundService(this, serviceIntent);
-            //check_notification();
+            check_notification();
         }
       //  loadProfile.start();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+       // updateScrollView();
     }
 
     private boolean isMyServiceRunning(Class<?> serviceClass) {
@@ -319,8 +327,11 @@ public class Dashboard extends AppCompatActivity {
 
 
 
+
+
     final ArrayList<String> dashboardUserNumbers = new ArrayList<>();
     private void updateScrollView() {
+        System.out.println(dashboardUserNumbers.size());
         DatabaseReference dbref = firebaseDatabase.getReference().child("Message");
         Query query = dbref.orderByChild("to").equalTo(userThread.getPhonenumber());
         query.addValueEventListener(new ValueEventListener() {
@@ -328,6 +339,7 @@ public class Dashboard extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 //System.out.println("hello there 123");
                 total_messages = dataSnapshot.getChildrenCount();
+                System.out.println("TOTAL MESSAGE" + total_messages);
                 //Log.i("Total messages :",Integer.toString((int) total_messages));
                 for(DataSnapshot messageSnapshot : dataSnapshot.getChildren()){
                     //System.out.println("hello there 123");
@@ -340,8 +352,6 @@ public class Dashboard extends AppCompatActivity {
                         writeTextView(newMessage.getFrom(), newMessage.getKey());
                     }
                 }
-
-
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -440,64 +450,7 @@ public class Dashboard extends AppCompatActivity {
         final ImageButton downloadBtn = new ImageButton(this);
         downloadBtn.setImageBitmap(scale1);
         downloadBtn.setTag(phone);
-
-
-       // Button downloadBtn = new Button(this);
-        //downloadBtn.setText("Download File");
-        downloadBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                //Display alert box with various options
-
-                final List<String> options = new ArrayList<>();
-                final List<Uri> tags = new ArrayList<>();
-                FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
-                DatabaseReference dbref = firebaseDatabase.getReference().child("Message");
-                Query query = dbref.orderByChild("to").equalTo(userThread.getPhonenumber());
-                query.addValueEventListener(new ValueEventListener(){
-
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        int limit = 0;
-                        for(DataSnapshot values : snapshot.getChildren()){
-                            if(limit ==5){
-                                break;
-                            }
-                            Message message = values.getValue(Message.class);
-                            if(message.getFrom().equals(downloadBtn.getTag())){
-                                Uri uri = Uri.parse(message.getFile2());
-                                options.add(uri.getLastPathSegment());
-                                tags.add(uri);
-                                limit++;
-                            }
-                        }
-
-
-                        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(Dashboard.this, android.R.layout.simple_list_item_1, options );
-                        popUpDialog.setContentView(R.layout.popup_window);
-                        popUpDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                        ImageView profilepic = popUpDialog.findViewById(R.id.popUpImage);
-                        profilepic.setVisibility(View.GONE);
-                        ListView lv = popUpDialog.findViewById(R.id.list_of_files);
-                        lv.setAdapter(arrayAdapter);
-                        popUpDialog.show();
-                        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                                String to_download = tags.get(i).toString();
-                                downloadFile(to_download);
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-
-                    }
-                });
-            }
-        });
+        downloadBtn.setOnClickListener(new onBtnViewFiles(downloadBtn));
 
 
         final TextView number = new TextView(this);
@@ -505,6 +458,7 @@ public class Dashboard extends AppCompatActivity {
         number.setGravity(Gravity.CENTER);
         number.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,TableRow.LayoutParams.MATCH_PARENT,0.6f));
 
+        final Handler updatePhone = new Handler();
         // thread to insert name if present in contacts
         new Thread() {
             @Override
@@ -516,33 +470,95 @@ public class Dashboard extends AppCompatActivity {
                     String phoneNum = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)).replace(" ", "").replace("-", "");
                     if (phoneNum.equals(phone)) {
                         name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-                        TextView tvNumber = (TextView) row.getChildAt(1);
-                        tvNumber.setText(name);
+                        final TextView tvNumber = (TextView) row.getChildAt(1);
+
+
+                        final String finalName = name;
+                        updatePhone.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                tvNumber.setText(finalName);
+                            }
+                        });
                         break;
                         //System.out.println("Hello There I am here! " + name);
                     }
                     //phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
                 }
                 phones.close();
-
-
             }
         }.start();
 
         number.setText(phone);
-        number.setTag(key);
-        //checkBox.setText("hello");
-        //row.addView(checkBox);
-        row.addView(profile_pic);
+        number.setTag(phone);
 
+        row.addView(profile_pic);
         row.addView(number);
-        //row.addView(space);
         row.addView(saveButton);
-        //row.addView(space);
         row.addView(downloadBtn);
+
+
         ll.addView(row, 0);
 
     }
+
+    private class onBtnViewFiles implements View.OnClickListener {
+
+        ImageButton downloadBtn;
+        public onBtnViewFiles(ImageButton button){
+            this.downloadBtn = button;
+        }
+        @Override
+        public void onClick(View view) {
+
+            final List<String> options = new ArrayList<>();
+            final List<Uri> tags = new ArrayList<>();
+            FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+            DatabaseReference dbref = firebaseDatabase.getReference().child("Message");
+            Query query = dbref.orderByChild("to").equalTo(userThread.getPhonenumber());
+            query.addValueEventListener(new ValueEventListener(){
+
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    int limit = 0;
+                    for(DataSnapshot values : snapshot.getChildren()){
+                        if(limit ==5){
+                            break;
+                        }
+                        Message message = values.getValue(Message.class);
+                        if(message.getFrom().equals(downloadBtn.getTag())){
+                            Uri uri = Uri.parse(message.getFile2());
+                            options.add(uri.getLastPathSegment());
+                            tags.add(uri);
+                            limit++;
+                        }
+                    }
+
+
+                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(Dashboard.this, android.R.layout.simple_list_item_1, options );
+                    popUpDialog.setContentView(R.layout.popup_window);
+                    popUpDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                    ImageView profilepic = popUpDialog.findViewById(R.id.popUpImage);
+                    profilepic.setVisibility(View.GONE);
+                    ListView lv = popUpDialog.findViewById(R.id.list_of_files);
+                    lv.setAdapter(arrayAdapter);
+                    popUpDialog.show();
+                    lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                            String to_download = tags.get(i).toString();
+                            downloadFile(to_download);
+                        }
+                    });
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+        }
+    };
 
     private void openPopUpWhenClicked(final String phone, ImageView profile_pic){
 
@@ -665,14 +681,48 @@ public class Dashboard extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if(requestCode == ON_REQUEST_CONTACT){
-            updateScrollView();
+            Uri uriData = data.getData();
+            String dataName = null;
+            String dataPhone = null;
+            Cursor cursor = getContentResolver().query(uriData, null, null, null, null);
+            if (cursor.moveToFirst()) {
+                /*
+                int id = cursor.getColumnIndex(ContactsContract.Contacts._ID);
+
+                ContentResolver cr = getContentResolver();
+                Cursor phones = cr.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
+                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = " + id, null, null);
+                if (phones.moveToFirst()) {
+                    dataPhone = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                }
+                 */
+
+
+                int idx = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
+                dataName = cursor.getString(idx);
+            }
+
+            if (dataName != null && dataPhone !=null) {
+                TableLayout ll = (TableLayout) findViewById(R.id.tableLayout);
+
+                int numberofRows = ll.getChildCount();
+
+                for(int i=0 ; i<numberofRows; i++){
+                    TableRow currentRow = (TableRow)ll.getChildAt(i);
+                    TextView currentTextView = (TextView)currentRow.getChildAt(1);
+                    if(currentTextView.getTag().equals(dataPhone)){
+                        currentTextView.setText(dataName);
+                    }
+                }
+            }
+
         }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        updateScrollView();
+        //updateScrollView();
     }
 
     private ArrayList<ContentValues> setLabels(String insta, String snap, String gitHub, String linkedin, String website){
@@ -778,37 +828,6 @@ public class Dashboard extends AppCompatActivity {
         }
 
  */
-
-
-
-    private void getFileFromNumber(String selectedUserNumber, String key) {
-
-        DatabaseReference dbref = firebaseDatabase.getReference().child("Message");
-
-        Query query = dbref.orderByChild("key").equalTo(key);
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for(DataSnapshot messageSnapshot : dataSnapshot.getChildren()){
-                    if(messageSnapshot.exists()){
-                        String file1 = messageSnapshot.getValue(Message.class).getFile1();
-                        String file2 = messageSnapshot.getValue(Message.class).getFile2();
-                        String phoneNumber = messageSnapshot.getValue(Message.class).getFrom();
-                        if(file1!=null){
-                            downloadfiles(file1,phoneNumber);
-                        }
-                        if(file2!=null){
-                            downloadfiles(file2,phoneNumber);
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-            }
-        });
-    }
 
     private void downloadfiles(String file1, String phoneNumber) {
 

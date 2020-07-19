@@ -41,6 +41,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.util.Log;
@@ -254,7 +255,7 @@ public class Dashboard extends AppCompatActivity {
             serviceIntent = new Intent(this, com.example.authotp.Notify.class);
             serviceIntent.putExtra("inputExtra", "AuthOTP");
             ContextCompat.startForegroundService(this, serviceIntent);
-            //check_notification();
+            check_notification();
         }
       //  loadProfile.start();
     }
@@ -361,21 +362,25 @@ public class Dashboard extends AppCompatActivity {
             @Override
             public void run() {
                 super.run();
-                StorageReference profileRef = firebaseStorage.getReference().child("Profiles/" +phone+"/" + "profile.jpg");
-                profileRef.getDownloadUrl().addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        System.out.println("Failed");
-                    }
-                }).addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        Picasso.get().load(uri).into(profile_pic);
-                        //loadImage.dismiss();
-                        counter++;
-
-                    }
-                });
+                try{
+                    StorageReference profileRef = firebaseStorage.getReference().child("Profiles/" + phone +"/" + "profile.jpg");
+                    profileRef.getDownloadUrl().addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            System.out.println("Failed");
+                        }
+                    }).addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            if(uri != null){
+                                Picasso.get().load(uri).into(profile_pic);
+                                counter++;
+                            }
+                        }
+                    });
+                }catch(Exception e){
+                    System.out.println(e.toString());
+                }
             }
         }.start();
 
@@ -504,6 +509,7 @@ public class Dashboard extends AppCompatActivity {
         number.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,TableRow.LayoutParams.MATCH_PARENT,0.6f));
 
         // thread to insert name if present in contacts
+        final Handler updatePhone = new Handler();
         new Thread() {
             @Override
             public void run() {
@@ -514,16 +520,22 @@ public class Dashboard extends AppCompatActivity {
                     String phoneNum = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)).replace(" ", "").replace("-", "");
                     if (phoneNum.equals(phone)) {
                         name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-                        TextView tvNumber = (TextView) row.getChildAt(1);
-                        tvNumber.setText(name);
+                        final TextView tvNumber = (TextView) row.getChildAt(1);
+
+
+                        final String finalName = name;
+                        updatePhone.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                tvNumber.setText(finalName);
+                            }
+                        });
                         break;
                         //System.out.println("Hello There I am here! " + name);
                     }
                     //phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
                 }
                 phones.close();
-
-
             }
         }.start();
 
@@ -598,16 +610,13 @@ public class Dashboard extends AppCompatActivity {
         String snap = information[5];
         String gitHub = information[6];
         String linkedin = information[7];
-        String notes = "Website: " + website + "\nInstagram: "
-                + insta + "\nSnapChat: " + snap + "\nGithub: " + gitHub + "\nLinkedIn: " + linkedin;
-
-
 
 
         boolean isExisting = false;
-
         Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
         Cursor cursor = getApplicationContext().getContentResolver().query(uri, null, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
+
+        ArrayList<ContentValues> data = setLabels(insta,snap,gitHub,linkedin,website);
 
          if(cursor.moveToFirst()) {
              isExisting = true;
@@ -615,19 +624,17 @@ public class Dashboard extends AppCompatActivity {
              Uri contactUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, idContact);
              Intent i = new Intent(Intent.ACTION_EDIT,contactUri);
 
-             ArrayList<ContentValues> data = setLabels(insta,snap,gitHub,linkedin,website);
-
              i.setData(contactUri);
              i.putExtra("finishActivityOnSaveCompleted", true);
 
              i.putExtra(ContactsContract.Intents.Insert.PHONE_ISPRIMARY,phoneNumber);
-             i.putExtra(ContactsContract.Intents.Insert.EMAIL_ISPRIMARY,email);
-             //i.putExtra(ContactsContract.Intents.Insert.NOTES, notes);
-
+             if(!email.equals("null")){
+                 i.putExtra(ContactsContract.Intents.Insert.EMAIL_ISPRIMARY,email);
+             }
              i.putParcelableArrayListExtra(ContactsContract.Intents.Insert.DATA, data);
 
              startActivityForResult(i,ON_REQUEST_CONTACT);
-            }
+         }
 
 
 
@@ -643,12 +650,11 @@ public class Dashboard extends AppCompatActivity {
              //intent.putExtra(ContactsContract.Intents.Insert)
               */
 
-
-             ArrayList<ContentValues> data = setLabels(insta,snap,gitHub,linkedin,website);
-
              Intent intent_demo = new Intent(Intent.ACTION_INSERT, ContactsContract.Contacts.CONTENT_URI);
              intent_demo.putExtra(ContactsContract.Intents.Insert.NAME, name);
-             intent_demo.putExtra(ContactsContract.Intents.Insert.EMAIL, email);
+             if(!email.equals("null")){
+                 intent_demo.putExtra(ContactsContract.Intents.Insert.EMAIL, email);
+             }
              intent_demo.putExtra(ContactsContract.Intents.Insert.PHONE, phoneNumber);
              intent_demo.putParcelableArrayListExtra(ContactsContract.Intents.Insert.DATA, data);
              startActivityForResult(intent_demo,ON_REQUEST_CONTACT);
@@ -675,42 +681,55 @@ public class Dashboard extends AppCompatActivity {
 
     private ArrayList<ContentValues> setLabels(String insta, String snap, String gitHub, String linkedin, String website){
         ArrayList<ContentValues> data = new ArrayList<ContentValues>();
+        if(!insta.equals("null")) {
+            insta = "Instagram: " + insta;
+            ContentValues row2 = new ContentValues();
+            row2.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
+            row2.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_CUSTOM);
+            row2.put(ContactsContract.CommonDataKinds.Website.LABEL, "Instagram");
+            row2.put(ContactsContract.CommonDataKinds.Website.URL, insta);
+            data.add(row2);
+        }
 
-        ContentValues row2 = new ContentValues();
-        row2.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
-        row2.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_CUSTOM);
-        row2.put(ContactsContract.CommonDataKinds.Website.LABEL, "Instagram");
-        row2.put(ContactsContract.CommonDataKinds.Website.URL, insta);
-        data.add(row2);
+        if(!snap.equals("null")){
+            snap = "SnapChat: " + snap;
+            ContentValues row3 = new ContentValues();
+            row3.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
+            row3.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_CUSTOM);
+            row3.put(ContactsContract.CommonDataKinds.Website.LABEL, "Snapchat");
+            row3.put(ContactsContract.CommonDataKinds.Website.URL, snap);
+            data.add(row3);
+        }
 
-        ContentValues row3 = new ContentValues();
-        row3.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
-        row3.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_CUSTOM);
-        row3.put(ContactsContract.CommonDataKinds.Website.LABEL, "Snapchat");
-        row3.put(ContactsContract.CommonDataKinds.Website.URL, snap);
-        data.add(row3);
+        if(!gitHub.equals("null")){
+            gitHub = "GitHub: " + gitHub;
+            ContentValues row4 = new ContentValues();
+            row4.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
+            row4.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_CUSTOM);
+            row4.put(ContactsContract.CommonDataKinds.Website.LABEL, "GitHub");
+            row4.put(ContactsContract.CommonDataKinds.Website.URL, gitHub);
+            data.add(row4);
+        }
 
-        ContentValues row4 = new ContentValues();
-        row4.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
-        row4.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_CUSTOM);
-        row4.put(ContactsContract.CommonDataKinds.Website.LABEL, "GitHub");
-        row4.put(ContactsContract.CommonDataKinds.Website.URL, gitHub);
-        data.add(row4);
+        if(!linkedin.equals("null")){
+            linkedin = "LinkedIn: " + linkedin;
+            ContentValues row5 = new ContentValues();
+            row5.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
+            row5.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_CUSTOM);
+            row5.put(ContactsContract.CommonDataKinds.Website.LABEL, "LinkedIn");
+            row5.put(ContactsContract.CommonDataKinds.Website.URL, linkedin);
+            data.add(row5);
+        }
 
-        ContentValues row5 = new ContentValues();
-        row5.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
-        row5.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_CUSTOM);
-        row5.put(ContactsContract.CommonDataKinds.Website.LABEL, "LinkedIn");
-        row5.put(ContactsContract.CommonDataKinds.Website.URL, linkedin);
-        data.add(row5);
-
-        ContentValues row6 = new ContentValues();
-        row6.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
-        row6.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_CUSTOM);
-        row6.put(ContactsContract.CommonDataKinds.Website.LABEL, "Website");
-        row6.put(ContactsContract.CommonDataKinds.Website.URL, website);
-        data.add(row6);
-
+        if(!website.equals("null")){
+            website = "Website: " + website;
+            ContentValues row6 = new ContentValues();
+            row6.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
+            row6.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_CUSTOM);
+            row6.put(ContactsContract.CommonDataKinds.Website.LABEL, "Website");
+            row6.put(ContactsContract.CommonDataKinds.Website.URL, website);
+            data.add(row6);
+        }
         return data;
     }
 

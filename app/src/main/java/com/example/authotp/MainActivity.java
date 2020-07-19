@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
 public class MainActivity extends AppCompatActivity {
 
     EditText phone, otpEnter;
-    Button next, login;
+    Button signup, login;
     FirebaseAuth fAuth;
     String otpCode = null;
     String verificationId;
@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         setTitle("Log In/Sign Up");
         phone = findViewById(R.id.getNumber);
-        next = findViewById(R.id.signUp);
+        signup = findViewById(R.id.signUp);
         login = findViewById(R.id.logIn);
         otpEnter = findViewById(R.id.otpEnter);
         otpTV = findViewById(R.id.otpTextView);
@@ -86,18 +86,18 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        next.setOnClickListener(new View.OnClickListener(){
+        signup.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
                 if(!phone.getText().toString().isEmpty() && phone.getText().toString().length() == 10) {
                     if(!verificationOnProgress){
-                        next.setEnabled(false);
+                        signup.setEnabled(false);
                         String phoneNum = "+" + countryCodePicker.getSelectedCountryCode()
                                 + phone.getText().toString();
                         Log.i("phone", "Phone No.: " + phoneNum);
                         requestPhoneAuth(phoneNum);
                     }else {
-                        next.setEnabled(false);
+                        signup.setEnabled(false);
                         otpEnter.setVisibility(View.GONE);
                         otpCode = otpEnter.getText().toString();
                         if(otpCode.isEmpty()){
@@ -125,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
                         Log.i("phone", "Phone No.: " + phoneNum);
                         requestPhoneAuth(phoneNum);
                     }else {
-                        login.setEnabled(false);
+                        //login.setEnabled(false);
                         otpEnter.setVisibility(View.GONE);
                         otpCode = otpEnter.getText().toString();
                         if(otpCode.isEmpty()){
@@ -162,8 +162,8 @@ public class MainActivity extends AppCompatActivity {
                         verificationId = s;
                         token = forceResendingToken;
                         verificationOnProgress = true;
-                        next.setText("Sign Up");
-                        next.setEnabled(true);
+                        signup.setText("Sign Up");
+                        signup.setEnabled(true);
                         otpEnter.setVisibility(View.VISIBLE);
                         otpTV.setVisibility(View.VISIBLE);
                     }

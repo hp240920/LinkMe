@@ -169,7 +169,6 @@ public class deleteFiles extends AppCompatActivity {
     private Uri pdfUri;
 
     public void onUpload(View v){
-
         Intent intent = new Intent();
         intent.setType("*/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
@@ -252,7 +251,6 @@ public class deleteFiles extends AppCompatActivity {
         String uriString = pdfUri.toString();
         File myFile = new File(uriString);
         String path = myFile.getAbsolutePath();
-
         if (uriString.startsWith("content://")) {
             Cursor cursor = null;
             try {

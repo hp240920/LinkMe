@@ -236,7 +236,6 @@ public class MainActivity extends AppCompatActivity {
 
         sharedPreferences.edit().putString("name",myUser.getName()).apply();
         sharedPreferences.edit().putString("phone",myUser.getPhonenumber()).apply();
-      //  SharePreHelper.setName(myUser.getPhonenumber());
         sharedPreferences.edit().putString("email",myUser.getEmail()).apply();
         sharedPreferences.edit().putString("website",myUser.getWebsite()).apply();
         sharedPreferences.edit().putString("insta",myUser.getInstagram()).apply();
@@ -244,7 +243,5 @@ public class MainActivity extends AppCompatActivity {
         sharedPreferences.edit().putString("github",myUser.getGitHub()).apply();
         sharedPreferences.edit().putString("linkedIn",myUser.getLinkedIn()).apply();
 
-       // sharedPreferences.edit().putString("file1",myUser.getFiles1()).apply();
-      //  sharedPreferences.edit().putString("file2",myUser.getFiles2()).apply();
     }
 }

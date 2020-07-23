@@ -1,32 +1,42 @@
 package com.example.authotp;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.OpenableColumns;
 import android.view.View;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import com.example.authotp.Threads.GetCurrentUserThread;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.ListResult;
+import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+
+import java.io.File;
 
 public class selectFile extends AppCompatActivity {
 
+    private static final int INTENT_CODE_SELECTFILE = 12;
     RadioButton file1,file2,file3,file4,file5;
     RadioGroup rbGroup;
     String myPhoneNumber;
     String send_to;
     String[] allFiles = new String[5];
+    Uri pdfUri;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,6 +69,8 @@ public class selectFile extends AppCompatActivity {
         //Intent intent = getIntent();
         send_to = User.lastestNumber;
         SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
+
+
         myPhoneNumber = sharedPreferences.getString("phone","");
         StorageReference storageReference = firebaseStorage.getReference().child("files/" + myPhoneNumber);
         storageReference.listAll()
@@ -140,4 +152,86 @@ public class selectFile extends AppCompatActivity {
            Toast.makeText(this,"ERROR",Toast.LENGTH_SHORT).show();
        }
     }
+
+    public void onSelectAndSend(View v){
+
+        Intent intent = new Intent();
+        intent.setType("*/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(intent,INTENT_CODE_SELECTFILE);
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == INTENT_CODE_SELECTFILE && resultCode == RESULT_OK && data != null) {
+            pdfUri = data.getData(); // getting the uri of selected file
+            assert pdfUri != null;
+            //String uriString = pdfUri.toString();
+            SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
+            uploadFile(pdfUri);
+        }
+        else{
+            Toast.makeText(this,"Please select a file",Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
+    private void uploadFile(Uri pdfUriFile){
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        final StorageReference storageReference = storage.getReference().child("Random Files/" + myPhoneNumber + "/"+ getFileName(pdfUriFile));
+        UploadTask uploadTask = storageReference.putFile(pdfUriFile);
+        uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+
+                storageReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        Intent intent = new Intent(selectFile.this,Conformation.class);
+                        intent.putExtra("myPhone",myPhoneNumber);
+                        intent.putExtra("sendTo",send_to);
+                        //intent.putExtra("info","");
+                        String stringUri = uri.toString();
+                        intent.putExtra("uri", stringUri);
+                        sendBroadcast(intent);
+                    }
+                });
+                finish();
+                //Toast.makeText(getApplicationContext(),"File successfully Sent",Toast.LENGTH_SHORT).show();
+            }
+        })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(getApplicationContext(), "File not Sent", Toast.LENGTH_LONG).show();
+                        e.printStackTrace();
+                    }
+                });
+    }
+
+    private String getFileName(Uri pdfUriFile){
+        String displayName = null;
+        String uriString = pdfUriFile.toString();
+        File myFile = new File(uriString);
+        String path = myFile.getAbsolutePath();
+
+        if (uriString.startsWith("content://")) {
+            Cursor cursor = null;
+            try {
+                cursor = this.getContentResolver().query(pdfUriFile, null, null, null, null);
+                if (cursor != null && cursor.moveToFirst()) {
+                    displayName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                }
+            } finally {
+                cursor.close();
+            }
+        } else if (uriString.startsWith("file://")) {
+            displayName = myFile.getName();
+        }
+        return displayName;
+    }
+
 }

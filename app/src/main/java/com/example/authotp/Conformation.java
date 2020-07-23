@@ -47,6 +47,7 @@ public class Conformation extends BroadcastReceiver {
                 if(dataSnapshot.exists()){
                     for(DataSnapshot user: dataSnapshot.getChildren()){
                         if(user.getValue(User.class).getPhonenumber().equals(my_phone)){
+                            // getting info based on User class
                             String info = user.getValue(User.class).toString();
                             FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
                             DatabaseReference databaseReference = firebaseDatabase.getReference().child("Message");
@@ -54,6 +55,7 @@ public class Conformation extends BroadcastReceiver {
                             DatabaseReference keyref = databaseReference.push();
                             String key = keyref.getKey();
 
+                            System.out.println(uri);
                             Message message = new Message(my_phone, send_to, false, info, uri, key);
                             databaseReference.child(key).setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override

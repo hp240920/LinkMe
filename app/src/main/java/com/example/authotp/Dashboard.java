@@ -11,6 +11,7 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.animation.Animator;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -100,6 +101,7 @@ import java.util.Objects;
 
 import static android.app.DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR;
 import static android.os.Environment.DIRECTORY_DOWNLOADS;
+import static androidx.core.app.ActivityCompat.requestPermissions;
 
 public class Dashboard extends AppCompatActivity {
 
@@ -212,7 +214,6 @@ public class Dashboard extends AppCompatActivity {
     Dialog popUpDialog;
 
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -220,6 +221,18 @@ public class Dashboard extends AppCompatActivity {
         setTitle("Dashboard");
 
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (Permissions.check_contacts_permission(Dashboard.this) == false){
+                System.out.println(" ------1");
+
+                requestPermissions(new String[] {
+                        Manifest.permission.READ_CONTACTS,
+                        Manifest.permission.WRITE_CONTACTS,
+                }, REQUEST_CODE);
+
+            }
+
+        }
         // Get all the values from Shared Prefrences for a background thread;
          userThread = new GetCurrentUserThread(Dashboard.this);
          getCurrentUser = new Thread(userThread);
@@ -252,12 +265,24 @@ public class Dashboard extends AppCompatActivity {
 
         // check if service is not started if not then start a service
         if(!isMyServiceRunning(Notify.class)){
-            serviceIntent = new Intent(this, com.example.authotp.Notify.class);
+            serviceIntent = new Intent(this, Notify.class);
             serviceIntent.putExtra("inputExtra", "AuthOTP");
             ContextCompat.startForegroundService(this, serviceIntent);
             check_notification();
         }
       //  loadProfile.start();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode == REQUEST_CODE){
+            if(grantResults.length > 1 && (grantResults[0] + grantResults[1] == PackageManager.PERMISSION_GRANTED)){
+              Intent intent = new Intent(getApplicationContext(), Dashboard.class);
+              startActivity(intent);
+              finish();
+            }
+        }
     }
 
     @Override
@@ -496,7 +521,6 @@ public class Dashboard extends AppCompatActivity {
         // thread to insert name if present in contacts
         final Handler updatePhone = new Handler();
         new Thread() {
-            @RequiresApi(api = Build.VERSION_CODES.M)
             @Override
             public void run() {
                 super.run();
@@ -523,13 +547,18 @@ public class Dashboard extends AppCompatActivity {
                     }
                     phones.close();
                 }catch(Exception e){
+                    /*
                     if (ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.READ_CONTACTS) +
                             ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED){
-                        requestPermissions(new String[] {
-                                Manifest.permission.READ_CONTACTS,
-                                Manifest.permission.WRITE_CONTACTS,
-                        }, REQUEST_CODE + 1);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            requestPermissions(new String[] {
+                                    Manifest.permission.READ_CONTACTS,
+                                    Manifest.permission.WRITE_CONTACTS,
+                            }, REQUEST_CODE + 1);
+                        }
                     }
+                     */
+
                 }
             }
         }.start();
@@ -609,13 +638,12 @@ public class Dashboard extends AppCompatActivity {
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void permission() {
         if (ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.READ_PHONE_STATE) +
-                ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.SYSTEM_ALERT_WINDOW) +
                 ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.READ_CALL_LOG) +
                 ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.READ_CONTACTS) +
                 ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.WRITE_CONTACTS) +
                 ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.READ_EXTERNAL_STORAGE) +
                 ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
-            if (shouldShowRequestPermissionRationale(Manifest.permission.READ_PHONE_STATE) || shouldShowRequestPermissionRationale(Manifest.permission.SYSTEM_ALERT_WINDOW) ||
+            if (shouldShowRequestPermissionRationale(Manifest.permission.READ_PHONE_STATE) ||
                     shouldShowRequestPermissionRationale(Manifest.permission.READ_CALL_LOG) || shouldShowRequestPermissionRationale(Manifest.permission.READ_CONTACTS) ||
                     shouldShowRequestPermissionRationale(Manifest.permission.WRITE_CONTACTS) || shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE) ||
                     shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
@@ -627,7 +655,6 @@ public class Dashboard extends AppCompatActivity {
                     public void onClick(DialogInterface dialogInterface, int i) {
                         requestPermissions(new String[] {
                                 Manifest.permission.READ_PHONE_STATE,
-                                Manifest.permission.SYSTEM_ALERT_WINDOW,
                                 Manifest.permission.READ_CALL_LOG,
                                 Manifest.permission.READ_CONTACTS,
                                 Manifest.permission.WRITE_CONTACTS,
@@ -644,12 +671,13 @@ public class Dashboard extends AppCompatActivity {
         }
     }
 
-    @Override
+    /*
+        @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if(requestCode == REQUEST_CODE){
                 if (grantResults.length > 0 &&
-                        grantResults[0] + grantResults[1] + grantResults[2] + grantResults[3] + grantResults[4] + grantResults[5] + grantResults[6] == PackageManager.PERMISSION_GRANTED) {
+                        grantResults[0] + grantResults[1] + grantResults[2] + grantResults[3] + grantResults[4] + grantResults[5] == PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(getApplicationContext(), "Permission Granted", Toast.LENGTH_SHORT).show();
                 }  else {
                     // Explain to the user that the feature is unavailable because
@@ -664,26 +692,16 @@ public class Dashboard extends AppCompatActivity {
         if(requestCode == REQUEST_CODE + 1){
             if (grantResults.length > 0 &&
                     grantResults[0] + grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(getApplicationContext(), "Permission Granted", Toast.LENGTH_SHORT).show();
-                /*
-                Intent intent = new Intent(getApplicationContext(), Dashboard.class);
-                startActivity(intent);
-                finish();
-                */
                 Dashboard.this.recreate();
-            }  else {
-                // Explain to the user that the feature is unavailable because
-                // the features requires a permission that the user has denied.
-                // At the same time, respect the user's decision. Don't link to
-                // system settings in an effort to convince the user to change
-                // their decision.
-                Toast.makeText(getApplicationContext(), "Permission Denied", Toast.LENGTH_SHORT).show();
             }
             return;
         }
         // Other 'case' lines to check for other
         // permissions this app might request.
     }
+
+
+     */
 
     private void openPopUpWhenClicked(final String phone, ImageView profile_pic){
 

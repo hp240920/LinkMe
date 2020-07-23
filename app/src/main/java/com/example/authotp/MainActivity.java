@@ -63,6 +63,10 @@ public class MainActivity extends AppCompatActivity {
     PhoneAuthProvider.ForceResendingToken token;
     ScrollView layoutMain;
 
+
+
+    /*
+
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void createPermissions() {
         if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_PHONE_STATE) +
@@ -81,7 +85,6 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialogInterface, int i) {
                         requestPermissions(new String[] {
                                 Manifest.permission.READ_PHONE_STATE,
-                                Manifest.permission.SYSTEM_ALERT_WINDOW,
                                 Manifest.permission.READ_CALL_LOG,
                                 Manifest.permission.READ_CONTACTS,
                                 Manifest.permission.WRITE_CONTACTS,
@@ -95,7 +98,6 @@ public class MainActivity extends AppCompatActivity {
             }else{
                 requestPermissions(new String[] {
                         Manifest.permission.READ_PHONE_STATE,
-                        Manifest.permission.SYSTEM_ALERT_WINDOW,
                         Manifest.permission.READ_CALL_LOG,
                         Manifest.permission.READ_CONTACTS,
                         Manifest.permission.WRITE_CONTACTS,
@@ -107,13 +109,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override
+
+
+
+      @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if(requestCode == REQUEST_CODE){
-                System.out.println(grantResults[0]  + grantResults[2] + grantResults[3] + grantResults[4] + grantResults[5] + grantResults[6]);
+                //System.out.println(grantResults[0]  + grantResults[2] + grantResults[3] + grantResults[4] + grantResults[5] + grantResults[6]);
                 if ((grantResults.length > 0) &&
-                        (grantResults[0] + grantResults[2] + grantResults[3] + grantResults[4] + grantResults[5] + grantResults[6]) == PackageManager.PERMISSION_GRANTED) {
+                        (grantResults[0] + grantResults[1]+ grantResults[2] + grantResults[3] + grantResults[4] + grantResults[5] ) == PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(getApplicationContext(), "Permission Granted", Toast.LENGTH_SHORT).show();
                 }  else {
                     Toast.makeText(getApplicationContext(), "Permission Denied", Toast.LENGTH_SHORT).show();
@@ -123,6 +128,8 @@ public class MainActivity extends AppCompatActivity {
         // Other 'case' lines to check for other
         // permissions this app might request.
     }
+     */
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

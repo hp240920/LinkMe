@@ -48,7 +48,7 @@ public class selectFile extends AppCompatActivity {
         manager.cancel(notificationId);
 
         file1 = findViewById(R.id.rb1);
-        //file1.setText("Hello There");
+//file1.setText("Hello There");
         file2 = findViewById(R.id.rb2);
         file3 = findViewById(R.id.rb3);
         file4 = findViewById(R.id.rb4);
@@ -66,7 +66,7 @@ public class selectFile extends AppCompatActivity {
         files[4] = file5;
         rbGroup = findViewById(R.id.rbGroup);
         FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
-        //Intent intent = getIntent();
+//Intent intent = getIntent();
         send_to = User.lastestNumber;
         SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
 
@@ -78,7 +78,7 @@ public class selectFile extends AppCompatActivity {
                     @Override
                     public void onSuccess(ListResult listResult) {
                         int count = 0;
-                        //int size = listResult.getItems().size();
+//int size = listResult.getItems().size();
                         for (StorageReference item : listResult.getItems()) {
                             if(count >= 5){
                                 break;
@@ -99,29 +99,29 @@ public class selectFile extends AppCompatActivity {
                             files[count].setTag(count);
                             files[count].setVisibility(View.VISIBLE);
 
-                            /*
-                            if(count == 0){
-                                file1.setText(item.getName());
-                                file1.setEnabled(true);
-                                file1.setTag(0);
-                            }else if(count == 1){
-                                file2.setText(item.getName());
-                                file2.setEnabled(true);
-                                file2.setTag(1);
-                            }else if(count == 2){
-                                file3.setText(item.getName());
-                                file3.setEnabled(true);
-                                file3.setTag(2);
-                            }else if(count == 3){
-                                file4.setText(item.getName());
-                                file4.setEnabled(true);
-                                file4.setTag(3);
-                            }else{
-                                file5.setText(item.getName());
-                                file5.setEnabled(true);
-                                file5.setTag(4);
-                            }
-                             */
+/*
+if(count == 0){
+file1.setText(item.getName());
+file1.setEnabled(true);
+file1.setTag(0);
+}else if(count == 1){
+file2.setText(item.getName());
+file2.setEnabled(true);
+file2.setTag(1);
+}else if(count == 2){
+file3.setText(item.getName());
+file3.setEnabled(true);
+file3.setTag(2);
+}else if(count == 3){
+file4.setText(item.getName());
+file4.setEnabled(true);
+file4.setTag(3);
+}else{
+file5.setText(item.getName());
+file5.setEnabled(true);
+file5.setTag(4);
+}
+*/
 
 
                             count++;
@@ -131,26 +131,26 @@ public class selectFile extends AppCompatActivity {
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        // Uh-oh, an error occurred!
+// Uh-oh, an error occurred!
                     }
                 });
     }
     public void onSend(View v){
-       RadioButton selected = findViewById(rbGroup.getCheckedRadioButtonId());
-       if(selected != null && !selected.getText().toString().equals("")){
-           String uri = allFiles[Integer.parseInt(selected.getTag().toString())];
-           System.out.println(uri);
-           Intent intent = new Intent(this,Conformation.class);
-           intent.putExtra("myPhone",myPhoneNumber);
-           intent.putExtra("sendTo",send_to);
-           //intent.putExtra("info","");
-           intent.putExtra("uri", uri);
-           sendBroadcast(intent);
-           finish();
-       }
-       else{
-           Toast.makeText(this,"ERROR",Toast.LENGTH_SHORT).show();
-       }
+        RadioButton selected = findViewById(rbGroup.getCheckedRadioButtonId());
+        if(selected != null && !selected.getText().toString().equals("")){
+            String uri = allFiles[Integer.parseInt(selected.getTag().toString())];
+            System.out.println(uri);
+            Intent intent = new Intent(this,Conformation.class);
+            intent.putExtra("myPhone",myPhoneNumber);
+            intent.putExtra("sendTo",send_to);
+//intent.putExtra("info","");
+            intent.putExtra("uri", uri);
+            sendBroadcast(intent);
+            finish();
+        }
+        else{
+            Toast.makeText(this,"ERROR",Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void onSelectAndSend(View v){
@@ -169,7 +169,7 @@ public class selectFile extends AppCompatActivity {
         if (requestCode == INTENT_CODE_SELECTFILE && resultCode == RESULT_OK && data != null) {
             pdfUri = data.getData(); // getting the uri of selected file
             assert pdfUri != null;
-            //String uriString = pdfUri.toString();
+//String uriString = pdfUri.toString();
             SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
             uploadFile(pdfUri);
         }
@@ -193,14 +193,14 @@ public class selectFile extends AppCompatActivity {
                         Intent intent = new Intent(selectFile.this,Conformation.class);
                         intent.putExtra("myPhone",myPhoneNumber);
                         intent.putExtra("sendTo",send_to);
-                        //intent.putExtra("info","");
+//intent.putExtra("info","");
                         String stringUri = uri.toString();
                         intent.putExtra("uri", stringUri);
                         sendBroadcast(intent);
                     }
                 });
                 finish();
-                //Toast.makeText(getApplicationContext(),"File successfully Sent",Toast.LENGTH_SHORT).show();
+//Toast.makeText(getApplicationContext(),"File successfully Sent",Toast.LENGTH_SHORT).show();
             }
         })
                 .addOnFailureListener(new OnFailureListener() {

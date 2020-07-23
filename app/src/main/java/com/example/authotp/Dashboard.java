@@ -2,6 +2,7 @@ package com.example.authotp;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
@@ -79,6 +80,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.ListResult;
 import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
 
@@ -101,6 +103,8 @@ import static android.os.Environment.DIRECTORY_DOWNLOADS;
 
 public class Dashboard extends AppCompatActivity {
 
+
+    private static final int REQUEST_CODE = 3055;
     //String key = "";
     ProgressDialog loadImage;
     private static int ON_REQUEST_CONTACT = 5;
@@ -207,19 +211,14 @@ public class Dashboard extends AppCompatActivity {
     Intent serviceIntent;
     Dialog popUpDialog;
 
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
         setTitle("Dashboard");
 
-        if (ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.SYSTEM_ALERT_WINDOW) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(Dashboard.this,
-                    new String[]{Manifest.permission.READ_PHONE_STATE, Manifest.permission.SYSTEM_ALERT_WINDOW, Manifest.permission.READ_CALL_LOG},
-                    1);
-        }
 
         // Get all the values from Shared Prefrences for a background thread;
          userThread = new GetCurrentUserThread(Dashboard.this);
@@ -333,8 +332,10 @@ public class Dashboard extends AppCompatActivity {
     private void updateScrollView() {
         System.out.println(dashboardUserNumbers.size());
         DatabaseReference dbref = firebaseDatabase.getReference().child("Message");
-        while (getCurrentUser.isAlive()){
-
+        while(true){
+            if(!getCurrentUser.isAlive()){
+                break;
+            }
         }
         Query query = dbref.orderByChild("to").equalTo(userThread.getPhonenumber());
         query.addValueEventListener(new ValueEventListener() {
@@ -376,21 +377,50 @@ public class Dashboard extends AppCompatActivity {
             @Override
             public void run() {
                 super.run();
-                StorageReference profileRef = firebaseStorage.getReference().child("Profiles/" +phone+"/" + "profile.jpg");
-                profileRef.getDownloadUrl().addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        System.out.println("Failed");
-                    }
-                }).addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        Picasso.get().load(uri).into(profile_pic);
-                        //loadImage.dismiss();
-                        counter++;
-
-                    }
-                });
+                try{
+                    StorageReference profileRef = firebaseStorage.getReference().child("Profiles/" + phone);
+                    profileRef.listAll()
+                            .addOnSuccessListener(new OnSuccessListener<ListResult>() {
+                                @Override
+                                public void onSuccess(ListResult listResult) {
+                                    for (StorageReference item : listResult.getItems()) {
+                                        item.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                            @Override
+                                            public void onSuccess(Uri uri) {
+                                                if(uri != null){
+                                                    Picasso.get().load(uri).into(profile_pic);
+                                                    counter++;
+                                                }
+                                            }
+                                        });
+                                    }
+                                }
+                            })
+                            .addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    // Uh-oh, an error occurred!
+                                }
+                            });
+                    /*
+                        profileRef.getDownloadUrl().addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            System.out.println("Failed");
+                        }
+                    }).addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            if(uri != null){
+                                Picasso.get().load(uri).into(profile_pic);
+                                counter++;
+                            }
+                        }
+                    });
+                    */
+                }catch(Exception e){
+                    System.out.println(e.toString());
+                }
             }
         }.start();
 
@@ -419,6 +449,7 @@ public class Dashboard extends AppCompatActivity {
         //saveButton.setScaleType(ImageView.ScaleType.FIT_XY);
         //Button addBtn = new Button(this);
         //addBtn.setText("Save Info");
+        final String[] output_name = {""};
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -434,7 +465,7 @@ public class Dashboard extends AppCompatActivity {
                                 String file1 = messageSnapshot.getValue(Message.class).getFile1();
 
                                 if(file1 != null){
-                                    saveToContact(file1);
+                                    saveToContact(output_name[0], file1);
                                 }
                             }
                         }
@@ -461,34 +492,45 @@ public class Dashboard extends AppCompatActivity {
         number.setGravity(Gravity.CENTER);
         number.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,TableRow.LayoutParams.MATCH_PARENT,0.6f));
 
-        final Handler updatePhone = new Handler();
+
         // thread to insert name if present in contacts
+        final Handler updatePhone = new Handler();
         new Thread() {
+            @RequiresApi(api = Build.VERSION_CODES.M)
             @Override
             public void run() {
                 super.run();
                 String name = "";
-                Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
-                while (phones.moveToNext()) {
-                    String phoneNum = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)).replace(" ", "").replace("-", "");
-                    if (phoneNum.equals(phone)) {
-                        name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-                        final TextView tvNumber = (TextView) row.getChildAt(1);
-
-
-                        final String finalName = name;
-                        updatePhone.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                tvNumber.setText(finalName);
-                            }
-                        });
-                        break;
-                        //System.out.println("Hello There I am here! " + name);
+                try{
+                    Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
+                    while (phones.moveToNext()) {
+                        String phoneNum = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)).replace(" ", "").replace("-", "");
+                        if (phoneNum.equals(phone)) {
+                            name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+                            output_name[0] = name;
+                            final TextView tvNumber = (TextView) row.getChildAt(1);
+                            final String finalName = name;
+                            updatePhone.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    tvNumber.setText(finalName);
+                                }
+                            });
+                            break;
+                            //System.out.println("Hello There I am here! " + name);
+                        }
+                        //phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
                     }
-                    //phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                    phones.close();
+                }catch(Exception e){
+                    if (ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.READ_CONTACTS) +
+                            ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED){
+                        requestPermissions(new String[] {
+                                Manifest.permission.READ_CONTACTS,
+                                Manifest.permission.WRITE_CONTACTS,
+                        }, REQUEST_CODE + 1);
+                    }
                 }
-                phones.close();
             }
         }.start();
 
@@ -531,13 +573,14 @@ public class Dashboard extends AppCompatActivity {
                         Message message = values.getValue(Message.class);
                         if(message.getFrom().equals(downloadBtn.getTag())){
                             Uri uri = Uri.parse(message.getFile2());
-                            options.add(0,uri.getLastPathSegment());
-                            tags.add(0,uri);
+                            options.add(0, uri.getLastPathSegment());
+                            tags.add(0, uri);
                             limit++;
                         }
                     }
 
-                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(Dashboard.this, android.R.layout.simple_list_item_1, options);
+
+                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(Dashboard.this, android.R.layout.simple_list_item_1, options );
                     popUpDialog.setContentView(R.layout.popup_window);
                     popUpDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                     ImageView profilepic = popUpDialog.findViewById(R.id.popUpImage);
@@ -549,7 +592,7 @@ public class Dashboard extends AppCompatActivity {
                         @Override
                         public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                             String to_download = tags.get(i).toString();
-                            lv.getChildAt(i).setBackgroundColor(0x88D14400);
+                            lv.getChildAt(i).setBackgroundColor(Color.parseColor("#6099cc00"));
                             downloadFile(to_download);
                         }
                     });
@@ -563,6 +606,85 @@ public class Dashboard extends AppCompatActivity {
         }
     };
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    public void permission() {
+        if (ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.READ_PHONE_STATE) +
+                ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.SYSTEM_ALERT_WINDOW) +
+                ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.READ_CALL_LOG) +
+                ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.READ_CONTACTS) +
+                ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.WRITE_CONTACTS) +
+                ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.READ_EXTERNAL_STORAGE) +
+                ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+            if (shouldShowRequestPermissionRationale(Manifest.permission.READ_PHONE_STATE) || shouldShowRequestPermissionRationale(Manifest.permission.SYSTEM_ALERT_WINDOW) ||
+                    shouldShowRequestPermissionRationale(Manifest.permission.READ_CALL_LOG) || shouldShowRequestPermissionRationale(Manifest.permission.READ_CONTACTS) ||
+                    shouldShowRequestPermissionRationale(Manifest.permission.WRITE_CONTACTS) || shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE) ||
+                    shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                AlertDialog.Builder build = new AlertDialog.Builder(Dashboard.this);
+                build.setTitle("Grant Permissions");
+                build.setMessage("These permissions are required to run this app");
+                build.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        requestPermissions(new String[] {
+                                Manifest.permission.READ_PHONE_STATE,
+                                Manifest.permission.SYSTEM_ALERT_WINDOW,
+                                Manifest.permission.READ_CALL_LOG,
+                                Manifest.permission.READ_CONTACTS,
+                                Manifest.permission.WRITE_CONTACTS,
+                                Manifest.permission.READ_EXTERNAL_STORAGE,
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
+                    }
+                });
+                build.setNegativeButton("Cancel", null);
+                AlertDialog alert = build.create();
+                alert.show();
+            }
+        }else{
+            Toast.makeText(getApplicationContext(), "App won't function properly", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode == REQUEST_CODE){
+                if (grantResults.length > 0 &&
+                        grantResults[0] + grantResults[1] + grantResults[2] + grantResults[3] + grantResults[4] + grantResults[5] + grantResults[6] == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(getApplicationContext(), "Permission Granted", Toast.LENGTH_SHORT).show();
+                }  else {
+                    // Explain to the user that the feature is unavailable because
+                    // the features requires a permission that the user has denied.
+                    // At the same time, respect the user's decision. Don't link to
+                    // system settings in an effort to convince the user to change
+                    // their decision.
+                    Toast.makeText(getApplicationContext(), "Permission Denied", Toast.LENGTH_SHORT).show();
+                }
+                return;
+        }
+        if(requestCode == REQUEST_CODE + 1){
+            if (grantResults.length > 0 &&
+                    grantResults[0] + grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(getApplicationContext(), "Permission Granted", Toast.LENGTH_SHORT).show();
+                /*
+                Intent intent = new Intent(getApplicationContext(), Dashboard.class);
+                startActivity(intent);
+                finish();
+                */
+                Dashboard.this.recreate();
+            }  else {
+                // Explain to the user that the feature is unavailable because
+                // the features requires a permission that the user has denied.
+                // At the same time, respect the user's decision. Don't link to
+                // system settings in an effort to convince the user to change
+                // their decision.
+                Toast.makeText(getApplicationContext(), "Permission Denied", Toast.LENGTH_SHORT).show();
+            }
+            return;
+        }
+        // Other 'case' lines to check for other
+        // permissions this app might request.
+    }
+
     private void openPopUpWhenClicked(final String phone, ImageView profile_pic){
 
         profile_pic.setOnClickListener(new View.OnClickListener() {
@@ -571,20 +693,31 @@ public class Dashboard extends AppCompatActivity {
                 popUpDialog.setContentView(R.layout.popup_window);
                 popUpDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
-                StorageReference profileRef = firebaseStorage.getReference().child("Profiles/" +phone+"/" + "profile.jpg");
-                profileRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        final ImageView popUpImg = popUpDialog.findViewById(R.id.popUpImage);
-                        Picasso.get().load(uri).into(popUpImg);
-                        popUpDialog.show();
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        System.out.println("Failed");
-                    }
-                });
+                StorageReference profileRef = firebaseStorage.getReference().child("Profiles/" + phone);
+                profileRef.listAll()
+                        .addOnSuccessListener(new OnSuccessListener<ListResult>() {
+                            @Override
+                            public void onSuccess(ListResult listResult) {
+                                for (StorageReference item : listResult.getItems()) {
+                                    item.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                        @Override
+                                        public void onSuccess(Uri uri) {
+                                            if(uri != null){
+                                                final ImageView popUpImg = popUpDialog.findViewById(R.id.popUpImage);
+                                                Picasso.get().load(uri).into(popUpImg);
+                                                popUpDialog.show();
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                System.out.println("Failed");
+                            }
+                        });
             }
         });
     }
@@ -608,7 +741,7 @@ public class Dashboard extends AppCompatActivity {
 
     }
 
-    private void saveToContact(String file1) {
+    private void saveToContact(String tag, String file1) {
         System.out.println(file1);
         String[] information = file1.split(", ");
         String name = information[0];
@@ -619,36 +752,29 @@ public class Dashboard extends AppCompatActivity {
         String snap = information[5];
         String gitHub = information[6];
         String linkedin = information[7];
-        String notes = "Website: " + website + "\nInstagram: "
-                + insta + "\nSnapChat: " + snap + "\nGithub: " + gitHub + "\nLinkedIn: " + linkedin;
-
-
 
 
         boolean isExisting = false;
-
         Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
         Cursor cursor = getApplicationContext().getContentResolver().query(uri, null, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
+
+        ArrayList<ContentValues> data = setLabels(insta,snap,gitHub,linkedin,website);
 
          if(cursor.moveToFirst()) {
              isExisting = true;
              long idContact = cursor.getLong(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID));
              Uri contactUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, idContact);
              Intent i = new Intent(Intent.ACTION_EDIT,contactUri);
-
-             ArrayList<ContentValues> data = setLabels(insta,snap,gitHub,linkedin,website);
-
              i.setData(contactUri);
              i.putExtra("finishActivityOnSaveCompleted", true);
 
-             i.putExtra(ContactsContract.Intents.Insert.PHONE_ISPRIMARY,phoneNumber);
-             i.putExtra(ContactsContract.Intents.Insert.EMAIL_ISPRIMARY,email);
-             //i.putExtra(ContactsContract.Intents.Insert.NOTES, notes);
-
+             i.putExtra(ContactsContract.Intents.Insert.PHONE_ISPRIMARY, phoneNumber);
+             if(!email.equals("null")){
+                 i.putExtra(ContactsContract.Intents.Insert.EMAIL_ISPRIMARY,email);
+             }
              i.putParcelableArrayListExtra(ContactsContract.Intents.Insert.DATA, data);
-
-             startActivityForResult(i,ON_REQUEST_CONTACT);
-            }
+             startActivityForResult(i, ON_REQUEST_CONTACT);
+         }
 
 
 
@@ -664,69 +790,148 @@ public class Dashboard extends AppCompatActivity {
              //intent.putExtra(ContactsContract.Intents.Insert)
               */
 
-
-             ArrayList<ContentValues> data = setLabels(insta,snap,gitHub,linkedin,website);
-
-
-               Intent intent_demo = new Intent(Intent.ACTION_INSERT, ContactsContract.Contacts.CONTENT_URI);
+             Intent intent_demo = new Intent(Intent.ACTION_INSERT, ContactsContract.Contacts.CONTENT_URI);
              intent_demo.putExtra(ContactsContract.Intents.Insert.NAME, name);
-             intent_demo.putExtra(ContactsContract.Intents.Insert.EMAIL, email);
+             if(!email.equals("null")){
+                 intent_demo.putExtra(ContactsContract.Intents.Insert.EMAIL, email);
+             }
              intent_demo.putExtra(ContactsContract.Intents.Insert.PHONE, phoneNumber);
              intent_demo.putParcelableArrayListExtra(ContactsContract.Intents.Insert.DATA, data);
-             startActivityForResult(intent_demo,ON_REQUEST_CONTACT);
-
+             startActivityForResult(intent_demo, ON_REQUEST_CONTACT);
 
         }
-
     }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
-        if(requestCode == ON_REQUEST_CONTACT && requestCode == RESULT_OK){
-            Toast.makeText(this,"Restart your App to view the changes",Toast.LENGTH_SHORT).show();
+        Intent refresh = new Intent(this, Dashboard.class);
+        startActivity(refresh);//Start the same Activity
+        finish(); //finish Activity.
+        /*
+        if(requestCode == ON_REQUEST_CONTACT){
+        if (ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.READ_CONTACTS) +
+                ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED){
+            requestPermissions(new String[] {
+                    Manifest.permission.READ_CONTACTS,
+                    Manifest.permission.WRITE_CONTACTS,
+            }, REQUEST_CODE + 1);
         }
+            if(resultCode == RESULT_OK){
+                String tag_check = data.getStringExtra("tag_check");
+                Uri uriData = data.getData();
+                String dataName = null;
+                String dataPhone = null;
+                Cursor cursor = getContentResolver().query(uriData, null, null, null, null);
+                if (cursor.moveToFirst()) {
+                    String id = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.Contacts._ID));
+
+                    String hasPhone = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER));
+
+                    if (hasPhone.equalsIgnoreCase("1"))
+                    {
+                        Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,null,
+                                ContactsContract.CommonDataKinds.Phone.CONTACT_ID +" = "+ id,null, null);
+                        phones.moveToFirst();
+                        String cNumber = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                        dataPhone = cNumber.replace(" ", "").replace("-", "");
+                        String nameContact = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME));
+                        dataName = nameContact;
+
+                    }
+                }
+
+                if (dataName != null && dataPhone != null) {
+                    TableLayout ll = findViewById(R.id.tableLayout);
+
+                    int num_of_rows = ll.getChildCount();
+
+                    for(int i=0 ; i < num_of_rows; i++){
+                        TableRow currentRow = (TableRow)ll.getChildAt(i);
+                        TextView currentTextView = (TextView)currentRow.getChildAt(1);
+                        String str = (String) currentTextView.getTag();
+                        if(currentTextView.getTag().equals(dataPhone)){
+                            currentTextView.setText(dataName);
+                        }
+                    }
+                }
+            }else if(resultCode == RESULT_CANCELED){
+                Toast.makeText(getApplicationContext(), "Abort!", Toast.LENGTH_SHORT).show();
+            }
+        }
+        */
+
+    }
+
+    /*
+                int id = cursor.getColumnIndex(ContactsContract.Contacts._ID);
+
+                ContentResolver cr = getContentResolver();
+                Cursor phones = cr.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
+                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = " + id, null, null);
+                if (phones.moveToFirst()) {
+                    dataPhone = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                }
+      */
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        //updateScrollView();
     }
 
     private ArrayList<ContentValues> setLabels(String insta, String snap, String gitHub, String linkedin, String website){
         ArrayList<ContentValues> data = new ArrayList<ContentValues>();
+        if(!insta.equals("null")) {
+            insta = "Instagram: " + insta;
+            ContentValues row2 = new ContentValues();
+            row2.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
+            row2.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_CUSTOM);
+            row2.put(ContactsContract.CommonDataKinds.Website.LABEL, "Instagram");
+            row2.put(ContactsContract.CommonDataKinds.Website.URL, insta);
+            data.add(row2);
+        }
 
-        ContentValues row2 = new ContentValues();
-        row2.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
-        row2.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_CUSTOM);
-        row2.put(ContactsContract.CommonDataKinds.Website.LABEL, "Instagram");
-        row2.put(ContactsContract.CommonDataKinds.Website.URL, insta);
-        data.add(row2);
+        if(!snap.equals("null")){
+            snap = "SnapChat: " + snap;
+            ContentValues row3 = new ContentValues();
+            row3.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
+            row3.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_CUSTOM);
+            row3.put(ContactsContract.CommonDataKinds.Website.LABEL, "Snapchat");
+            row3.put(ContactsContract.CommonDataKinds.Website.URL, snap);
+            data.add(row3);
+        }
 
-        ContentValues row3 = new ContentValues();
-        row3.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
-        row3.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_CUSTOM);
-        row3.put(ContactsContract.CommonDataKinds.Website.LABEL, "Snapchat");
-        row3.put(ContactsContract.CommonDataKinds.Website.URL, snap);
-        data.add(row3);
+        if(!gitHub.equals("null")){
+            gitHub = "GitHub: " + gitHub;
+            ContentValues row4 = new ContentValues();
+            row4.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
+            row4.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_CUSTOM);
+            row4.put(ContactsContract.CommonDataKinds.Website.LABEL, "GitHub");
+            row4.put(ContactsContract.CommonDataKinds.Website.URL, gitHub);
+            data.add(row4);
+        }
 
-        ContentValues row4 = new ContentValues();
-        row4.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
-        row4.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_CUSTOM);
-        row4.put(ContactsContract.CommonDataKinds.Website.LABEL, "GitHub");
-        row4.put(ContactsContract.CommonDataKinds.Website.URL, gitHub);
-        data.add(row4);
+        if(!linkedin.equals("null")){
+            linkedin = "LinkedIn: " + linkedin;
+            ContentValues row5 = new ContentValues();
+            row5.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
+            row5.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_CUSTOM);
+            row5.put(ContactsContract.CommonDataKinds.Website.LABEL, "LinkedIn");
+            row5.put(ContactsContract.CommonDataKinds.Website.URL, linkedin);
+            data.add(row5);
+        }
 
-        ContentValues row5 = new ContentValues();
-        row5.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
-        row5.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_CUSTOM);
-        row5.put(ContactsContract.CommonDataKinds.Website.LABEL, "LinkedIn");
-        row5.put(ContactsContract.CommonDataKinds.Website.URL, linkedin);
-        data.add(row5);
-
-        ContentValues row6 = new ContentValues();
-        row6.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
-        row6.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_CUSTOM);
-        row6.put(ContactsContract.CommonDataKinds.Website.LABEL, "Website");
-        row6.put(ContactsContract.CommonDataKinds.Website.URL, website);
-        data.add(row6);
-
+        if(!website.equals("null")){
+            website = "Website: " + website;
+            ContentValues row6 = new ContentValues();
+            row6.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
+            row6.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_CUSTOM);
+            row6.put(ContactsContract.CommonDataKinds.Website.LABEL, "Website");
+            row6.put(ContactsContract.CommonDataKinds.Website.URL, website);
+            data.add(row6);
+        }
         return data;
     }
 

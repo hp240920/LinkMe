@@ -209,5 +209,4 @@ private String getlastCall(Context context){
         assert manager != null;
         manager.notify(0, builder.build());
     }
-
 }

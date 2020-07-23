@@ -98,6 +98,7 @@ public class Sign_Up extends AppCompatActivity {
         btnSignUp = findViewById(R.id.btnSignUp);
         edit_profile = findViewById(R.id.change_profile);
         profile_pic = findViewById(R.id.profile);
+        profile_pic.setImageResource(R.drawable.default_dp);
         delete_profile = findViewById(R.id.delete_profile);
 
         Intent intent  = getIntent();
@@ -105,7 +106,6 @@ public class Sign_Up extends AppCompatActivity {
         if(intent.getBooleanExtra("check", false)){
             setFields(intent);
         }
-
         phoneNo.setText(phone);
         phoneNumber = phone;
         phoneNo.setEnabled(false);
@@ -115,11 +115,20 @@ public class Sign_Up extends AppCompatActivity {
         database = FirebaseDatabase.getInstance();
         storage = FirebaseStorage.getInstance();
 
-        StorageReference profileRef = storage.getReference().child("Profiles/" + Objects.requireNonNull(phone + "/" + "profile.jpg"));
-        profileRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+        StorageReference profileRef = storage.getReference().child("Profiles/" + Objects.requireNonNull(phone));
+        profileRef.listAll().addOnSuccessListener(new OnSuccessListener<ListResult>() {
             @Override
-            public void onSuccess(Uri uri) {
-                Picasso.get().load(uri).into(profile_pic);
+            public void onSuccess(ListResult listResult) {
+                for (StorageReference item : listResult.getItems()) {
+                    item.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            if(uri != null){
+                                Picasso.get().load(uri).into(profile_pic);
+                            }
+                        }
+                    });
+                }
             }
         });
 
@@ -134,10 +143,16 @@ public class Sign_Up extends AppCompatActivity {
         delete_profile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                StorageReference profileRef = storage.getReference().child("Profiles/" + Objects.requireNonNull(phone + "/" + "profile.jpg"));
-                profileRef.delete();
-                finish();
-                startActivity(getIntent());
+                StorageReference profileRef = storage.getReference().child("Profiles/" + phone);
+                profileRef.listAll().addOnSuccessListener(new OnSuccessListener<ListResult>() {
+                    @Override
+                    public void onSuccess(ListResult listResult) {
+                        for (StorageReference item : listResult.getItems()) {
+                            item.delete();
+                        }
+                    }
+                });
+                profile_pic.setImageResource(R.drawable.default_dp);
             }
         });
     }
@@ -184,7 +199,7 @@ public class Sign_Up extends AppCompatActivity {
 
     private void selectPdf() {
         Intent intent = new Intent();
-        intent.setType("application/pdf");
+        intent.setType("*/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(intent,INTENT_CODE_SELECTFILE);
     }
@@ -228,7 +243,7 @@ public class Sign_Up extends AppCompatActivity {
     }
 
     private void uploadProfileToFirebase(Uri imageUri) {
-        final StorageReference profileRef = storage.getReference().child("Profiles/" + Objects.requireNonNull(phoneNumber+"/" + "profile.jpg"));
+        final StorageReference profileRef = storage.getReference().child("Profiles/" + phoneNumber + "/" + "profile.jpg");
         profileRef.putFile(imageUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
@@ -303,7 +318,6 @@ public class Sign_Up extends AppCompatActivity {
     }
 
     private void movetoDashboard(User myUser){
-
         createSharedPref(myUser);
         Intent intent = new Intent(Sign_Up.this,Dashboard.class);
         startActivity(intent);
@@ -442,6 +456,8 @@ public class Sign_Up extends AppCompatActivity {
             keyref = databaseReference.child(key);
         }
         keyref.setValue(myUser);
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
+        ref.child("Phone").child(phone).setValue(phone);
         movetoDashboard(myUser);
     }
 
@@ -451,6 +467,7 @@ public class Sign_Up extends AppCompatActivity {
         progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         progressDialog.setTitle("Uploading files....");
         progressDialog.setProgress(0);
+        progressDialog.show();
         progressDialog.show();
 
         final String phone = phoneNo.getText().toString() + "/";
@@ -596,5 +613,4 @@ public class Sign_Up extends AppCompatActivity {
                     });
         }
     }
-
 }

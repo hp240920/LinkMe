@@ -78,11 +78,14 @@ public class SearchNearby extends AppCompatActivity {
         String userName = sharedPreferences.getString("name","");
         etName.setText(userName);
     }
+
+
     public void makeConnection(View v) {
         startAdvertising();
         Toast.makeText(this, "Starting Advertising", Toast.LENGTH_LONG).show();
         Log.i("Stutus :", "Starting Advertising and Discovery");
     }
+
 
     public void startSearch(View v){
 

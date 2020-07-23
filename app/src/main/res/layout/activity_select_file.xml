@@ -9,125 +9,142 @@
     android:layout_height="match_parent"
     android:layout_width="fill_parent">
 
-<LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    tools:context=".selectFile">
-
-    <TextView
-        android:id="@+id/folderName"
-        android:layout_width="327dp"
-        android:layout_height="39dp"
-        android:layout_marginStart="42dp"
-        android:layout_marginTop="28dp"
-        android:layout_marginEnd="42dp"
-        android:foregroundGravity="center"
-        android:gravity="center"
-        android:textSize="24sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/textView13"
-        android:layout_width="174dp"
-        android:layout_height="41dp"
-        android:layout_marginStart="22dp"
-        android:layout_marginTop="25dp"
-        android:text="Select a file:"
-        android:textSize="20sp"
-        app:layout_constraintBottom_toTopOf="@+id/tableLayout"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TableLayout
-        android:id="@+id/tableLayout"
-        android:layout_width="367dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="23dp"
-        android:layout_marginEnd="23dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView13">
-
-        <TableRow
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="30px"
-            android:layout_marginBottom="30px">
-
-            <RadioGroup
-                android:id="@+id/rbGroup"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-
-                <RadioButton
-                    android:id="@+id/rb1"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="20px"
-                    android:layout_marginTop="50px"
-                    android:hint="No Extra File"
-                    android:visibility="gone" />
-
-                <RadioButton
-                    android:id="@+id/rb2"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="20px"
-                    android:layout_marginTop="50px"
-                    android:hint="No Extra File"
-                    android:visibility="gone" />
-
-                <RadioButton
-                    android:id="@+id/rb3"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="20px"
-                    android:layout_marginTop="50px"
-                    android:hint="No Extra File"
-                    android:visibility="gone" />
-
-                <RadioButton
-                    android:id="@+id/rb4"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="20px"
-                    android:layout_marginTop="50px"
-                    android:hint="No Extra File"
-                    android:visibility="gone" />
-
-                <RadioButton
-                    android:id="@+id/rb5"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="20px"
-                    android:layout_marginTop="50px"
-                    android:hint="No Extra File"
-                    android:visibility="gone" />
-            </RadioGroup>
-        </TableRow>
-
-    </TableLayout>
-
-    <Button
-        android:id="@+id/selectFile"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginLeft="50dp"
-        android:layout_marginTop="50dp"
-        android:layout_marginRight="50dp"
-        android:layout_marginBottom="50dp"
-        android:onClick="onSend"
-        android:text="Send"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tableLayout" />
+        android:orientation="vertical"
+        tools:context=".selectFile">
+
+        <TextView
+            android:id="@+id/folderName"
+            android:layout_width="327dp"
+            android:layout_height="39dp"
+            android:layout_marginStart="42dp"
+            android:layout_marginTop="28dp"
+            android:layout_marginEnd="42dp"
+            android:foregroundGravity="center"
+            android:gravity="center"
+            android:textSize="24sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/textView13"
+            android:layout_width="174dp"
+            android:layout_height="41dp"
+            android:layout_marginStart="22dp"
+            android:layout_marginTop="25dp"
+            android:text="Select a file:"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toTopOf="@+id/tableLayout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TableLayout
+            android:id="@+id/tableLayout"
+            android:layout_width="367dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="23dp"
+            android:layout_marginEnd="23dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView13">
+
+            <TableRow
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30px"
+                android:layout_marginBottom="30px">
+
+                <RadioGroup
+                    android:id="@+id/rbGroup"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <RadioButton
+                        android:id="@+id/rb1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="20px"
+                        android:layout_marginTop="50px"
+                        android:hint="No Extra File"
+                        android:visibility="gone" />
+
+                    <RadioButton
+                        android:id="@+id/rb2"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="20px"
+                        android:layout_marginTop="50px"
+                        android:hint="No Extra File"
+                        android:visibility="gone" />
+
+                    <RadioButton
+                        android:id="@+id/rb3"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="20px"
+                        android:layout_marginTop="50px"
+                        android:hint="No Extra File"
+                        android:visibility="gone" />
+
+                    <RadioButton
+                        android:id="@+id/rb4"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="20px"
+                        android:layout_marginTop="50px"
+                        android:hint="No Extra File"
+                        android:visibility="gone" />
+
+                    <RadioButton
+                        android:id="@+id/rb5"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="20px"
+                        android:layout_marginTop="50px"
+                        android:hint="No Extra File"
+                        android:visibility="gone" />
+                </RadioGroup>
+            </TableRow>
+
+        </TableLayout>
+
+        <Button
+            android:id="@+id/selectFile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginLeft="50dp"
+            android:layout_marginTop="50dp"
+            android:layout_marginRight="50dp"
+            android:layout_marginBottom="25dp"
+            android:onClick="onSend"
+            android:text="Send"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tableLayout" />
+
+        <Button
+            android:id="@+id/otherFile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginLeft="50dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginRight="50dp"
+            android:layout_marginBottom="50dp"
+            android:onClick="onSelectAndSend"
+            android:text="Select Other file"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tableLayout" />
 
 
-</LinearLayout>
+    </LinearLayout>
 </ScrollView>

@@ -333,6 +333,9 @@ public class Dashboard extends AppCompatActivity {
     private void updateScrollView() {
         System.out.println(dashboardUserNumbers.size());
         DatabaseReference dbref = firebaseDatabase.getReference().child("Message");
+        while (getCurrentUser.isAlive()){
+
+        }
         Query query = dbref.orderByChild("to").equalTo(userThread.getPhonenumber());
         query.addValueEventListener(new ValueEventListener() {
             @Override
@@ -515,7 +518,7 @@ public class Dashboard extends AppCompatActivity {
             final List<Uri> tags = new ArrayList<>();
             FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
             DatabaseReference dbref = firebaseDatabase.getReference().child("Message");
-            Query query = dbref.orderByChild("to").equalTo(userThread.getPhonenumber());
+            Query query = dbref.orderByChild("to").equalTo(userThread.getPhonenumber()).limitToLast(5);
             query.addValueEventListener(new ValueEventListener(){
 
                 @Override
@@ -528,25 +531,25 @@ public class Dashboard extends AppCompatActivity {
                         Message message = values.getValue(Message.class);
                         if(message.getFrom().equals(downloadBtn.getTag())){
                             Uri uri = Uri.parse(message.getFile2());
-                            options.add(uri.getLastPathSegment());
-                            tags.add(uri);
+                            options.add(0,uri.getLastPathSegment());
+                            tags.add(0,uri);
                             limit++;
                         }
                     }
 
-
-                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(Dashboard.this, android.R.layout.simple_list_item_1, options );
+                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(Dashboard.this, android.R.layout.simple_list_item_1, options);
                     popUpDialog.setContentView(R.layout.popup_window);
                     popUpDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                     ImageView profilepic = popUpDialog.findViewById(R.id.popUpImage);
                     profilepic.setVisibility(View.GONE);
-                    ListView lv = popUpDialog.findViewById(R.id.list_of_files);
+                    final ListView lv = popUpDialog.findViewById(R.id.list_of_files);
                     lv.setAdapter(arrayAdapter);
                     popUpDialog.show();
                     lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                         @Override
                         public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                             String to_download = tags.get(i).toString();
+                            lv.getChildAt(i).setBackgroundColor(0x88D14400);
                             downloadFile(to_download);
                         }
                     });
@@ -664,65 +667,26 @@ public class Dashboard extends AppCompatActivity {
 
              ArrayList<ContentValues> data = setLabels(insta,snap,gitHub,linkedin,website);
 
-             Intent intent_demo = new Intent(Intent.ACTION_INSERT, ContactsContract.Contacts.CONTENT_URI);
+
+               Intent intent_demo = new Intent(Intent.ACTION_INSERT, ContactsContract.Contacts.CONTENT_URI);
              intent_demo.putExtra(ContactsContract.Intents.Insert.NAME, name);
              intent_demo.putExtra(ContactsContract.Intents.Insert.EMAIL, email);
              intent_demo.putExtra(ContactsContract.Intents.Insert.PHONE, phoneNumber);
              intent_demo.putParcelableArrayListExtra(ContactsContract.Intents.Insert.DATA, data);
              startActivityForResult(intent_demo,ON_REQUEST_CONTACT);
 
+
         }
 
     }
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if(requestCode == ON_REQUEST_CONTACT){
-            Uri uriData = data.getData();
-            String dataName = null;
-            String dataPhone = null;
-            Cursor cursor = getContentResolver().query(uriData, null, null, null, null);
-            if (cursor.moveToFirst()) {
-                /*
-                int id = cursor.getColumnIndex(ContactsContract.Contacts._ID);
-
-                ContentResolver cr = getContentResolver();
-                Cursor phones = cr.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
-                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = " + id, null, null);
-                if (phones.moveToFirst()) {
-                    dataPhone = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                }
-                 */
-
-
-                int idx = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
-                dataName = cursor.getString(idx);
-            }
-
-            if (dataName != null && dataPhone !=null) {
-                TableLayout ll = (TableLayout) findViewById(R.id.tableLayout);
-
-                int numberofRows = ll.getChildCount();
-
-                for(int i=0 ; i<numberofRows; i++){
-                    TableRow currentRow = (TableRow)ll.getChildAt(i);
-                    TextView currentTextView = (TextView)currentRow.getChildAt(1);
-                    if(currentTextView.getTag().equals(dataPhone)){
-                        currentTextView.setText(dataName);
-                    }
-                }
-            }
-
+        if(requestCode == ON_REQUEST_CONTACT && requestCode == RESULT_OK){
+            Toast.makeText(this,"Restart your App to view the changes",Toast.LENGTH_SHORT).show();
         }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        //updateScrollView();
     }
 
     private ArrayList<ContentValues> setLabels(String insta, String snap, String gitHub, String linkedin, String website){
@@ -882,6 +846,7 @@ public class Dashboard extends AppCompatActivity {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher_round)
                 .setContentTitle("AuthOPT Incoming")
+                .setAutoCancel(true)
                 .setContentText("Message from " + num);
 
         // Creates the intent needed to show the notification

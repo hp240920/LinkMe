@@ -23,6 +23,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.authotp.Threads.GetCurrentUserThread;
 import com.google.android.gms.nearby.Nearby;
 import com.google.android.gms.nearby.connection.AdvertisingOptions;
 import com.google.android.gms.nearby.connection.ConnectionInfo;
@@ -52,6 +53,9 @@ public class SearchNearby extends AppCompatActivity {
     Boolean isAdvertising;
     LinearLayout linearLayout;
     private static int ON_REQUEST_CONTACT = 5;
+    Thread getCurrentUser;
+    GetCurrentUserThread userThread;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +69,10 @@ public class SearchNearby extends AppCompatActivity {
         connectionsClient = Nearby.getConnectionsClient(this);
         linearLayout = findViewById(R.id.linearLayout_searchNearby);
         sendInfo.setEnabled(false);
+
+        userThread = new GetCurrentUserThread(SearchNearby.this);
+        getCurrentUser = new Thread(userThread);
+        getCurrentUser.start();
 
         SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
         String userName = sharedPreferences.getString("name","");
@@ -122,9 +130,8 @@ public class SearchNearby extends AppCompatActivity {
     // format : name, phoneNumber, email, website FOR CONTACT
 
     public void onSendInfo(View v){
-        SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
-        User currentUser = getSharedPref(sharedPreferences);
 
+        User currentUser = userThread.getCurrentUser();
         String details = currentUser.getName() + ", "+ currentUser.getPhonenumber() + ", "+ currentUser.getEmail() +", "+ currentUser.getWebsite() + ", "
                 + currentUser.getInstagram() + ", "+ currentUser.getSnapchat() + ", "+ currentUser.getGitHub() + ", "+ currentUser.getLinkedIn();
         connectionsClient.sendPayload(
@@ -132,28 +139,13 @@ public class SearchNearby extends AppCompatActivity {
         Toast.makeText(this,"sending Information",Toast.LENGTH_LONG).show();
     }
 
-    private User getSharedPref(SharedPreferences sharedPreferences){
-        User currentUser = new User();
-        currentUser.setName(sharedPreferences.getString("name",""));
-        currentUser.setPhonenumber(sharedPreferences.getString("phone",""));
-        currentUser.setEmail(sharedPreferences.getString("email", ""));
-        currentUser.setWebsite(sharedPreferences.getString("website", ""));
-        currentUser.setInstagram(sharedPreferences.getString("insta",""));
-        currentUser.setSnapchat(sharedPreferences.getString("snap",""));
-        currentUser.setGitHub(sharedPreferences.getString("github",""));
-        currentUser.setLinkedIn(sharedPreferences.getString("linkedIn",""));
-        //currentUser.setFiles1(sharedPreferences.getString("file1",""));
-        //currentUser.setFiles2(sharedPreferences.getString("file2",""));
-        return currentUser;
-    }
-
-
     @Override
     public void onBackPressed() {
         connectionsClient.stopAllEndpoints();
         finish();
 
     }
+
 
     private static final Strategy STRATEGY = Strategy.P2P_CLUSTER; // need to check if this the best choice
     private String opponentEndpointId;
@@ -218,7 +210,10 @@ public class SearchNearby extends AppCompatActivity {
                 public void onDisconnected(@NonNull String s) {
                     Log.i("TAG", "onDisconnected: disconnected from the opponent");
                     Toast.makeText(getApplicationContext(),"Disconnected",Toast.LENGTH_LONG).show();
-
+                    // on disconnect restart the activity
+                    Intent refresh = getIntent();
+                    startActivity(refresh);
+                    finish();
                 }
 
             };
@@ -288,13 +283,16 @@ public class SearchNearby extends AppCompatActivity {
     private void getInfo(Payload payload){
 
         String received = new String(payload.asBytes(), UTF_8);
+        saveToContact(received);
+
+
+        /*
         String[] inforamtion = received.split(", ");
         String name = inforamtion[0];
         String phoneNumber = inforamtion[1];
         String email = inforamtion[2];
         String website = inforamtion[3];
-
-        Intent intent = new Intent(ContactsContract.Intents.Insert.ACTION);
+            Intent intent = new Intent(ContactsContract.Intents.Insert.ACTION);
         intent.setType(ContactsContract.RawContacts.CONTENT_TYPE);
         intent.putExtra(ContactsContract.Intents.Insert.EMAIL,email);
         intent.putExtra(ContactsContract.Intents.Insert.PHONE,phoneNumber);
@@ -302,7 +300,10 @@ public class SearchNearby extends AppCompatActivity {
         intent.putExtra(ContactsContract.Intents.Insert.NOTES,website);
         startActivity(intent);
 
-        Toast.makeText(getApplicationContext()," Recieved Text is "+received,Toast.LENGTH_LONG).show();
+
+         */
+
+        //Toast.makeText(getApplicationContext()," Recieved Text is "+received,Toast.LENGTH_LONG).show();
     }
 
 
@@ -339,6 +340,7 @@ public class SearchNearby extends AppCompatActivity {
             i.setData(contactUri);
             i.putExtra("finishActivityOnSaveCompleted", true);
 
+
             i.putExtra(ContactsContract.Intents.Insert.PHONE_ISPRIMARY,phoneNumber);
             i.putExtra(ContactsContract.Intents.Insert.EMAIL_ISPRIMARY,email);
             //i.putExtra(ContactsContract.Intents.Insert.NOTES, notes);
@@ -351,20 +353,8 @@ public class SearchNearby extends AppCompatActivity {
 
 
         if(isExisting == false){
-             /*
-               Intent intent = new Intent(ContactsContract.Intents.Insert.ACTION);
-            intent.setType(ContactsContract.RawContacts.CONTENT_TYPE);
-            intent.putExtra(ContactsContract.Intents.Insert.EMAIL,email);
-            intent.putExtra(ContactsContract.Intents.Insert.PHONE,phoneNumber);
-            intent.putExtra(ContactsContract.Intents.Insert.NAME,name);
-            intent.putExtra(ContactsContract.Intents.Insert.NOTES, notes);
-             //intent.putExtra(ContactsContract.CommonDataKinds.BaseTypes.TYPE_CUSTOM, notes);
-             //intent.putExtra(ContactsContract.Intents.Insert)
-              */
-
 
             ArrayList<ContentValues> data = setLabels(insta,snap,gitHub,linkedin,website);
-
             Intent intent_demo = new Intent(Intent.ACTION_INSERT, ContactsContract.Contacts.CONTENT_URI);
             intent_demo.putExtra(ContactsContract.Intents.Insert.NAME, name);
             intent_demo.putExtra(ContactsContract.Intents.Insert.EMAIL, email);
@@ -381,7 +371,7 @@ public class SearchNearby extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if(requestCode == ON_REQUEST_CONTACT){
+        if(requestCode == ON_REQUEST_CONTACT && resultCode == RESULT_OK && data !=null ){
             System.out.println("Contact Saved ");
         }
     }

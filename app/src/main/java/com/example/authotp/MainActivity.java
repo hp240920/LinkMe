@@ -111,7 +111,6 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if(requestCode == REQUEST_CODE){
-                System.out.println(grantResults[0]  + grantResults[2] + grantResults[3] + grantResults[4] + grantResults[5] + grantResults[6]);
                 if ((grantResults.length > 0) &&
                         (grantResults[0] + grantResults[2] + grantResults[3] + grantResults[4] + grantResults[5] + grantResults[6]) == PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(getApplicationContext(), "Permission Granted", Toast.LENGTH_SHORT).show();
@@ -127,6 +126,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            createPermissions();
+        }
 
         // to remove the notification once clicked
         Intent intent = getIntent();

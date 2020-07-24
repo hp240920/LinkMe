@@ -65,12 +65,11 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    /*
+
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void createPermissions() {
         if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_PHONE_STATE) +
-                ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.SYSTEM_ALERT_WINDOW) +
                 ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_CALL_LOG) +
                 ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_CONTACTS) +
                 ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_CONTACTS) +
@@ -128,12 +127,16 @@ public class MainActivity extends AppCompatActivity {
         // Other 'case' lines to check for other
         // permissions this app might request.
     }
-     */
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            createPermissions();
+        }
 
         // to remove the notification once clicked
         Intent intent = getIntent();

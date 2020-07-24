@@ -5,14 +5,18 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.util.Log;
@@ -40,11 +44,13 @@ import com.google.android.gms.nearby.connection.Strategy;
 
 import java.util.ArrayList;
 
+import static androidx.core.app.ActivityCompat.requestPermissions;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class SearchNearby extends AppCompatActivity {
 
 
+    private static final int REQUEST_CODE = 4055;
     ConnectionsClient connectionsClient;
     Button connection;
     Button findConnection;
@@ -62,6 +68,17 @@ public class SearchNearby extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_nearby);
         setTitle("Search Nearby");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!Permissions.check_location_permission(SearchNearby.this)){
+                requestPermissions(new String[] {
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                        Manifest.permission.CHANGE_WIFI_STATE,
+                        Manifest.permission.ACCESS_WIFI_STATE,
+                        Manifest.permission.BLUETOOTH,
+                        Manifest.permission.BLUETOOTH_ADMIN,
+                }, REQUEST_CODE);
+            }
+        }
         connection = findViewById(R.id.btnHost);
         findConnection = findViewById(R.id.btnFind);
         etName = findViewById(R.id.etName);
@@ -79,6 +96,17 @@ public class SearchNearby extends AppCompatActivity {
         etName.setText(userName);
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode == REQUEST_CODE){
+            if(grantResults.length > 1 && (grantResults[0] + grantResults[1] + grantResults[2] + grantResults[3] + grantResults[4] == PackageManager.PERMISSION_GRANTED)){
+                Toast.makeText(getApplicationContext(), "Permission Granted", Toast.LENGTH_SHORT).show();
+            }else{
+                finish();
+            }
+        }
+    }
 
     public void makeConnection(View v) {
         startAdvertising();

@@ -297,7 +297,7 @@ public class Sign_Up extends AppCompatActivity {
     public void onclickbtnSignUp(View v){
         final User myUser = createUser();
 
-       FirebaseQuerry.getKey(new FirebaseQuerry.FirestoreCallback() {
+        FirebaseQuerry.getKey(new FirebaseQuerry.FirestoreCallback() {
            @Override
            public void OncallBack(User currentUser) {
 
@@ -306,7 +306,7 @@ public class Sign_Up extends AppCompatActivity {
            public void OncallBackKey(String key) {
                uploadUser(myUser,key);
            }
-       },myUser.getPhonenumber());
+        },myUser.getPhonenumber());
 
 
     }

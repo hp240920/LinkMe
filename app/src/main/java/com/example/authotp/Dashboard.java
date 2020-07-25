@@ -107,6 +107,9 @@ public class Dashboard extends AppCompatActivity {
 
 
     private static final int REQUEST_CODE = 3055;
+    private static final int REQUEST_CONTACT = 3066;
+    private static final int REQUEST_PHONE = 3067;
+    private static final int REQUEST_STORAGE = 3068;
     //String key = "";
     ProgressDialog loadImage;
     private static int ON_REQUEST_CONTACT = 5;
@@ -220,10 +223,22 @@ public class Dashboard extends AppCompatActivity {
         setContentView(R.layout.activity_dashboard);
         setTitle("Dashboard");
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!Permissions.check_phone_permission(Dashboard.this)){
+                requestPermissions(new String[] {
+                        Manifest.permission.READ_PHONE_STATE,
+                        Manifest.permission.READ_CALL_LOG,
+                }, REQUEST_PHONE);
+            }
+        }
+
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if(Permissions.check_contacts_permission(this)==false){
-                get_contacts_permission();
+            if (!Permissions.check_contacts_permission(Dashboard.this)){
+                requestPermissions(new String[] {
+                        Manifest.permission.READ_CONTACTS,
+                        Manifest.permission.WRITE_CONTACTS,
+                }, REQUEST_CONTACT);
             }
         }
 
@@ -264,35 +279,28 @@ public class Dashboard extends AppCompatActivity {
             ContextCompat.startForegroundService(this, serviceIntent);
             check_notification();
         }
-      //  loadProfile.start();
+      //  loadrofile.start();
     }
-
-
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    protected void get_contacts_permission(){
-        requestPermissions( new String[] {
-                Manifest.permission.READ_CONTACTS,
-                Manifest.permission.WRITE_CONTACTS,
-        }, REQUEST_CODE);
-    }
-
-
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    protected void get_storage_permission(){
-        requestPermissions(new String[] {
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
-    }
-
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if(requestCode == REQUEST_CODE){
+        if(requestCode == REQUEST_CONTACT ){
             if(grantResults.length > 1 && (grantResults[0] + grantResults[1] == PackageManager.PERMISSION_GRANTED)){
               Intent intent = new Intent(getApplicationContext(), Dashboard.class);
               startActivity(intent);
               finish();
+            }
+        }
+        if(requestCode == REQUEST_PHONE){
+            if(grantResults.length > 1 && (grantResults[0] + grantResults[1] == PackageManager.PERMISSION_GRANTED)){
+                Intent intent = new Intent(getApplicationContext(), Dashboard.class);
+                startActivity(intent);
+                finish();
+            }else{
+                Intent intent = new Intent(getApplicationContext(), Dashboard.class);
+                startActivity(intent);
+                finish();
             }
         }
     }
@@ -594,65 +602,67 @@ public class Dashboard extends AppCompatActivity {
         public onBtnViewFiles(ImageButton button){
             this.downloadBtn = button;
         }
+
         @Override
         public void onClick(View view) {
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if(Permissions.check_storage_permission(Dashboard.this)==false){
-                    get_storage_permission();
-                }
-                else {
-                    final List<String> options = new ArrayList<>();
-                    final List<Uri> tags = new ArrayList<>();
-                    FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
-                    DatabaseReference dbref = firebaseDatabase.getReference().child("Message");
-                    Query query = dbref.orderByChild("to").equalTo(userThread.getPhonenumber()).limitToLast(5);
-                    query.addValueEventListener(new ValueEventListener(){
-
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            int limit = 0;
-                            for(DataSnapshot values : snapshot.getChildren()){
-                                if(limit ==5){
-                                    break;
-                                }
-                                Message message = values.getValue(Message.class);
-                                if(message.getFrom().equals(downloadBtn.getTag())){
-                                    Uri uri = Uri.parse(message.getFile2());
-                                    options.add(0, uri.getLastPathSegment());
-                                    tags.add(0, uri);
-                                    limit++;
-                                }
-                            }
-
-
-                            ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(Dashboard.this, android.R.layout.simple_list_item_1, options );
-                            popUpDialog.setContentView(R.layout.popup_window);
-                            popUpDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                            ImageView profilepic = popUpDialog.findViewById(R.id.popUpImage);
-                            profilepic.setVisibility(View.GONE);
-                            final ListView lv = popUpDialog.findViewById(R.id.list_of_files);
-                            lv.setAdapter(arrayAdapter);
-                            popUpDialog.show();
-                            lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                                @Override
-                                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                                    String to_download = tags.get(i).toString();
-                                    lv.getChildAt(i).setBackgroundColor(Color.parseColor("#6099cc00"));
-                                    downloadFile(to_download);
-                                }
-                            });
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-
-                        }
-                    });
+                if(!Permissions.check_storage_permission(Dashboard.this)){
+                    requestPermissions(new String[] {
+                            Manifest.permission.READ_EXTERNAL_STORAGE,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_STORAGE);
                 }
             }
 
+            if(Permissions.check_storage_permission(Dashboard.this)){
+                final List<String> options = new ArrayList<>();
+                final List<Uri> tags = new ArrayList<>();
+                FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+                DatabaseReference dbref = firebaseDatabase.getReference().child("Message");
+                Query query = dbref.orderByChild("to").equalTo(userThread.getPhonenumber()).limitToLast(5);
+                query.addValueEventListener(new ValueEventListener(){
 
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        int limit = 0;
+                        for(DataSnapshot values : snapshot.getChildren()){
+                            if(limit ==5){
+                                break;
+                            }
+                            Message message = values.getValue(Message.class);
+                            if(message.getFrom().equals(downloadBtn.getTag())){
+                                Uri uri = Uri.parse(message.getFile2());
+                                options.add(0, uri.getLastPathSegment());
+                                tags.add(0, uri);
+                                limit++;
+                            }
+                        }
+
+
+                        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(Dashboard.this, android.R.layout.simple_list_item_1, options );
+                        popUpDialog.setContentView(R.layout.popup_window);
+                        popUpDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                        ImageView profilepic = popUpDialog.findViewById(R.id.popUpImage);
+                        profilepic.setVisibility(View.GONE);
+                        final ListView lv = popUpDialog.findViewById(R.id.list_of_files);
+                        lv.setAdapter(arrayAdapter);
+                        popUpDialog.show();
+                        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                                String to_download = tags.get(i).toString();
+                                lv.getChildAt(i).setBackgroundColor(Color.parseColor("#6099cc00"));
+                                downloadFile(to_download);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+            }
         }
     };
 
@@ -845,9 +855,12 @@ public class Dashboard extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Intent refresh = new Intent(this, Dashboard.class);
-        startActivity(refresh);//Start the same Activity
-        finish(); //finish Activity.
+        if(requestCode == ON_REQUEST_CONTACT && resultCode == RESULT_OK){
+            Intent refresh = new Intent(this, Dashboard.class);
+            startActivity(refresh);//Start the same Activity
+            finish();
+        }
+        //finish Activity.
         /*
         if(requestCode == ON_REQUEST_CONTACT){
         if (ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.READ_CONTACTS) +

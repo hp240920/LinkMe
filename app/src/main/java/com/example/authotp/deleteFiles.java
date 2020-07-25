@@ -35,8 +35,6 @@ import java.util.ArrayList;
 
 public class deleteFiles extends AppCompatActivity {
 
-
-    private static final int REQUEST_CODE = 92;
     TextView phone_folder;
     String folder_name = null;
     FirebaseStorage firebaseStorage;
@@ -54,7 +52,7 @@ public class deleteFiles extends AppCompatActivity {
         folder_name = intent.getStringExtra("phone");
         phone_folder.setText(folder_name);
         file1 = findViewById(R.id.sendFile1);
-        //file1.setText("Hello There");
+//file1.setText("Hello There");
         file2 = findViewById(R.id.file2);
         file3 = findViewById(R.id.file3);
         file4 = findViewById(R.id.file4);
@@ -109,7 +107,7 @@ public class deleteFiles extends AppCompatActivity {
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        // Uh-oh, an error occurred!
+
                     }
                 });
     }
@@ -137,7 +135,6 @@ public class deleteFiles extends AppCompatActivity {
                     .addOnSuccessListener(new OnSuccessListener<ListResult>() {
                         @Override
                         public void onSuccess(ListResult listResult) {
-                            //int count = 0;
                             for (StorageReference item : listResult.getItems()) {
                                 if(item.getName().equals(checkBoxId.get(count))){
                                     item.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -156,12 +153,10 @@ public class deleteFiles extends AppCompatActivity {
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            // Uh-oh, an error occurred!
+
                         }
                     });
         }
-        //checkBoxId.clear();
-
     }
 
     private void uncheckAll() {
@@ -176,18 +171,7 @@ public class deleteFiles extends AppCompatActivity {
     private Uri pdfUri;
 
     public void onUpload(View v){
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            // If Permission not given
-            if (Permissions.check_storage_permission(deleteFiles.this) == false) {
-                get_storage_permission();
-            }
-            else{
-                // If permission given
-                selectFile();
-            }
-        }
-
-
+        selectFile();
     }
 
     private void selectFile(){
@@ -198,36 +182,16 @@ public class deleteFiles extends AppCompatActivity {
             startActivityForResult(intent,INTENT_CODE_SELECTFILE);
         }
         else {
-            Toast.makeText(this,"No Empty slot Available",Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,"Maximum Upload Reach (MAX: 5)",Toast.LENGTH_SHORT).show();
         }
     }
-
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    protected void get_storage_permission(){
-        requestPermissions(new String[] {
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if(requestCode == REQUEST_CODE){
-            if(grantResults.length > 1 && (grantResults[0] + grantResults[1] == PackageManager.PERMISSION_GRANTED)){
-                selectFile();
-            }
-        }
-    }
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        // check whether user has selected a pdf
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == INTENT_CODE_SELECTFILE && resultCode == RESULT_OK && data != null) {
-            pdfUri = data.getData(); // getting the uri of selected file
+            pdfUri = data.getData();
             assert pdfUri != null;
-            //String uriString = pdfUri.toString();
             SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
             User currentUser = getSharedPref(sharedPreferences);
             uploadFile(pdfUri,currentUser);
@@ -247,8 +211,6 @@ public class deleteFiles extends AppCompatActivity {
         currentUser.setSnapchat(sharedPreferences.getString("snap",""));
         currentUser.setGitHub(sharedPreferences.getString("github",""));
         currentUser.setLinkedIn(sharedPreferences.getString("linkedIn",""));
-       // currentUser.setFiles1(sharedPreferences.getString("file1",""));
-        //currentUser.setFiles2(sharedPreferences.getString("file2",""));
         return currentUser;
     }
 
@@ -269,7 +231,6 @@ public class deleteFiles extends AppCompatActivity {
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 progressDialog.dismiss();
                 Toast.makeText(getApplicationContext(),"File successfully Uploaded",Toast.LENGTH_SHORT).show();
-                // Restart the activity
                 updateFileView();
             }
         })
@@ -283,7 +244,6 @@ public class deleteFiles extends AppCompatActivity {
                 .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
-                        // tacking the progress of our upload
                         int currentProgress = (int) (100 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
                         progressDialog.setProgress(currentProgress);
                     }

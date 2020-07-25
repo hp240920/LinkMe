@@ -222,17 +222,11 @@ public class Dashboard extends AppCompatActivity {
 
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (Permissions.check_contacts_permission(Dashboard.this) == false){
-                System.out.println(" ------1");
-
-                requestPermissions(new String[] {
-                        Manifest.permission.READ_CONTACTS,
-                        Manifest.permission.WRITE_CONTACTS,
-                }, REQUEST_CODE);
-
+            if(Permissions.check_contacts_permission(this)==false){
+                get_contacts_permission();
             }
-
         }
+
         // Get all the values from Shared Prefrences for a background thread;
          userThread = new GetCurrentUserThread(Dashboard.this);
          getCurrentUser = new Thread(userThread);
@@ -272,6 +266,24 @@ public class Dashboard extends AppCompatActivity {
         }
       //  loadProfile.start();
     }
+
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    protected void get_contacts_permission(){
+        requestPermissions( new String[] {
+                Manifest.permission.READ_CONTACTS,
+                Manifest.permission.WRITE_CONTACTS,
+        }, REQUEST_CODE);
+    }
+
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    protected void get_storage_permission(){
+        requestPermissions(new String[] {
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
+    }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -585,53 +597,62 @@ public class Dashboard extends AppCompatActivity {
         @Override
         public void onClick(View view) {
 
-            final List<String> options = new ArrayList<>();
-            final List<Uri> tags = new ArrayList<>();
-            FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
-            DatabaseReference dbref = firebaseDatabase.getReference().child("Message");
-            Query query = dbref.orderByChild("to").equalTo(userThread.getPhonenumber()).limitToLast(5);
-            query.addValueEventListener(new ValueEventListener(){
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if(Permissions.check_storage_permission(Dashboard.this)==false){
+                    get_storage_permission();
+                }
+                else {
+                    final List<String> options = new ArrayList<>();
+                    final List<Uri> tags = new ArrayList<>();
+                    FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+                    DatabaseReference dbref = firebaseDatabase.getReference().child("Message");
+                    Query query = dbref.orderByChild("to").equalTo(userThread.getPhonenumber()).limitToLast(5);
+                    query.addValueEventListener(new ValueEventListener(){
 
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    int limit = 0;
-                    for(DataSnapshot values : snapshot.getChildren()){
-                        if(limit ==5){
-                            break;
-                        }
-                        Message message = values.getValue(Message.class);
-                        if(message.getFrom().equals(downloadBtn.getTag())){
-                            Uri uri = Uri.parse(message.getFile2());
-                            options.add(0, uri.getLastPathSegment());
-                            tags.add(0, uri);
-                            limit++;
-                        }
-                    }
-
-
-                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(Dashboard.this, android.R.layout.simple_list_item_1, options );
-                    popUpDialog.setContentView(R.layout.popup_window);
-                    popUpDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                    ImageView profilepic = popUpDialog.findViewById(R.id.popUpImage);
-                    profilepic.setVisibility(View.GONE);
-                    final ListView lv = popUpDialog.findViewById(R.id.list_of_files);
-                    lv.setAdapter(arrayAdapter);
-                    popUpDialog.show();
-                    lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                         @Override
-                        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                            String to_download = tags.get(i).toString();
-                            lv.getChildAt(i).setBackgroundColor(Color.parseColor("#6099cc00"));
-                            downloadFile(to_download);
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            int limit = 0;
+                            for(DataSnapshot values : snapshot.getChildren()){
+                                if(limit ==5){
+                                    break;
+                                }
+                                Message message = values.getValue(Message.class);
+                                if(message.getFrom().equals(downloadBtn.getTag())){
+                                    Uri uri = Uri.parse(message.getFile2());
+                                    options.add(0, uri.getLastPathSegment());
+                                    tags.add(0, uri);
+                                    limit++;
+                                }
+                            }
+
+
+                            ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(Dashboard.this, android.R.layout.simple_list_item_1, options );
+                            popUpDialog.setContentView(R.layout.popup_window);
+                            popUpDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                            ImageView profilepic = popUpDialog.findViewById(R.id.popUpImage);
+                            profilepic.setVisibility(View.GONE);
+                            final ListView lv = popUpDialog.findViewById(R.id.list_of_files);
+                            lv.setAdapter(arrayAdapter);
+                            popUpDialog.show();
+                            lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                                    String to_download = tags.get(i).toString();
+                                    lv.getChildAt(i).setBackgroundColor(Color.parseColor("#6099cc00"));
+                                    downloadFile(to_download);
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
                         }
                     });
                 }
+            }
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
 
-                }
-            });
         }
     };
 

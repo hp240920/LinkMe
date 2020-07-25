@@ -2,6 +2,7 @@ package com.example.authotp;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
@@ -21,6 +22,7 @@ import android.database.Cursor;
 import android.graphics.Paint;
 import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.ContactsContract;
@@ -135,8 +137,18 @@ public class Sign_Up extends AppCompatActivity {
         edit_profile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent pick_profile = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                startActivityForResult(pick_profile, 404);
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    if(Permissions.check_storage_permission(Sign_Up.this)==false){
+                        get_storage_permission();
+                    }
+                    else {
+                        Intent pick_profile = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                        startActivityForResult(pick_profile, 404);
+                    }
+                }
+
+
             }
         });
 
@@ -157,6 +169,13 @@ public class Sign_Up extends AppCompatActivity {
         });
     }
 
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    protected void get_storage_permission(){
+        requestPermissions(new String[] {
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
+    }
 
 
 
@@ -231,9 +250,6 @@ public class Sign_Up extends AppCompatActivity {
             }
             fileName.setText(" Selected File: "+ displayName);
         }
-        else{
-            Toast.makeText(this,"Please select a file",Toast.LENGTH_SHORT).show();
-        }
 
         if(requestCode == 404 && resultCode == Activity.RESULT_OK){
             Uri imageUri = data.getData();
@@ -266,13 +282,12 @@ public class Sign_Up extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-
-        if(requestCode == REQUEST_CODE && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED){
-            selectPdf();
-        }
-
-        else{
-            Toast.makeText(this,"Please provide the permissions",Toast.LENGTH_LONG).show();
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode == REQUEST_CODE){
+            if(grantResults.length > 1 && (grantResults[0] + grantResults[1] == PackageManager.PERMISSION_GRANTED)){
+                Intent pick_profile = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(pick_profile, 404);
+            }
         }
     }
 
@@ -280,34 +295,13 @@ public class Sign_Up extends AppCompatActivity {
     //private User myUser;
 
     public void onclickbtnSignUp(View v){
-       /*
-         if(editInfo){
-            DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
-            Query query = ref.child("User").orderByChild("phonenumber").equalTo(phoneNo.getText().toString());
-
-            query.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    for (DataSnapshot user: dataSnapshot.getChildren()) {
-                        user.getRef().removeValue();
-                    }
-                }
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-                    Log.i("Error: ", "onCancelled", databaseError.toException());
-                }
-            });
-        }
-        */
         final User myUser = createUser();
-        final Uri myFileUri = uploadFile();
 
        FirebaseQuerry.getKey(new FirebaseQuerry.FirestoreCallback() {
            @Override
            public void OncallBack(User currentUser) {
 
            }
-
            @Override
            public void OncallBackKey(String key) {
                uploadUser(myUser,key);
@@ -369,14 +363,6 @@ public class Sign_Up extends AppCompatActivity {
         String userGit = github.getText().toString();
         String userLinkedIn = linkedin.getText().toString();
         String userFile1 = "";
-
-        /*
-        if(pdfUri.toString().substring(0,5).equals("https")){
-         userFile1 = pdfUri.toString();
-            pdfUri = null;
-        }
-         */
-
 
         String userFile2 = "";
         //ArrayList<User> arrFiles = new ArrayList<>();

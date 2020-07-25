@@ -141,7 +141,6 @@ public class MainActivity extends AppCompatActivity {
         NotificationManager manager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
         manager.cancel(notificationId);
 
-
         SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
 
 

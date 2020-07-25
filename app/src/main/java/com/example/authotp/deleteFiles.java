@@ -2,15 +2,20 @@ package com.example.authotp;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.view.View;
 import android.widget.CheckBox;
@@ -31,11 +36,13 @@ import java.util.ArrayList;
 public class deleteFiles extends AppCompatActivity {
 
 
+    private static final int REQUEST_CODE = 92;
     TextView phone_folder;
     String folder_name = null;
     FirebaseStorage firebaseStorage;
     ArrayList<String> checkBoxId = new ArrayList<>();
     CheckBox file1, file2, file3, file4, file5;
+    private int number_of_files = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +70,6 @@ public class deleteFiles extends AppCompatActivity {
                 .addOnSuccessListener(new OnSuccessListener<ListResult>() {
                     @Override
                     public void onSuccess(ListResult listResult) {
-                        int count = 0;
                         file1.setText("");
                         file2.setText("");
                         file3.setText("");
@@ -74,28 +80,29 @@ public class deleteFiles extends AppCompatActivity {
                         file3.setEnabled(false);
                         file4.setEnabled(false);
                         file5.setEnabled(false);
+                        number_of_files = 0;
                         for (StorageReference item : listResult.getItems()) {
-                            if(count >= 5){
+                            if(number_of_files >= 5){
                                 break;
                             }
                             System.out.println("Item: " + item.getName());
-                            if(count == 0){
+                            if(number_of_files == 0){
                                 file1.setText(item.getName());
                                 file1.setEnabled(true);
-                            }else if(count == 1){
+                            }else if(number_of_files == 1){
                                 file2.setText(item.getName());
                                 file2.setEnabled(true);
-                            }else if(count == 2){
+                            }else if(number_of_files == 2){
                                 file3.setText(item.getName());
                                 file3.setEnabled(true);
-                            }else if(count == 3){
+                            }else if(number_of_files == 3){
                                 file4.setText(item.getName());
                                 file4.setEnabled(true);
                             }else{
                                 file5.setText(item.getName());
                                 file5.setEnabled(true);
                             }
-                            count++;
+                            number_of_files++;
                         }
                     }
                 })
@@ -169,10 +176,47 @@ public class deleteFiles extends AppCompatActivity {
     private Uri pdfUri;
 
     public void onUpload(View v){
-        Intent intent = new Intent();
-        intent.setType("*/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(intent,INTENT_CODE_SELECTFILE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // If Permission not given
+            if (Permissions.check_storage_permission(deleteFiles.this) == false) {
+                get_storage_permission();
+            }
+            else{
+                // If permission given
+                selectFile();
+            }
+        }
+
+
+    }
+
+    private void selectFile(){
+        if(number_of_files < 5){
+            Intent intent = new Intent();
+            intent.setType("*/*");
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            startActivityForResult(intent,INTENT_CODE_SELECTFILE);
+        }
+        else {
+            Toast.makeText(this,"No Empty slot Available",Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    protected void get_storage_permission(){
+        requestPermissions(new String[] {
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode == REQUEST_CODE){
+            if(grantResults.length > 1 && (grantResults[0] + grantResults[1] == PackageManager.PERMISSION_GRANTED)){
+                selectFile();
+            }
+        }
     }
 
 

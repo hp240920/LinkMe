@@ -2,7 +2,9 @@ package com.example.authotp;
 
 import androidx.annotation.NonNull;
 
-public class Message {
+import java.util.Objects;
+
+public class Message implements Comparable {
     private String from;
     private String to;
     private boolean check;
@@ -82,5 +84,35 @@ public class Message {
     public String toString() {
 
         return "From "+ this.from + " To "+ this.to;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Message message = (Message) o;
+        return from.equals(message.from) &&
+                to.equals(message.to);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(from, to);
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        if(o instanceof Message){
+            if(((Message) o).getKey().compareTo(this.getKey())>0){
+                return 1;
+            }
+            else if(((Message) o).getKey().compareTo(this.getKey())==0){
+                return 0;
+            }
+            else {
+                return -1;
+            }
+        }
+        return -1;
     }
 }

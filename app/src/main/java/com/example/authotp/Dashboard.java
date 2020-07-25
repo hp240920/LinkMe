@@ -96,6 +96,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -206,6 +207,17 @@ public class Dashboard extends AppCompatActivity {
         editor.clear();
         editor.apply();
         SharePreHelper.setName(null);
+
+        /*
+          if(isMyServiceRunning(Notify.class)){
+            serviceIntent = new Intent(this, Notify.class);
+            serviceIntent.putExtra("inputExtra", "AuthOTP");
+            stopService(serviceIntent);
+            check_notification();
+        }
+
+         */
+
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
     }
@@ -257,7 +269,6 @@ public class Dashboard extends AppCompatActivity {
 
         // Custom popup window created for profile pic and display a list of file of a particular user.
         popUpDialog = new Dialog(this);
-
 
         // Getting Firebase Database and Storage
         firebaseDatabase = FirebaseDatabase.getInstance();
@@ -373,15 +384,11 @@ public class Dashboard extends AppCompatActivity {
 
 
 
-    final ArrayList<String> dashboardUserNumbers = new ArrayList<>();
+    ArrayList<Message> dashboardUserNumbers = new ArrayList<>();
     private void updateScrollView() {
-        System.out.println(dashboardUserNumbers.size());
+        //System.out.println(dashboardUserNumbers.size());
         DatabaseReference dbref = firebaseDatabase.getReference().child("Message");
-        while(true){
-            if(!getCurrentUser.isAlive()){
-                break;
-            }
-        }
+        while(getCurrentUser.isAlive()){};
         Query query = dbref.orderByChild("to").equalTo(userThread.getPhonenumber());
         query.addValueEventListener(new ValueEventListener() {
             @Override
@@ -394,12 +401,20 @@ public class Dashboard extends AppCompatActivity {
                     //System.out.println("hello there 123");
                     if(messageSnapshot.exists()){
                         Message newMessage = messageSnapshot.getValue(Message.class);
-                        if(dashboardUserNumbers.contains(newMessage.getFrom())){
+                        if(dashboardUserNumbers.contains(newMessage)){
+                            if(dashboardUserNumbers.get(dashboardUserNumbers.indexOf(newMessage)).getKey().compareTo(newMessage.getKey())<0){
+                                dashboardUserNumbers.set(dashboardUserNumbers.indexOf(newMessage),newMessage);
+                            }
                             continue;
                         }
-                        dashboardUserNumbers.add(newMessage.getFrom());
-                        writeTextView(newMessage.getFrom(), newMessage.getKey());
+                        dashboardUserNumbers.add(newMessage);
                     }
+                }
+
+                Collections.sort(dashboardUserNumbers);
+                //System.out.print("Hello");
+                for(Message newMessage : dashboardUserNumbers){
+                    writeTextView(newMessage.getFrom(), newMessage.getKey());
                 }
             }
             @Override
@@ -409,6 +424,15 @@ public class Dashboard extends AppCompatActivity {
         });
 
     }
+
+    /*
+    private ArrayList<Message> sort_it(ArrayList<Message> list){
+
+        for(int i=0; i<list.size(); i++){
+
+        }
+    }
+     */
 
     private void writeTextView (final String phone, final String key){
 
@@ -567,17 +591,6 @@ public class Dashboard extends AppCompatActivity {
                     }
                     phones.close();
                 }catch(Exception e){
-                    /*
-                    if (ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.READ_CONTACTS) +
-                            ContextCompat.checkSelfPermission(Dashboard.this, Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED){
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                            requestPermissions(new String[] {
-                                    Manifest.permission.READ_CONTACTS,
-                                    Manifest.permission.WRITE_CONTACTS,
-                            }, REQUEST_CODE + 1);
-                        }
-                    }
-                     */
 
                 }
             }
@@ -592,7 +605,7 @@ public class Dashboard extends AppCompatActivity {
         row.addView(downloadBtn);
 
 
-        ll.addView(row, 0);
+        ll.addView(row);
 
     }
 

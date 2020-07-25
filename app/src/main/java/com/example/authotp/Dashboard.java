@@ -223,6 +223,15 @@ public class Dashboard extends AppCompatActivity {
         setContentView(R.layout.activity_dashboard);
         setTitle("Dashboard");
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!Permissions.check_phone_permission(Dashboard.this)){
+                requestPermissions(new String[] {
+                        Manifest.permission.READ_PHONE_STATE,
+                        Manifest.permission.READ_CALL_LOG,
+                }, REQUEST_PHONE);
+            }
+        }
+
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (!Permissions.check_contacts_permission(Dashboard.this)){
@@ -270,7 +279,7 @@ public class Dashboard extends AppCompatActivity {
             ContextCompat.startForegroundService(this, serviceIntent);
             check_notification();
         }
-      //  loadProfile.start();
+      //  loadrofile.start();
     }
 
     @Override
@@ -281,6 +290,17 @@ public class Dashboard extends AppCompatActivity {
               Intent intent = new Intent(getApplicationContext(), Dashboard.class);
               startActivity(intent);
               finish();
+            }
+        }
+        if(requestCode == REQUEST_PHONE){
+            if(grantResults.length > 1 && (grantResults[0] + grantResults[1] == PackageManager.PERMISSION_GRANTED)){
+                Intent intent = new Intent(getApplicationContext(), Dashboard.class);
+                startActivity(intent);
+                finish();
+            }else{
+                Intent intent = new Intent(getApplicationContext(), Dashboard.class);
+                startActivity(intent);
+                finish();
             }
         }
     }

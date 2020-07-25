@@ -2,15 +2,20 @@ package com.example.authotp;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.view.View;
 import android.widget.CheckBox;
@@ -30,12 +35,12 @@ import java.util.ArrayList;
 
 public class deleteFiles extends AppCompatActivity {
 
-
     TextView phone_folder;
     String folder_name = null;
     FirebaseStorage firebaseStorage;
     ArrayList<String> checkBoxId = new ArrayList<>();
     CheckBox file1, file2, file3, file4, file5;
+    private int number_of_files = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +52,7 @@ public class deleteFiles extends AppCompatActivity {
         folder_name = intent.getStringExtra("phone");
         phone_folder.setText(folder_name);
         file1 = findViewById(R.id.sendFile1);
-        //file1.setText("Hello There");
+//file1.setText("Hello There");
         file2 = findViewById(R.id.file2);
         file3 = findViewById(R.id.file3);
         file4 = findViewById(R.id.file4);
@@ -63,7 +68,6 @@ public class deleteFiles extends AppCompatActivity {
                 .addOnSuccessListener(new OnSuccessListener<ListResult>() {
                     @Override
                     public void onSuccess(ListResult listResult) {
-                        int count = 0;
                         file1.setText("");
                         file2.setText("");
                         file3.setText("");
@@ -74,35 +78,36 @@ public class deleteFiles extends AppCompatActivity {
                         file3.setEnabled(false);
                         file4.setEnabled(false);
                         file5.setEnabled(false);
+                        number_of_files = 0;
                         for (StorageReference item : listResult.getItems()) {
-                            if(count >= 5){
+                            if(number_of_files >= 5){
                                 break;
                             }
                             System.out.println("Item: " + item.getName());
-                            if(count == 0){
+                            if(number_of_files == 0){
                                 file1.setText(item.getName());
                                 file1.setEnabled(true);
-                            }else if(count == 1){
+                            }else if(number_of_files == 1){
                                 file2.setText(item.getName());
                                 file2.setEnabled(true);
-                            }else if(count == 2){
+                            }else if(number_of_files == 2){
                                 file3.setText(item.getName());
                                 file3.setEnabled(true);
-                            }else if(count == 3){
+                            }else if(number_of_files == 3){
                                 file4.setText(item.getName());
                                 file4.setEnabled(true);
                             }else{
                                 file5.setText(item.getName());
                                 file5.setEnabled(true);
                             }
-                            count++;
+                            number_of_files++;
                         }
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        // Uh-oh, an error occurred!
+
                     }
                 });
     }
@@ -130,7 +135,6 @@ public class deleteFiles extends AppCompatActivity {
                     .addOnSuccessListener(new OnSuccessListener<ListResult>() {
                         @Override
                         public void onSuccess(ListResult listResult) {
-                            //int count = 0;
                             for (StorageReference item : listResult.getItems()) {
                                 if(item.getName().equals(checkBoxId.get(count))){
                                     item.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -149,12 +153,10 @@ public class deleteFiles extends AppCompatActivity {
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            // Uh-oh, an error occurred!
+
                         }
                     });
         }
-        //checkBoxId.clear();
-
     }
 
     private void uncheckAll() {
@@ -169,21 +171,27 @@ public class deleteFiles extends AppCompatActivity {
     private Uri pdfUri;
 
     public void onUpload(View v){
-        Intent intent = new Intent();
-        intent.setType("*/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(intent,INTENT_CODE_SELECTFILE);
+        selectFile();
     }
 
+    private void selectFile(){
+        if(number_of_files < 5){
+            Intent intent = new Intent();
+            intent.setType("*/*");
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            startActivityForResult(intent,INTENT_CODE_SELECTFILE);
+        }
+        else {
+            Toast.makeText(this,"Maximum Upload Reach (MAX: 5)",Toast.LENGTH_SHORT).show();
+        }
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        // check whether user has selected a pdf
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == INTENT_CODE_SELECTFILE && resultCode == RESULT_OK && data != null) {
-            pdfUri = data.getData(); // getting the uri of selected file
+            pdfUri = data.getData();
             assert pdfUri != null;
-            //String uriString = pdfUri.toString();
             SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
             User currentUser = getSharedPref(sharedPreferences);
             uploadFile(pdfUri,currentUser);
@@ -203,8 +211,6 @@ public class deleteFiles extends AppCompatActivity {
         currentUser.setSnapchat(sharedPreferences.getString("snap",""));
         currentUser.setGitHub(sharedPreferences.getString("github",""));
         currentUser.setLinkedIn(sharedPreferences.getString("linkedIn",""));
-       // currentUser.setFiles1(sharedPreferences.getString("file1",""));
-        //currentUser.setFiles2(sharedPreferences.getString("file2",""));
         return currentUser;
     }
 
@@ -225,7 +231,6 @@ public class deleteFiles extends AppCompatActivity {
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 progressDialog.dismiss();
                 Toast.makeText(getApplicationContext(),"File successfully Uploaded",Toast.LENGTH_SHORT).show();
-                // Restart the activity
                 updateFileView();
             }
         })
@@ -239,7 +244,6 @@ public class deleteFiles extends AppCompatActivity {
                 .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
-                        // tacking the progress of our upload
                         int currentProgress = (int) (100 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
                         progressDialog.setProgress(currentProgress);
                     }

@@ -134,10 +134,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            createPermissions();
-        }
-
         // to remove the notification once clicked
         Intent intent = getIntent();
         int notificationId = intent.getIntExtra("notification_id", 0);
@@ -261,6 +257,8 @@ public class MainActivity extends AppCompatActivity {
                     public void onVerificationFailed(@NonNull FirebaseException e) {
                         Toast.makeText(MainActivity.this, e.getMessage(),
                                 Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                        startActivity(intent);
                     }
                 });
     }

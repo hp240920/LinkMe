@@ -280,29 +280,9 @@ public class Sign_Up extends AppCompatActivity {
     //private User myUser;
 
     public void onclickbtnSignUp(View v){
-       /*
-         if(editInfo){
-            DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
-            Query query = ref.child("User").orderByChild("phonenumber").equalTo(phoneNo.getText().toString());
-
-            query.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    for (DataSnapshot user: dataSnapshot.getChildren()) {
-                        user.getRef().removeValue();
-                    }
-                }
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-                    Log.i("Error: ", "onCancelled", databaseError.toException());
-                }
-            });
-        }
-        */
         final User myUser = createUser();
-        final Uri myFileUri = uploadFile();
 
-       FirebaseQuerry.getKey(new FirebaseQuerry.FirestoreCallback() {
+        FirebaseQuerry.getKey(new FirebaseQuerry.FirestoreCallback() {
            @Override
            public void OncallBack(User currentUser) {
 
@@ -312,7 +292,7 @@ public class Sign_Up extends AppCompatActivity {
            public void OncallBackKey(String key) {
                uploadUser(myUser,key);
            }
-       },myUser.getPhonenumber());
+        },myUser.getPhonenumber());
 
 
     }

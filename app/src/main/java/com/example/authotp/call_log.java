@@ -55,6 +55,8 @@ public class call_log extends AppCompatActivity {
                 Intent intent = new Intent(getApplicationContext(), call_log.class);
                 startActivity(intent);
                 finish();
+            }else{
+                finish();
             }
         }
     }

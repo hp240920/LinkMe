@@ -4,14 +4,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
-import android.animation.Animator;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -20,51 +17,36 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
-import android.content.ContentProviderOperation;
-import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.OperationApplicationException;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.Point;
-import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.media.Image;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -73,7 +55,6 @@ import android.widget.Toast;
 import com.example.authotp.Threads.GetCurrentUserThread;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.common.collect.Table;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -86,24 +67,10 @@ import com.google.firebase.storage.ListResult;
 import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
 
-import org.w3c.dom.Text;
-
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
-
-import static android.app.DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR;
-import static android.os.Environment.DIRECTORY_DOWNLOADS;
-import static androidx.core.app.ActivityCompat.requestPermissions;
 
 public class Dashboard extends AppCompatActivity {
 
@@ -119,6 +86,7 @@ public class Dashboard extends AppCompatActivity {
     private long counter = 0;
     Thread getCurrentUser;
     GetCurrentUserThread userThread;
+    boolean isFirstTimeRun = true;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -404,7 +372,7 @@ public class Dashboard extends AppCompatActivity {
                     //System.out.println("hello there 123");
                     if(messageSnapshot.exists()){
                         Message newMessage = messageSnapshot.getValue(Message.class);
-                        notify = newMessage.isNotify();
+                        //notify = newMessage.isNotify();
                         if(dashboardUserNumbers.contains(newMessage)){
                             if(dashboardUserNumbers.get(dashboardUserNumbers.indexOf(newMessage)).getKey().compareTo(newMessage.getKey()) < 0){
                                 dashboardUserNumbers.set(dashboardUserNumbers.indexOf(newMessage),newMessage);
@@ -418,8 +386,9 @@ public class Dashboard extends AppCompatActivity {
                 Collections.sort(dashboardUserNumbers);
                 //System.out.print("Hello");
                 for(Message newMessage : dashboardUserNumbers){
-                    writeTextView(newMessage.getFrom(), newMessage.getKey(), notify);
+                    writeTextView(newMessage.getFrom(), newMessage.getKey(),newMessage.isNotify());
                 }
+                isFirstTimeRun = false;
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -427,6 +396,42 @@ public class Dashboard extends AppCompatActivity {
             }
         });
 
+        query.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+            }
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+                    final Message messageObj = snapshot.getValue(Message.class);
+                    //final Message messageObj = message.getValue(Message.class);
+                    // is notify false
+                    if(!messageObj.isNotify()){
+                      unread_message(messageObj);
+                    }
+                    else {
+                        // read message
+                        read_message(messageObj);
+                    }
+
+                }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
     /*
@@ -438,8 +443,41 @@ public class Dashboard extends AppCompatActivity {
     }
      */
 
-    private void writeTextView (final String phone, final String key, final boolean notify){
+    private void read_message(Message message){
+        TableLayout   ll = findViewById(R.id.tableLayout);
+        int num_of_rows = ll.getChildCount();
 
+        for(int i=0 ; i < num_of_rows; i++){
+            TableRow currentRow = (TableRow)ll.getChildAt(i);
+            TextView currentTextView = (TextView)currentRow.getChildAt(1);
+            String str = (String) currentTextView.getTag();
+            if(str.equals(message.getFrom())){
+                // Unread new message
+                currentRow.setBackgroundResource(R.color.defaultBackgroundColor);
+                currentTextView.setTypeface(null, Typeface.NORMAL);
+            }
+        }
+    }
+
+    private void unread_message(Message message){
+        TableLayout   ll = findViewById(R.id.tableLayout);
+        int num_of_rows = ll.getChildCount();
+
+        for(int i=0 ; i < num_of_rows; i++){
+            TableRow currentRow = (TableRow)ll.getChildAt(i);
+            TextView currentTextView = (TextView)currentRow.getChildAt(1);
+            String str = (String) currentTextView.getTag();
+            if(str.equals(message.getFrom())){
+                // Unread new message
+                currentRow.setBackgroundResource(R.color.LightGrey);
+                currentTextView.setTypeface(null, Typeface.BOLD);
+            }
+        }
+    }
+
+    private void writeTextView(final String phone, final String key, final boolean notify){
+
+        System.out.println( "Phone "+ phone + "Notify "+ notify);
         TableLayout ll = (TableLayout) findViewById(R.id.tableLayout);
         ll.setColumnStretchable(0, true);
         final ImageView profile_pic = new ImageView(this);
@@ -587,7 +625,7 @@ public class Dashboard extends AppCompatActivity {
                                 public void run() {
                                     tvNumber.setText(finalName);
                                     if(!notify){
-                                        tvNumber.setTypeface(null, Typeface.BOLD);
+                                      tvNumber.setTypeface(null, Typeface.BOLD);
                                     }
                                 }
                             });
@@ -610,9 +648,12 @@ public class Dashboard extends AppCompatActivity {
         row.addView(number);
         row.addView(saveButton);
         row.addView(downloadBtn);
+
         if(!notify){
             row.setBackgroundResource(R.color.LightGrey);
         }
+
+
         ll.addView(row);
 
     }
@@ -643,7 +684,7 @@ public class Dashboard extends AppCompatActivity {
                 final FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
                 final DatabaseReference dbref = firebaseDatabase.getReference().child("Message");
                 Query query = dbref.orderByChild("to").equalTo(userThread.getPhonenumber()).limitToLast(5);
-                query.addValueEventListener(new ValueEventListener(){
+                query.addListenerForSingleValueEvent(new ValueEventListener(){
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         int limit = 0;
@@ -922,7 +963,7 @@ public class Dashboard extends AppCompatActivity {
                 }
 
                 if (dataName != null && dataPhone != null) {
-                    TableLayout ll = findViewById(R.id.tableLayout);
+                  TableLayout   ll = findViewById(R.id.tableLayout);
 
                     int num_of_rows = ll.getChildCount();
 

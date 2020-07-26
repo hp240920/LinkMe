@@ -8,6 +8,7 @@ public class Message implements Comparable {
     private String from;
     private String to;
     private boolean check;
+    private boolean notify;
     private String file1;
     private String file2;
     private String key;
@@ -40,8 +41,16 @@ public class Message implements Comparable {
         return check;
     }
 
+    public boolean isNotify() {
+        return notify;
+    }
+
     public void setCheck(boolean check) {
         this.check = check;
+    }
+
+    public void setNotify(boolean notify) {
+        this.notify = notify;
     }
 
     public String getFrom() {
@@ -64,16 +73,18 @@ public class Message implements Comparable {
 
     }
 
-    public Message(String from, String to, boolean check){
+    public Message(String from, String to, boolean check, boolean notify){
         this.from = from;
         this.to = to;
         this.check = check;
+        this.notify = notify;
     }
 
-    public Message(String from, String to, boolean check,String file1, String file2,String key){
+    public Message(String from, String to, boolean check, boolean notify, String file1, String file2, String key){
         this.from = from;
         this.to = to;
         this.check = check;
+        this.notify = notify;
         this.file1 = file1;
         this.file2 = file2;
         this.key = key;

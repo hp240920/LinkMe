@@ -139,7 +139,7 @@ file5.setTag(4);
         RadioButton selected = findViewById(rbGroup.getCheckedRadioButtonId());
         if(selected != null && !selected.getText().toString().equals("")){
             String uri = allFiles[Integer.parseInt(selected.getTag().toString())];
-            System.out.println(uri);
+            //System.out.println(uri);
             Intent intent = new Intent(this,Conformation.class);
             intent.putExtra("myPhone",myPhoneNumber);
             intent.putExtra("sendTo",send_to);

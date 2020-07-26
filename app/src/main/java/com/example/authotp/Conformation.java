@@ -56,7 +56,7 @@ public class Conformation extends BroadcastReceiver {
                             String key = keyref.getKey();
 
                             System.out.println(uri);
-                            Message message = new Message(my_phone, send_to, false, info, uri, key);
+                            Message message = new Message(my_phone, send_to, false, false, info, uri, key);
                             databaseReference.child(key).setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void aVoid) {

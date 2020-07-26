@@ -39,7 +39,7 @@ public class NotificationAction extends BroadcastReceiver {
         DatabaseReference databaseReference = firebaseDatabase.getReference().child("Message");
 
 
-        Message message = new Message(my_phone, send_to, false);
+        Message message = new Message(my_phone, send_to, false, false);
         databaseReference.push().setValue(message).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {

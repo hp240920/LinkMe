@@ -36,6 +36,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.Image;
@@ -345,6 +346,7 @@ public class Dashboard extends AppCompatActivity {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                 String key = dataSnapshot.getKey();
+                //System.out.println("KEY: " + key);
                 Message message = dataSnapshot.getValue(Message.class);
                 //System.out.println("Needed123!!! " + message.toString());
                 assert message != null;
@@ -390,10 +392,11 @@ public class Dashboard extends AppCompatActivity {
         DatabaseReference dbref = firebaseDatabase.getReference().child("Message");
         while(getCurrentUser.isAlive()){};
         Query query = dbref.orderByChild("to").equalTo(userThread.getPhonenumber());
-        query.addValueEventListener(new ValueEventListener() {
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 //System.out.println("hello there 123");
+                boolean notify = false;
                 total_messages = dataSnapshot.getChildrenCount();
                 System.out.println("TOTAL MESSAGE" + total_messages);
                 //Log.i("Total messages :",Integer.toString((int) total_messages));
@@ -401,8 +404,9 @@ public class Dashboard extends AppCompatActivity {
                     //System.out.println("hello there 123");
                     if(messageSnapshot.exists()){
                         Message newMessage = messageSnapshot.getValue(Message.class);
+                        notify = newMessage.isNotify();
                         if(dashboardUserNumbers.contains(newMessage)){
-                            if(dashboardUserNumbers.get(dashboardUserNumbers.indexOf(newMessage)).getKey().compareTo(newMessage.getKey())<0){
+                            if(dashboardUserNumbers.get(dashboardUserNumbers.indexOf(newMessage)).getKey().compareTo(newMessage.getKey()) < 0){
                                 dashboardUserNumbers.set(dashboardUserNumbers.indexOf(newMessage),newMessage);
                             }
                             continue;
@@ -414,7 +418,7 @@ public class Dashboard extends AppCompatActivity {
                 Collections.sort(dashboardUserNumbers);
                 //System.out.print("Hello");
                 for(Message newMessage : dashboardUserNumbers){
-                    writeTextView(newMessage.getFrom(), newMessage.getKey());
+                    writeTextView(newMessage.getFrom(), newMessage.getKey(), notify);
                 }
             }
             @Override
@@ -434,7 +438,7 @@ public class Dashboard extends AppCompatActivity {
     }
      */
 
-    private void writeTextView (final String phone, final String key){
+    private void writeTextView (final String phone, final String key, final boolean notify){
 
         TableLayout ll = (TableLayout) findViewById(R.id.tableLayout);
         ll.setColumnStretchable(0, true);
@@ -582,6 +586,9 @@ public class Dashboard extends AppCompatActivity {
                                 @Override
                                 public void run() {
                                     tvNumber.setText(finalName);
+                                    if(!notify){
+                                        tvNumber.setTypeface(null, Typeface.BOLD);
+                                    }
                                 }
                             });
                             break;
@@ -603,8 +610,9 @@ public class Dashboard extends AppCompatActivity {
         row.addView(number);
         row.addView(saveButton);
         row.addView(downloadBtn);
-
-
+        if(!notify){
+            row.setBackgroundResource(R.color.LightGrey);
+        }
         ll.addView(row);
 
     }
@@ -628,17 +636,21 @@ public class Dashboard extends AppCompatActivity {
             }
 
             if(Permissions.check_storage_permission(Dashboard.this)){
+                TableRow row = (TableRow) downloadBtn.getParent();
+                row.setBackgroundColor(Color.TRANSPARENT);
                 final List<String> options = new ArrayList<>();
                 final List<Uri> tags = new ArrayList<>();
-                FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
-                DatabaseReference dbref = firebaseDatabase.getReference().child("Message");
+                final FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+                final DatabaseReference dbref = firebaseDatabase.getReference().child("Message");
                 Query query = dbref.orderByChild("to").equalTo(userThread.getPhonenumber()).limitToLast(5);
                 query.addValueEventListener(new ValueEventListener(){
-
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         int limit = 0;
+                        //String key = snapshot.getKey();
                         for(DataSnapshot values : snapshot.getChildren()){
+                            String key = values.getKey();
+                            System.out.println("KEY: " + key);
                             if(limit ==5){
                                 break;
                             }
@@ -647,12 +659,13 @@ public class Dashboard extends AppCompatActivity {
                                 Uri uri = Uri.parse(message.getFile2());
                                 options.add(0, uri.getLastPathSegment());
                                 tags.add(0, uri);
+                                firebaseDatabase.getReference("Message").child(key).child("notify").setValue(true);
                                 limit++;
                             }
                         }
 
 
-                        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(Dashboard.this, android.R.layout.simple_list_item_1, options );
+                        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(Dashboard.this, android.R.layout.simple_list_item_1, options);
                         popUpDialog.setContentView(R.layout.popup_window);
                         popUpDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                         ImageView profilepic = popUpDialog.findViewById(R.id.popUpImage);
@@ -873,6 +886,7 @@ public class Dashboard extends AppCompatActivity {
             startActivity(refresh);//Start the same Activity
             finish();
         }
+
         //finish Activity.
         /*
         if(requestCode == ON_REQUEST_CONTACT){

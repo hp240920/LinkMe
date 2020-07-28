@@ -6,6 +6,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -36,6 +37,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.ContactsContract;
+import android.provider.DocumentsContract;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -46,6 +48,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -196,6 +199,8 @@ public class Dashboard extends AppCompatActivity {
     FirebaseStorage firebaseStorage;
     Intent serviceIntent;
     Dialog popUpDialog;
+    String[] profile_pic = {"123","4656","789"};
+    String[] contact = {"12315456","54665123"};
 
 
     @Override
@@ -203,6 +208,8 @@ public class Dashboard extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
         setTitle("Dashboard");
+
+
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (!Permissions.check_phone_permission(Dashboard.this)){
@@ -224,9 +231,7 @@ public class Dashboard extends AppCompatActivity {
         }
 
         // Get all the values from Shared Prefrences for a background thread;
-         userThread = new GetCurrentUserThread(Dashboard.this);
-         getCurrentUser = new Thread(userThread);
-         getCurrentUser.start();
+
 
         /*
         SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
@@ -244,6 +249,9 @@ public class Dashboard extends AppCompatActivity {
         firebaseStorage =FirebaseStorage.getInstance();
 
         // update the scroll view
+        userThread = new GetCurrentUserThread(Dashboard.this);
+        getCurrentUser = new Thread(userThread);
+        getCurrentUser.start();
 
         //loadImage = new ProgressDialog(Dashboard.this);
         //loadImage.setTitle("Processing");
@@ -261,6 +269,7 @@ public class Dashboard extends AppCompatActivity {
         }
       //  loadrofile.start();
     }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -383,12 +392,25 @@ public class Dashboard extends AppCompatActivity {
                     }
                 }
 
+                 ArrayList<Row> rows = new ArrayList<>();
                 Collections.sort(dashboardUserNumbers);
                 //System.out.print("Hello");
                 for(Message newMessage : dashboardUserNumbers){
-                    writeTextView(newMessage.getFrom(), newMessage.getKey(),newMessage.isNotify());
+                    //writeTextView(newMessage.getFrom(), newMessage.getKey(),newMessage.isNotify());
+
+                    rows.add(new Row(newMessage.getFrom(),R.drawable.default_dp, R.drawable.ic_round_save_alt_24 ,R.drawable.ic_baseline_save_24));
                 }
+                MyListAdapter adapter=new MyListAdapter(Dashboard.this,rows);
+                ListView list=(ListView)findViewById(R.id.listView);
+                //list.addView(new TextView(this));
+                list.setAdapter(adapter);
                 isFirstTimeRun = false;
+                for(Message newMessage : dashboardUserNumbers){
+                    if(!newMessage.isNotify()){
+                        unread_message(newMessage);
+                    }
+                }
+
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -444,11 +466,14 @@ public class Dashboard extends AppCompatActivity {
      */
 
     private void read_message(Message message){
-        TableLayout   ll = findViewById(R.id.tableLayout);
-        int num_of_rows = ll.getChildCount();
+        //TableLayout   ll = findViewById(R.id.tableLayout);
+        //int num_of_rows = ll.getChildCount();
+
+        ListView listView = findViewById(R.id.listView);
+        int num_of_rows = listView.getChildCount();
 
         for(int i=0 ; i < num_of_rows; i++){
-            TableRow currentRow = (TableRow)ll.getChildAt(i);
+            LinearLayout currentRow = (LinearLayout) listView.getChildAt(i);
             TextView currentTextView = (TextView)currentRow.getChildAt(1);
             String str = (String) currentTextView.getTag();
             if(str.equals(message.getFrom())){
@@ -460,11 +485,11 @@ public class Dashboard extends AppCompatActivity {
     }
 
     private void unread_message(Message message){
-        TableLayout   ll = findViewById(R.id.tableLayout);
-        int num_of_rows = ll.getChildCount();
+        ListView listView = findViewById(R.id.listView);
+        int num_of_rows = listView.getChildCount();
 
         for(int i=0 ; i < num_of_rows; i++){
-            TableRow currentRow = (TableRow)ll.getChildAt(i);
+            LinearLayout currentRow = (LinearLayout) listView.getChildAt(i);
             TextView currentTextView = (TextView)currentRow.getChildAt(1);
             String str = (String) currentTextView.getTag();
             if(str.equals(message.getFrom())){
@@ -550,6 +575,7 @@ public class Dashboard extends AppCompatActivity {
 
         TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,TableRow.LayoutParams.MATCH_PARENT,0.15f);
         row.setLayoutParams(lp);
+        //row.setOnClickListener(onClickRow);
 
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.save_symbol);
         int height = (bitmap.getHeight() * 128 / bitmap.getWidth());
@@ -602,6 +628,7 @@ public class Dashboard extends AppCompatActivity {
         number.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
         number.setGravity(Gravity.CENTER);
         number.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,TableRow.LayoutParams.MATCH_PARENT,0.6f));
+       // number.setOnClickListener(onClickRow);
 
 
         // thread to insert name if present in contacts
@@ -678,7 +705,6 @@ public class Dashboard extends AppCompatActivity {
 
             if(Permissions.check_storage_permission(Dashboard.this)){
                 TableRow row = (TableRow) downloadBtn.getParent();
-                row.setBackgroundColor(Color.TRANSPARENT);
                 final List<String> options = new ArrayList<>();
                 final List<Uri> tags = new ArrayList<>();
                 final FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
@@ -732,6 +758,32 @@ public class Dashboard extends AppCompatActivity {
             }
         }
     };
+
+    /*
+     View.OnClickListener onClickRow = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            TextView textview = (TextView) view;
+            String number = textview.getTag().toString();
+            File filepath = new File(Environment.getExternalStorageDirectory() + "/MYAPP");
+            Uri uriToLoad = Uri.fromFile(filepath);
+            // Choose a directory using the system's file picker.
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+
+            // Provide read access to files and sub-directories in the user-selected
+            // directory.
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+            // Optionally, specify a URI for the directory that should be opened in
+            // the system file picker when it loads.
+            intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, uriToLoad);
+            startActivity(intent);
+
+        }
+    };
+
+     */
+
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void permission() {
@@ -1195,5 +1247,8 @@ public class Dashboard extends AppCompatActivity {
     }
 
 
+    public void demo(){
+
+    }
 
 }

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/list_Item"
+    android:layout_width="match_parent"
+    android:layout_height="50dp">
+
+    <ImageView
+        android:id="@+id/profile"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
+        android:layout_gravity="fill"
+        android:layout_weight="1"
+        android:foregroundGravity="fill"
+        android:paddingTop="10dp"
+        android:paddingBottom="15dp" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginLeft="0dp"
+        android:layout_weight="3"
+        android:foregroundGravity="center_horizontal"
+        android:gravity="center"
+        android:paddingTop="10dp"
+        android:paddingBottom="15dp"
+        android:text="TextView" />
+
+    <ImageButton
+        android:id="@+id/btnSave"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginLeft="10dp"
+        android:layout_weight="1"
+        android:background="#80ffffff"
+        android:foregroundGravity="center_horizontal"
+        android:paddingTop="10dp"
+        android:paddingBottom="15dp"
+        app:srcCompat="@android:drawable/arrow_down_float" />
+
+    <ImageButton
+        android:id="@+id/btnDownload"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginLeft="10dp"
+        android:layout_weight="1"
+        android:background="#80ffffff"
+        android:foregroundGravity="center_horizontal"
+        android:paddingTop="10dp"
+        android:paddingBottom="15dp"
+        app:srcCompat="@android:drawable/arrow_up_float" />
+</LinearLayout>

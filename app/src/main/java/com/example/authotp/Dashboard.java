@@ -199,16 +199,12 @@ public class Dashboard extends AppCompatActivity {
     FirebaseStorage firebaseStorage;
     Intent serviceIntent;
     Dialog popUpDialog;
-    String[] profile_pic = {"123","4656","789"};
-    String[] contact = {"12315456","54665123"};
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
         setTitle("Dashboard");
-
 
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -230,6 +226,7 @@ public class Dashboard extends AppCompatActivity {
             }
         }
 
+
         // Get all the values from Shared Prefrences for a background thread;
 
 
@@ -238,6 +235,15 @@ public class Dashboard extends AppCompatActivity {
         currentUser = new User();
         getSharedPref(sharedPreferences);
          */
+
+        final SwipeRefreshLayout pullToRefresh = findViewById(R.id.pullToRefresh);
+        pullToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                updateScrollView(); // your code
+                pullToRefresh.setRefreshing(false);
+            }
+        });
 
 
 
@@ -372,8 +378,6 @@ public class Dashboard extends AppCompatActivity {
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                //System.out.println("hello there 123");
-                boolean notify = false;
                 total_messages = dataSnapshot.getChildrenCount();
                 System.out.println("TOTAL MESSAGE" + total_messages);
                 //Log.i("Total messages :",Integer.toString((int) total_messages));
@@ -392,16 +396,15 @@ public class Dashboard extends AppCompatActivity {
                     }
                 }
 
-                 ArrayList<Row> rows = new ArrayList<>();
+                ArrayList<Row> rows = new ArrayList<>();
                 Collections.sort(dashboardUserNumbers);
                 //System.out.print("Hello");
                 for(Message newMessage : dashboardUserNumbers){
                     //writeTextView(newMessage.getFrom(), newMessage.getKey(),newMessage.isNotify());
-
-                    rows.add(new Row(newMessage.getFrom(),R.drawable.default_dp, R.drawable.ic_round_save_alt_24 ,R.drawable.ic_baseline_save_24));
+                    rows.add(new Row(newMessage,R.drawable.default_dp, R.drawable.ic_round_save_alt_24 ,R.drawable.ic_baseline_save_24));
                 }
-                MyListAdapter adapter=new MyListAdapter(Dashboard.this,rows);
-                ListView list=(ListView)findViewById(R.id.listView);
+                MyListAdapter adapter = new MyListAdapter(Dashboard.this, rows);
+                ListView list= (ListView) findViewById(R.id.listView);
                 //list.addView(new TextView(this));
                 list.setAdapter(adapter);
                 isFirstTimeRun = false;
@@ -410,7 +413,6 @@ public class Dashboard extends AppCompatActivity {
                         unread_message(newMessage);
                     }
                 }
-
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -493,8 +495,6 @@ public class Dashboard extends AppCompatActivity {
             TextView currentTextView = (TextView)currentRow.getChildAt(1);
             String str = (String) currentTextView.getTag();
             if(str.equals(message.getFrom())){
-                // Unread new message
-                currentRow.setBackgroundResource(R.color.LightGrey);
                 currentTextView.setTypeface(null, Typeface.BOLD);
             }
         }
@@ -1247,8 +1247,5 @@ public class Dashboard extends AppCompatActivity {
     }
 
 
-    public void demo(){
-
-    }
 
 }

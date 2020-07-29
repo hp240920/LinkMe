@@ -2,16 +2,16 @@ package com.example.authotp;
 
 public class Row {
 
-    String name;
+    Message message;
     Integer profile;
     int img_download;
     int img_save;
 
-    public Row(String name, Integer profile, int img_download, int img_save){
+    public Row(Message message, Integer profile, int img_download, int img_save){
         this.img_download = img_download;
         this.img_save = img_save;
         this.profile = profile;
-        this.name = name;
+        this.message = message;
     }
 
     public int getImg_download() {
@@ -30,12 +30,12 @@ public class Row {
         this.img_save = img_save;
     }
 
-    public String getName() {
-        return name;
+    public Message getName() {
+        return message;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setName(Message message) {
+        this.message = message;
     }
 
     public Integer getProfile() {

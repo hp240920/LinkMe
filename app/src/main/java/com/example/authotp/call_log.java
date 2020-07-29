@@ -8,19 +8,29 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.media.Image;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.CallLog;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.ArrayList;
 
 import static androidx.core.app.ActivityCompat.requestPermissions;
 
@@ -62,6 +72,7 @@ public class call_log extends AppCompatActivity {
     }
 
     private void displayRecentCalls() {
+        ArrayList<Call_Row> call_rows = new ArrayList<>();
         try {
 
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) {
@@ -79,41 +90,43 @@ public class call_log extends AppCompatActivity {
             //c.moveToFirst();
 
             int counter=0;
-                while (c.moveToNext() && counter < 15){
+            while (c.moveToNext() && counter < 15){
 
-                    int intNum = c.getColumnIndex(CallLog.Calls.NUMBER);
-                    int intname = c.getColumnIndex(CallLog.Calls.CACHED_NAME);
-                    int intduration = c.getColumnIndex(CallLog.Calls.DURATION);
-                    int intdate = c.getColumnIndex(CallLog.Calls.DATE);
+                int intNum = c.getColumnIndex(CallLog.Calls.NUMBER);
+                int intname = c.getColumnIndex(CallLog.Calls.CACHED_NAME);
+                int intduration = c.getColumnIndex(CallLog.Calls.DURATION);
+                int intdate = c.getColumnIndex(CallLog.Calls.DATE);
 
 
-                    final String num = c.getString(intNum);// for  number
-                    String name = c.getString(intname);// for name
-                    String duration = c.getString(intduration);// for duration
-                    String callDate = c.getString(intdate); // for date
-                    int type = Integer.parseInt(c.getString(c.getColumnIndex(CallLog.Calls.TYPE)));// for call
+                final String num = c.getString(intNum);// for  number
+                String name = c.getString(intname);// for name
+                String duration = c.getString(intduration);// for duration
+                String callDate = c.getString(intdate); // for date
+                int type = Integer.parseInt(c.getString(c.getColumnIndex(CallLog.Calls.TYPE)));// for call
 
-                    User user = new User(name,num);
-                    //String display = user.getCalllogUserString(user);
-                    writeTextView(user);
-                    counter++;
-
-                }
-
+                User user = new User(name,num);
+                //String display = user.getCalllogUserString(user);
+                //writeTextView(user);
+                Call_Row call_row = new Call_Row(name, num, R.drawable.ic_baseline_send_24);
+                call_rows.add(call_row);
+                counter++;
+            }
             c.close();
-
-            // sendMessage("123454","101"); "\n Name  " + name + "\n duration " + duration + "\n type " + type + " \n date "+ callDate +
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+        ListView lv = findViewById(R.id.list_call_log);
+        RecentCall_ListAdapter recentCall_listAdapter = new RecentCall_ListAdapter(this, call_rows);
+        lv.setAdapter(recentCall_listAdapter);
+
     }
     private void writeTextView(User toDisplay){
         System.out.println(toDisplay);
         TextView textView = new TextView(this);
         textView.setText(toDisplay.getCalllogUserString(toDisplay));
         //textView.setOnClickListener(onClickListener);
-        TableLayout ll = (TableLayout) findViewById(R.id.tableLayout_callLog);
+        TableLayout ll = null;
         ll.setColumnStretchable(0, true);
         ll.setColumnStretchable(1, true);
        // ll.setColumnStretchable(2, true);
@@ -144,4 +157,64 @@ public class call_log extends AppCompatActivity {
             }
         }
     };
+}
+
+class RecentCall_ListAdapter extends BaseAdapter{
+
+    Activity context;
+    ArrayList<Call_Row> rows;
+    private static LayoutInflater inflater = null;
+
+    public RecentCall_ListAdapter(Activity context, ArrayList<Call_Row> rows){
+        this.context = context;
+        this.rows = rows;
+        inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    }
+
+    @Override
+    public int getCount() {
+        return rows.size();
+    }
+
+    @Override
+    public Object getItem(int i) {
+        return null;
+    }
+
+    @Override
+    public long getItemId(int i) {
+        return 0;
+    }
+
+    @Override
+    public View getView(int i, View view, ViewGroup viewGroup) {
+        View itemView = view;
+        if(itemView == null){
+            itemView = inflater.inflate(R.layout.call_log_xml, null);
+        }
+        TextView textView = itemView.findViewById(R.id.tv_recent_call);
+        String name = rows.get(i).getName();
+        if(name == null || name.isEmpty()){
+            textView.setText(rows.get(i).getPhone());
+        }else{
+            textView.setText(name);
+        }
+        ImageButton btn = itemView.findViewById(R.id.btn_recent_send);
+        btn.setImageResource(rows.get(i).getSend_img());
+        btn.setTag(rows.get(i).getPhone());
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(view instanceof ImageButton){
+                    ImageButton btn = (ImageButton) view;
+                    String selectedUserNumber = btn.getTag().toString();
+                    Toast.makeText(context, selectedUserNumber, Toast.LENGTH_SHORT).show();
+                    Intent selectFile = new Intent(context, com.example.authotp.selectFile.class);
+                    User.lastestNumber = selectedUserNumber;
+                    context.startActivity(selectFile);
+                }
+            }
+        });
+        return itemView;
+    }
 }

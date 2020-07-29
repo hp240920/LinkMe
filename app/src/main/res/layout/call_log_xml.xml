@@ -10,6 +10,7 @@
         android:layout_height="60dp"
         android:layout_weight="0.25"
         android:gravity="center"
+        android:maxWidth="425dp"
         android:paddingTop="10dp"
         android:paddingBottom="10dp"
         android:text="TextView" />

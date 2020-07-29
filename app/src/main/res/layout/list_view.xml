@@ -25,6 +25,8 @@
         android:layout_weight="3"
         android:foregroundGravity="center_horizontal"
         android:gravity="center"
+        android:maxWidth="200dp"
+        android:maxHeight="35dp"
         android:paddingTop="10dp"
         android:paddingBottom="15dp"
         android:text="TextView" />
@@ -38,6 +40,8 @@
         android:layout_weight="1"
         android:background="#80ffffff"
         android:foregroundGravity="center_horizontal"
+        android:maxWidth="40dp"
+        android:maxHeight="40dp"
         android:paddingTop="10dp"
         android:paddingBottom="15dp"
         app:srcCompat="@android:drawable/arrow_down_float" />
@@ -51,6 +55,8 @@
         android:layout_weight="1"
         android:background="#80ffffff"
         android:foregroundGravity="center_horizontal"
+        android:maxWidth="40dp"
+        android:maxHeight="40dp"
         android:paddingTop="10dp"
         android:paddingBottom="15dp"
         app:srcCompat="@android:drawable/arrow_up_float" />

@@ -357,19 +357,26 @@ public class MyListAdapter extends BaseAdapter {
                         }
                         ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, last_5_options);
                         ArrayList<Call_Row> rows = new ArrayList<>();
-                        rows.add(new Call_Row(last_5_options.get(0), last_5_tags.get(0), R.drawable.ic_baseline_save_alt_24));
-                        rows.add(new Call_Row(last_5_options.get(1), last_5_tags.get(1), R.drawable.ic_baseline_save_alt_24));
-                        rows.add(new Call_Row(last_5_options.get(2), last_5_tags.get(2), R.drawable.ic_baseline_save_alt_24));
-                        rows.add(new Call_Row(last_5_options.get(3), last_5_tags.get(3), R.drawable.ic_baseline_save_alt_24));
-                        rows.add(new Call_Row(last_5_options.get(4), last_5_tags.get(4), R.drawable.ic_baseline_save_alt_24));
-                        PopUpAdapter popUpAdapter = new PopUpAdapter(context, rows);
-                        popUpDialog.setContentView(R.layout.popup_window);
-                        //popUpDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                        ImageView profilepic = popUpDialog.findViewById(R.id.popUpImage);
-                        profilepic.setVisibility(View.GONE);
-                        final ListView lv = popUpDialog.findViewById(R.id.list_of_files);
-                        lv.setAdapter(popUpAdapter);
-                        popUpDialog.show();
+                        try{
+                            rows.add(new Call_Row(last_5_options.get(0), last_5_tags.get(0), R.drawable.ic_baseline_save_alt_24));
+                            rows.add(new Call_Row(last_5_options.get(1), last_5_tags.get(1), R.drawable.ic_baseline_save_alt_24));
+                            rows.add(new Call_Row(last_5_options.get(2), last_5_tags.get(2), R.drawable.ic_baseline_save_alt_24));
+                            rows.add(new Call_Row(last_5_options.get(3), last_5_tags.get(3), R.drawable.ic_baseline_save_alt_24));
+                            rows.add(new Call_Row(last_5_options.get(4), last_5_tags.get(4), R.drawable.ic_baseline_save_alt_24));
+                        }catch (IndexOutOfBoundsException e){
+
+                        }
+                        finally {
+
+                            PopUpAdapter popUpAdapter = new PopUpAdapter(context, rows);
+                            popUpDialog.setContentView(R.layout.popup_window);
+                            //popUpDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                            ImageView profilepic = popUpDialog.findViewById(R.id.popUpImage);
+                            profilepic.setVisibility(View.GONE);
+                            final ListView lv = popUpDialog.findViewById(R.id.list_of_files);
+                            lv.setAdapter(popUpAdapter);
+                            popUpDialog.show();
+                        }
                         /*
                         final List<Uri> finalLast_5_tags = last_5_tags;
                         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -388,6 +395,16 @@ public class MyListAdapter extends BaseAdapter {
 
                     }
                 });
+            }
+            else{
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    final int REQUEST_STORAGE = 3068;
+                    if(!Permissions.check_storage_permission(context)){
+                        context.requestPermissions(new String[] {
+                                Manifest.permission.READ_EXTERNAL_STORAGE,
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_STORAGE);
+                    }
+                }
             }
         }
     }

@@ -11,10 +11,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.os.Handler;
 import android.provider.ContactsContract;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,6 +26,7 @@ import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -49,6 +52,7 @@ import com.squareup.picasso.Picasso;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class MyListAdapter extends BaseAdapter {
 
@@ -98,8 +102,7 @@ public class MyListAdapter extends BaseAdapter {
         }
 
         TextView textView = itemView.findViewById(R.id.textView);
-
-        String name = rows.get(position).getName();
+        String name = rows.get(position).getMessage().getFrom();
 
         ImageView profile_pic = itemView.findViewById(R.id.profile);
         profile_pic.setImageResource(rows.get(position).getProfile());
@@ -121,8 +124,19 @@ public class MyListAdapter extends BaseAdapter {
         imageButton_save.setOnClickListener(onClickSave);
 
         textView.setText(name);
+        textView.setTag(name);
+        if(!rows.get(position).getMessage().isNotify()){
+            textView.setTypeface(Typeface.DEFAULT_BOLD);
+        }
+
+        //Thread to fill the name from contacts
+        Set_contact_names contact_names = new Set_contact_names(textView,name);
+        Thread fill_contact = new Thread(contact_names);
+        fill_contact.start();
+
         return itemView;
     }
+
 
     private View.OnClickListener onClickSave = new View.OnClickListener() {
         @Override
@@ -316,16 +330,13 @@ public class MyListAdapter extends BaseAdapter {
                         for(DataSnapshot values : snapshot.getChildren()){
                             String key = values.getKey();
                             System.out.println("KEY: " + key);
-                            if(limit ==5){
-                                break;
-                            }
                             Message message = values.getValue(Message.class);
                             if(message.getFrom().equals(downloadBtn.getTag())){
                                 Uri uri = Uri.parse(message.getFile2());
                                 options.add(0, uri.getLastPathSegment());
                                 tags.add(0, uri);
                                 firebaseDatabase.getReference("Message").child(key).child("notify").setValue(true);
-                                limit++;
+                                //limit++;
                             }
                         }
 
@@ -374,6 +385,45 @@ public class MyListAdapter extends BaseAdapter {
     }
 
 
+
+
+    class Set_contact_names implements Runnable{
+
+        TextView textView;
+        String phone_from;
+        final Handler updatePhone = new Handler();
+      public Set_contact_names(TextView textView, String phone_from){
+          this.textView = textView;
+          this.phone_from = phone_from;
+      }
+            @Override
+            public void run() {
+                String name = "";
+                try{
+                    Cursor phones = context.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
+                    while (phones.moveToNext()) {
+                        String phoneNum = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)).replace(" ", "").replace("-", "");
+                        if (phoneNum.equals(phone_from)) {
+                            name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+
+                            final String finalName = name;
+                            updatePhone.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    textView.setText(finalName);
+                                }
+                            });
+                            break;
+                            //System.out.println("Hello There I am here! " + name);
+                        }
+                        //phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                    }
+                    phones.close();
+                }catch(Exception e){
+
+                }
+            }
+    }
 
 
 

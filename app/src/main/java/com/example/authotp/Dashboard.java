@@ -397,19 +397,13 @@ public class Dashboard extends AppCompatActivity {
                 //System.out.print("Hello");
                 for(Message newMessage : dashboardUserNumbers){
                     //writeTextView(newMessage.getFrom(), newMessage.getKey(),newMessage.isNotify());
-
-                    rows.add(new Row(newMessage.getFrom(),R.drawable.default_dp, R.drawable.ic_round_save_alt_24 ,R.drawable.ic_baseline_save_24));
+                    rows.add(new Row(newMessage,R.drawable.default_dp, R.drawable.ic_round_save_alt_24 ,R.drawable.ic_baseline_save_24));
                 }
                 MyListAdapter adapter=new MyListAdapter(Dashboard.this,rows);
-                ListView list=(ListView)findViewById(R.id.listView);
+                ListView list= findViewById(R.id.listView);
                 //list.addView(new TextView(this));
                 list.setAdapter(adapter);
                 isFirstTimeRun = false;
-                for(Message newMessage : dashboardUserNumbers){
-                    if(!newMessage.isNotify()){
-                        unread_message(newMessage);
-                    }
-                }
 
             }
             @Override

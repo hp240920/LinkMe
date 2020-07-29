@@ -2,7 +2,6 @@ package com.example.authotp;
 
 public class Row {
 
-
     Message message;
     Integer profile;
     int img_download;
@@ -12,15 +11,6 @@ public class Row {
         this.img_download = img_download;
         this.img_save = img_save;
         this.profile = profile;
-        this.message = message;
-
-    }
-
-    public Message getMessage() {
-        return message;
-    }
-
-    public void setMessage(Message message) {
         this.message = message;
     }
 
@@ -40,6 +30,13 @@ public class Row {
         this.img_save = img_save;
     }
 
+    public Message getName() {
+        return message;
+    }
+
+    public void setName(Message message) {
+        this.message = message;
+    }
 
     public Integer getProfile() {
         return profile;

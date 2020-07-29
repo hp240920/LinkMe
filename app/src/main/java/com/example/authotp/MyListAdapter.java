@@ -31,6 +31,7 @@ import android.widget.ListView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -49,10 +50,11 @@ import com.google.firebase.storage.ListResult;
 import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
 
+import org.w3c.dom.Text;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class MyListAdapter extends BaseAdapter {
 
@@ -102,7 +104,8 @@ public class MyListAdapter extends BaseAdapter {
         }
 
         TextView textView = itemView.findViewById(R.id.textView);
-        String name = rows.get(position).getMessage().getFrom();
+
+        String name = rows.get(position).getName().getFrom();
 
         ImageView profile_pic = itemView.findViewById(R.id.profile);
         profile_pic.setImageResource(rows.get(position).getProfile());
@@ -125,18 +128,16 @@ public class MyListAdapter extends BaseAdapter {
 
         textView.setText(name);
         textView.setTag(name);
-        if(!rows.get(position).getMessage().isNotify()){
+        if(!rows.get(position).getName().isNotify()){
             textView.setTypeface(Typeface.DEFAULT_BOLD);
         }
 
-        //Thread to fill the name from contacts
         Set_contact_names contact_names = new Set_contact_names(textView,name);
         Thread fill_contact = new Thread(contact_names);
         fill_contact.start();
 
         return itemView;
     }
-
 
     private View.OnClickListener onClickSave = new View.OnClickListener() {
         @Override
@@ -164,7 +165,10 @@ public class MyListAdapter extends BaseAdapter {
     };
 
     private void saveToContact(String file1) {
+        System.out.println(file1 + " , ");
+        file1 = file1 + " , ";
         String[] information = file1.split(", ");
+        System.out.println(information.length);
         String name = information[0];
         String phoneNumber = information[1];
         String email = information[2];
@@ -172,7 +176,9 @@ public class MyListAdapter extends BaseAdapter {
         String insta = information[4];
         String snap = information[5];
         String gitHub = information[6];
+        //if(information[7] == nullzzz)
         String linkedin = information[7];
+        //System.out.println(linkedin);
 
 
         boolean isExisting = false;
@@ -215,8 +221,7 @@ public class MyListAdapter extends BaseAdapter {
 
     private ArrayList<ContentValues> setLabels(String insta, String snap, String gitHub, String linkedin, String website){
         ArrayList<ContentValues> data = new ArrayList<ContentValues>();
-        if(!insta.equals("null")) {
-            insta = "Instagram: " + insta;
+        if(!insta.equals("null") && !insta.isEmpty()) {
             ContentValues row2 = new ContentValues();
             row2.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
             row2.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_CUSTOM);
@@ -225,8 +230,7 @@ public class MyListAdapter extends BaseAdapter {
             data.add(row2);
         }
 
-        if(!snap.equals("null")){
-            snap = "SnapChat: " + snap;
+        if(!snap.equals("null") && !snap.isEmpty()){
             ContentValues row3 = new ContentValues();
             row3.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
             row3.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_CUSTOM);
@@ -236,7 +240,6 @@ public class MyListAdapter extends BaseAdapter {
         }
 
         if(!gitHub.equals("null")){
-            gitHub = "GitHub: " + gitHub;
             ContentValues row4 = new ContentValues();
             row4.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
             row4.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_CUSTOM);
@@ -245,8 +248,7 @@ public class MyListAdapter extends BaseAdapter {
             data.add(row4);
         }
 
-        if(!linkedin.equals("null")){
-            linkedin = "LinkedIn: " + linkedin;
+        if(!linkedin.equals("null") && !linkedin.isEmpty()){
             ContentValues row5 = new ContentValues();
             row5.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
             row5.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_CUSTOM);
@@ -255,8 +257,7 @@ public class MyListAdapter extends BaseAdapter {
             data.add(row5);
         }
 
-        if(!website.equals("null")){
-            website = "Website: " + website;
+        if(!website.equals("null") && !website.isEmpty()){
             ContentValues row6 = new ContentValues();
             row6.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
             row6.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_CUSTOM);
@@ -315,6 +316,10 @@ public class MyListAdapter extends BaseAdapter {
         @Override
         public void onClick(View view) {
 
+            LinearLayout ll = (LinearLayout) view.getParent();
+            TextView tv = (TextView) ll.getChildAt(1);
+            tv.setTypeface(Typeface.DEFAULT);
+
             if(Permissions.check_storage_permission(context)){
 
                 final List<String> options = new ArrayList<>();
@@ -325,11 +330,10 @@ public class MyListAdapter extends BaseAdapter {
                 query.addListenerForSingleValueEvent(new ValueEventListener(){
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        int limit = 0;
-                        //String key = snapshot.getKey();
+                        //int limit = 0;
                         for(DataSnapshot values : snapshot.getChildren()){
                             String key = values.getKey();
-                            System.out.println("KEY: " + key);
+                            //System.out.println("KEY: " + key + "        " + limit);
                             Message message = values.getValue(Message.class);
                             if(message.getFrom().equals(downloadBtn.getTag())){
                                 Uri uri = Uri.parse(message.getFile2());
@@ -339,24 +343,44 @@ public class MyListAdapter extends BaseAdapter {
                                 //limit++;
                             }
                         }
-
-
-                        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, options);
+                        List<String> last_5_options = new ArrayList<>();
+                        if(options.size() > 5){
+                            last_5_options = options.subList(0, 5);
+                        }else{
+                            last_5_options = options;
+                        }
+                        List<Uri> last_5_tags = new ArrayList<>();
+                        if(tags.size() > 5){
+                            last_5_tags = tags.subList(0, 5);
+                        }else {
+                            last_5_tags = tags;
+                        }
+                        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, last_5_options);
+                        ArrayList<Call_Row> rows = new ArrayList<>();
+                        rows.add(new Call_Row(last_5_options.get(0), last_5_tags.get(0), R.drawable.ic_baseline_save_alt_24));
+                        rows.add(new Call_Row(last_5_options.get(1), last_5_tags.get(1), R.drawable.ic_baseline_save_alt_24));
+                        rows.add(new Call_Row(last_5_options.get(2), last_5_tags.get(2), R.drawable.ic_baseline_save_alt_24));
+                        rows.add(new Call_Row(last_5_options.get(3), last_5_tags.get(3), R.drawable.ic_baseline_save_alt_24));
+                        rows.add(new Call_Row(last_5_options.get(4), last_5_tags.get(4), R.drawable.ic_baseline_save_alt_24));
+                        PopUpAdapter popUpAdapter = new PopUpAdapter(context, rows);
                         popUpDialog.setContentView(R.layout.popup_window);
-                        popUpDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                        //popUpDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                         ImageView profilepic = popUpDialog.findViewById(R.id.popUpImage);
                         profilepic.setVisibility(View.GONE);
                         final ListView lv = popUpDialog.findViewById(R.id.list_of_files);
-                        lv.setAdapter(arrayAdapter);
+                        lv.setAdapter(popUpAdapter);
                         popUpDialog.show();
+                        /*
+                        final List<Uri> finalLast_5_tags = last_5_tags;
                         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                             @Override
                             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                                String to_download = tags.get(i).toString();
+                                String to_download = finalLast_5_tags.get(i).toString();
                                 lv.getChildAt(i).setBackgroundColor(Color.parseColor("#6099cc00"));
                                 downloadFile(to_download);
                             }
                         });
+                         */
                     }
 
                     @Override
@@ -367,6 +391,7 @@ public class MyListAdapter extends BaseAdapter {
             }
         }
     }
+
 
     private void downloadFile(String file2) {
 
@@ -384,47 +409,43 @@ public class MyListAdapter extends BaseAdapter {
         downloadManager.enqueue(request);
     }
 
-
-
-
     class Set_contact_names implements Runnable{
 
         TextView textView;
         String phone_from;
         final Handler updatePhone = new Handler();
-      public Set_contact_names(TextView textView, String phone_from){
-          this.textView = textView;
-          this.phone_from = phone_from;
-      }
-            @Override
-            public void run() {
-                String name = "";
-                try{
-                    Cursor phones = context.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
-                    while (phones.moveToNext()) {
-                        String phoneNum = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)).replace(" ", "").replace("-", "");
-                        if (phoneNum.equals(phone_from)) {
-                            name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+        public Set_contact_names(TextView textView, String phone_from){
+            this.textView = textView;
+            this.phone_from = phone_from;
+        }
+        @Override
+        public void run() {
+            String name = "";
+            try{
+                Cursor phones = context.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
+                while (phones.moveToNext()) {
+                    String phoneNum = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)).replace(" ", "").replace("-", "");
+                    if (phoneNum.equals(phone_from)) {
+                        name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
 
-                            final String finalName = name;
-                            updatePhone.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    textView.setText(finalName);
-                                }
-                            });
-                            break;
-                            //System.out.println("Hello There I am here! " + name);
-                        }
-                        //phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                        final String finalName = name;
+                        updatePhone.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                textView.setText(finalName);
+                            }
+                        });
+                        break;
+//System.out.println("Hello There I am here! " + name);
                     }
-                    phones.close();
-                }catch(Exception e){
-
+//phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
                 }
-            }
-    }
+                phones.close();
+            }catch(Exception e){
 
+            }
+        }
+    }
 
 
     class Set_profile implements Runnable{
@@ -469,6 +490,74 @@ public class MyListAdapter extends BaseAdapter {
                 }
     }
 
+}
 
+class PopUpAdapter extends BaseAdapter{
+    Activity context;
+    ArrayList<Call_Row> rows;
+    private static LayoutInflater inflater = null;
 
+    public PopUpAdapter(Activity context, ArrayList<Call_Row> rows){
+        this.context = context;
+        this.rows = rows;
+        inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    }
+
+    @Override
+    public int getCount() {
+        return rows.size();
+    }
+
+    @Override
+    public Object getItem(int i) {
+        return null;
+    }
+
+    @Override
+    public long getItemId(int i) {
+        return 0;
+    }
+
+    @Override
+    public View getView(int i, View view, ViewGroup viewGroup) {
+        View itemView = view;
+        if(itemView == null){
+            itemView = inflater.inflate(R.layout.pop_up_list, null);
+        }
+        TextView textView = itemView.findViewById(R.id.file_name);
+        String name = rows.get(i).getName();
+        textView.setText(name);
+        ImageButton btn = itemView.findViewById(R.id.download_file);
+        btn.setImageResource(rows.get(i).getSend_img());
+        btn.setTag(rows.get(i).getUri());
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(view instanceof ImageButton){
+                    ImageButton btn = (ImageButton) view;
+                    String uri = (String) btn.getTag().toString();
+                    LinearLayout lv = (LinearLayout) btn.getParent();
+                    lv.setBackgroundColor(Color.parseColor("#6099cc00"));
+                    downloadFile(uri);
+                }
+            }
+        });
+        return itemView;
+    }
+
+    private void downloadFile(String file2) {
+
+        File filepath = new File(Environment.getExternalStorageDirectory() + "/MYAPP");
+        if(!filepath.exists()){
+            filepath.mkdir();
+        }
+        DownloadManager downloadManager = (DownloadManager) context.
+                getSystemService(Context.DOWNLOAD_SERVICE);
+        Uri uri = Uri.parse(file2);
+        DownloadManager.Request request = new DownloadManager.Request(uri);
+
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        request.setDestinationInExternalPublicDir( "/MYAPP/", uri.getLastPathSegment());
+        downloadManager.enqueue(request);
+    }
 }

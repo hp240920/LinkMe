@@ -62,11 +62,7 @@ public class MainActivity extends AppCompatActivity {
 
     PhoneAuthProvider.ForceResendingToken token;
     ScrollView layoutMain;
-
-
-
-
-
+    
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void createPermissions() {
         if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_PHONE_STATE) +

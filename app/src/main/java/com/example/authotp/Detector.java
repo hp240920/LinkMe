@@ -13,9 +13,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.CallLog;
+import android.provider.ContactsContract;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -60,6 +62,9 @@ public class Detector extends BroadcastReceiver{
                 String incomingNumber1 = User.lastestNumber;
                 notificationOut(context,incomingNumber1,myNumber);
 
+                if(getNameOfContact(context,incomingNumber1) != null){
+                    incomingNumber1 = getNameOfContact(context,incomingNumber1);
+                }
                 if(SharePreHelper.getName().equals("true")){
                     notificationIn(context, incomingNumber1, myNumber);
                     SharePreHelper.setName("");
@@ -75,9 +80,30 @@ public class Detector extends BroadcastReceiver{
         }
     }
 
+    public static String getNameOfContact(Context context, String number) {
+
+        Uri uri=Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI,Uri.encode(number));
+
+        String[] projection = new String[]{ContactsContract.PhoneLookup.DISPLAY_NAME};
+
+        String contactName="";
+        Cursor cursor=context.getContentResolver().query(uri,projection,null,null,null);
+
+        if (cursor != null) {
+            if(cursor.moveToFirst()) {
+                contactName=cursor.getString(0);
+            }
+            cursor.close();
+        }
+
+        return contactName;
+
+    }
 
 
-private String getlastCall(Context context){
+
+
+    private String getlastCall(Context context){
     if (ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) {
         // TODO: Consider calling
         //    ActivityCompat#requestPermissions
@@ -136,7 +162,7 @@ private String getlastCall(Context context){
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
                 .setSmallIcon(R.mipmap.ic_launcher_round)
-                .setContentTitle("Outgoing Notification AuthOTP")
+                .setContentTitle("Outgoing Notification LinkMe")
                 .setContentText("Do you want to share your details with " + incomingNumber)
                 .setContentIntent(contentIntent)
                 .setAutoCancel(true)
@@ -186,7 +212,7 @@ private String getlastCall(Context context){
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
                 .setSmallIcon(R.mipmap.ic_launcher_round)
-                .setContentTitle("Incoming Notification AuthOTP")
+                .setContentTitle("Incoming Notification LinkMe")
                 .setContentText("Do you want to share your details with " + incomingNumber)
                 .setContentIntent(contentIntent)
                 .setAutoCancel(true)

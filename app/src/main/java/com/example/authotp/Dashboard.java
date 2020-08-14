@@ -18,6 +18,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.content.ComponentName;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
@@ -179,6 +180,12 @@ public class Dashboard extends AppCompatActivity {
         editor.clear();
         editor.apply();
         SharePreHelper.setName(null);
+        stopService(serviceIntent);
+
+        PackageManager pm  = Dashboard.this.getPackageManager();
+        ComponentName componentName = new ComponentName(Dashboard.this, Detector.class);
+        pm.setComponentEnabledSetting(componentName,PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                PackageManager.DONT_KILL_APP);
 
         /*
           if(isMyServiceRunning(Notify.class)){
@@ -273,10 +280,18 @@ public class Dashboard extends AppCompatActivity {
             ContextCompat.startForegroundService(this, serviceIntent);
             check_notification();
         }
+
+        startDetector();
       //  loadrofile.start();
     }
 
 
+    private void startDetector(){
+        PackageManager pm  = Dashboard.this.getPackageManager();
+        ComponentName componentName = new ComponentName(Dashboard.this, Detector.class);
+        pm.setComponentEnabledSetting(componentName,PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                PackageManager.DONT_KILL_APP);
+    }
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -1219,10 +1234,14 @@ public class Dashboard extends AppCompatActivity {
 
 
     private void notification2(String num) {
+
+        if(Detector.getNameOfContact(this,num) != null){
+            num = Detector.getNameOfContact(this,num);
+        }
         // Builds your notification
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher_round)
-                .setContentTitle("AuthOPT Incoming")
+                .setContentTitle("LinkMe Incoming")
                 .setAutoCancel(true)
                 .setContentText("Message from " + num);
 

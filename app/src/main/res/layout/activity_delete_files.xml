@@ -107,17 +107,18 @@
     </TableLayout>
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
         <Button
             android:id="@+id/btnUpload"
-            android:layout_width="400px"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
-            android:layout_marginTop="47dp"
-            android:layout_marginEnd="22dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginEnd="10dp"
+            android:layout_weight="1"
             android:onClick="onUpload"
             android:text="Upload"
             app:layout_constraintEnd_toEndOf="parent"
@@ -126,12 +127,13 @@
 
         <Button
             android:id="@+id/deleteFile"
-            android:layout_width="400px"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="22dp"
-            android:layout_marginTop="47dp"
-            android:layout_marginEnd="61dp"
-            android:layout_marginBottom="161dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="0dp"
+            android:layout_weight="1"
             android:onClick="onDelete"
             android:text="Delete"
             app:layout_constraintBottom_toBottomOf="parent"

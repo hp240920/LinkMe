@@ -58,7 +58,7 @@
         </receiver>
         <receiver android:name=".NotificationAction" />
         <receiver android:name=".CancelNotification" />
-        <receiver android:name=".Conformation"></receiver>
+        <receiver android:name=".Conformation" />
         <service android:name=".Notify" />
     </application>
 

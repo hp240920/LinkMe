@@ -57,6 +57,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.authotp.Threads.GetCurrentUserThread;
+import com.google.android.gms.common.internal.Constants;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.ChildEventListener;
@@ -180,23 +181,15 @@ public class Dashboard extends AppCompatActivity {
         editor.clear();
         editor.apply();
         SharePreHelper.setName(null);
-        stopService(serviceIntent);
-
+        if(isMyServiceRunning(Notify.class)){
+            serviceIntent = new Intent(Dashboard.this, Notify.class);
+            serviceIntent.putExtra("inputExtra", "stop");
+            startService(serviceIntent);
+        }
         PackageManager pm  = Dashboard.this.getPackageManager();
         ComponentName componentName = new ComponentName(Dashboard.this, Detector.class);
         pm.setComponentEnabledSetting(componentName,PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
                 PackageManager.DONT_KILL_APP);
-
-        /*
-          if(isMyServiceRunning(Notify.class)){
-            serviceIntent = new Intent(this, Notify.class);
-            serviceIntent.putExtra("inputExtra", "AuthOTP");
-            stopService(serviceIntent);
-            check_notification();
-        }
-
-         */
-
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
     }
@@ -212,7 +205,6 @@ public class Dashboard extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
         setTitle("Dashboard");
-
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (!Permissions.check_phone_permission(Dashboard.this)){
@@ -235,6 +227,11 @@ public class Dashboard extends AppCompatActivity {
 
 
         // Get all the values from Shared Prefrences for a background thread;
+
+        Intent intent = getIntent();
+        int notificationId = intent.getIntExtra("notification_id", 0);
+        NotificationManager manager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+        manager.cancel(notificationId);
 
 
         /*
@@ -276,11 +273,13 @@ public class Dashboard extends AppCompatActivity {
         // check if service is not started if not then start a service
         if(!isMyServiceRunning(Notify.class)){
             serviceIntent = new Intent(this, Notify.class);
-            serviceIntent.putExtra("inputExtra", "AuthOTP");
-            ContextCompat.startForegroundService(this, serviceIntent);
+            serviceIntent.putExtra("inputExtra", "start");
+            //ContextCompat.startForegroundService(this, serviceIntent);
+            //Intent startIntent = new Intent(Dashboard.this, Notify.class);
+            //startIntent.setAction(Constants.ACTION.STARTFOREGROUND_ACTION);
+            startService(serviceIntent);
             check_notification();
         }
-
         startDetector();
       //  loadrofile.start();
     }
@@ -1264,7 +1263,5 @@ public class Dashboard extends AppCompatActivity {
         }
         manager.notify(1, builder.build());
     }
-
-
 
 }

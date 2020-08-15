@@ -21,23 +21,27 @@ public class Notify extends Service {
         super.onCreate();
     }
 
-    
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String input = intent.getStringExtra("inputExtra");
-        Intent notificationIntent = new Intent(this, Dashboard.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this,
-                0, notificationIntent, 0);
-        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Background Service")
-                .setContentText(input)
-                .setSmallIcon(R.drawable.ic_launcher_background)
-                .setContentIntent(pendingIntent)
-                .build();
-        startForeground(2, notification);
-        //do heavy work on a background thread
-        //stopSelf();
-        return START_REDELIVER_INTENT;
+        if (input.equals("start")) {
+            Intent notificationIntent = new Intent(this, Dashboard.class);
+            PendingIntent pendingIntent = PendingIntent.getActivity(this,
+                    0, notificationIntent, 0);
+            Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                    .setContentTitle("Background Service")
+                    .setContentText("LinkMe")
+                    .setSmallIcon(R.drawable.ic_launcher_background)
+                    .setContentIntent(pendingIntent)
+                    .build();
+            startForeground(2, notification);
+            return START_REDELIVER_INTENT;
+        } else if (input.equals("stop")) {
+            stopForeground(true);
+            stopSelfResult(startId);
+        }
+        return START_NOT_STICKY;
     }
     @Override
     public void onDestroy() {

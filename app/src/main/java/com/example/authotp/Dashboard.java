@@ -64,6 +64,7 @@ import com.google.android.gms.common.internal.Constants;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -80,6 +81,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class Dashboard extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -156,22 +158,33 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
         getSharedPref(sharedPreferences);
          */
 
+        // here we can make a method
+
         final SwipeRefreshLayout pullToRefresh = findViewById(R.id.pullToRefresh);
         pullToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                updateScrollView(); // your code
+                setNativagationDrawer();
+                updateScrollView();
                 pullToRefresh.setRefreshing(false);
             }
         });
 
+        if(!isMyServiceRunning(Notify.class)){
+            //System.out.println("HELLO");
+            serviceIntent = new Intent(this, Notify.class);
+            serviceIntent.putExtra("inputExtra", "start");
+            ContextCompat.startForegroundService(this, serviceIntent);
+            check_notification();
+        }
+
+
+
 
         // Drawer Layout
         drawerLayout = findViewById(R.id.drawer_layout);
-        navigationView = findViewById(R.id.navigation_bar);
-        navigationView.setNavigationItemSelectedListener(Dashboard.this);
-
-        actionBarDrawerToggle = new ActionBarDrawerToggle(this,drawerLayout,R.string.open,R.string.close);
+        setNativagationDrawer();
+        actionBarDrawerToggle = new ActionBarDrawerToggle(this,drawerLayout, R.string.open, R.string.close);
 
         drawerLayout.addDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.syncState();
@@ -198,21 +211,54 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
         //loadImage.dismiss();
 
         // check if service is not started if not then start a service
-        if(!isMyServiceRunning(Notify.class)){
-            serviceIntent = new Intent(this, Notify.class);
-            serviceIntent.putExtra("inputExtra", "AuthOTP");
-            ContextCompat.startForegroundService(this, serviceIntent);
-            check_notification();
-        }
 
         startDetector();
         //  loadrofile.start();
     }
 
+    private void setNativagationDrawer(){
+        navigationView = findViewById(R.id.navigation_bar);
+        navigationView.setNavigationItemSelectedListener(Dashboard.this);
+
+        View header = navigationView.getHeaderView(0);
+        final ImageView my_profile = (ImageView) header.findViewById(R.id.nav_profile);
+        my_profile.setImageResource(R.drawable.default_dp);
+        TextView my_name = (TextView) header.findViewById(R.id.nav_name);
+        TextView my_phone = (TextView) header.findViewById(R.id.nav_number);
+        //my_profile.setImageResource(R.drawable.default_dp);
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+
+        SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
+        String phone = sharedPreferences.getString("phone", "");
+        String name = sharedPreferences.getString("name", "");
+        if(!name.equals("")){
+            my_name.setText(name);
+        }
+        //assert phone != null;
+        if(!phone.equals("")){
+            my_phone.setText(phone);
+            StorageReference profileRef = storage.getReference().child("Profiles/" + Objects.requireNonNull(phone));
+            profileRef.listAll().addOnSuccessListener(new OnSuccessListener<ListResult>() {
+                @Override
+                public void onSuccess(ListResult listResult) {
+                    for (StorageReference item : listResult.getItems()) {
+                        item.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                if(uri != null){
+                                    Picasso.get().load(uri).into(my_profile);
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    }
+
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-
         System.out.println("Clicked");
         drawerLayout.closeDrawers();
         switch (menuItem.getItemId()) {

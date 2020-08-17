@@ -1,34 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="176dp"
-    android:background= "@color/light_nav"
+    android:layout_height="185dp"
+    android:background="@color/light_nav"
     android:gravity="bottom"
     android:orientation="vertical"
     android:padding="16dp"
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
+
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:id="@+id/nav_profile"
+        android:layout_width="94dp"
+        android:layout_height="94dp"
         android:layout_gravity="center"
+        android:layout_marginStart="15dp"
+        android:layout_marginLeft="25dp"
+        android:layout_marginTop="0dp"
+        android:layout_marginEnd="15dp"
+        android:layout_marginRight="25dp"
+        android:layout_marginBottom="0dp"
+        android:foregroundGravity="center"
         android:src="@mipmap/ic_launcher_round" />
 
     <TextView
         android:id="@+id/nav_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="2dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="2dp"
+        android:layout_marginRight="2dp"
+        android:layout_marginBottom="5dp"
         android:paddingTop="8dp"
         android:text="Coding in Flow"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-        android:textColor="#050505"
-        />
+        android:textColor="#050505" />
 
     <TextView
         android:id="@+id/nav_number"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="0dp"
+        android:layout_marginLeft="2dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="2dp"
+        android:layout_marginRight="2dp"
+        android:layout_marginBottom="2dp"
         android:text="info@codinginflow.com"
-        android:textColor="#050505"
-         />
+        android:textColor="#050505" />
 
 </LinearLayout>

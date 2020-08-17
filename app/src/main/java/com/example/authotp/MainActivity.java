@@ -130,7 +130,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // to remove the notification once clicked
         Intent intent = getIntent();
         int notificationId = intent.getIntExtra("notification_id", 0);
         NotificationManager manager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
@@ -229,7 +228,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onCodeAutoRetrievalTimeOut(String s) {
                         super.onCodeAutoRetrievalTimeOut(s);
-                        Toast.makeText(MainActivity.this, "Auto-verification Failed!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Auto-Verification Failed!", Toast.LENGTH_SHORT).show();
                         MainActivity.this.recreate();
                     }
 

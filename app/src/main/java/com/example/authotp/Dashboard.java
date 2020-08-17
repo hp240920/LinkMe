@@ -60,6 +60,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.authotp.Threads.GetCurrentUserThread;
+import com.google.android.gms.common.internal.Constants;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.navigation.NavigationView;
@@ -300,23 +301,15 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
         editor.clear();
         editor.apply();
         SharePreHelper.setName(null);
-        stopService(serviceIntent);
-
+        if(isMyServiceRunning(Notify.class)){
+            serviceIntent = new Intent(Dashboard.this, Notify.class);
+            serviceIntent.putExtra("inputExtra", "stop");
+            startService(serviceIntent);
+        }
         PackageManager pm  = Dashboard.this.getPackageManager();
         ComponentName componentName = new ComponentName(Dashboard.this, Detector.class);
         pm.setComponentEnabledSetting(componentName,PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
                 PackageManager.DONT_KILL_APP);
-
-        /*
-          if(isMyServiceRunning(Notify.class)){
-            serviceIntent = new Intent(this, Notify.class);
-            serviceIntent.putExtra("inputExtra", "AuthOTP");
-            stopService(serviceIntent);
-            check_notification();
-        }
-
-         */
-
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
     }
@@ -1302,7 +1295,5 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
         }
         manager.notify(1, builder.build());
     }
-
-
 
 }

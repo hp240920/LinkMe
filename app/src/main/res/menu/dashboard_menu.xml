@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:title="Edit Information" android:id="@+id/edit_information"></item>
-    <item android:id="@+id/delete_files" android:title="Manage Files" />
-    <item android:id="@+id/call_log" android:title="Recent Calls"></item>
-    <item android:id="@+id/search_nearby" android:title="Search Nearby"></item>
-    <item android:title="Help" android:id="@+id/about_us"></item>
-    <item android:title="Log Out" android:id="@+id/log_out"></item>
+
+    <item android:title="Edit Information" android:icon="@drawable/edit_information" android:id="@+id/edit_information"></item>
+    <item android:id="@+id/delete_files" android:icon="@drawable/manage_file" android:title="Manage Files" />
+    <item android:id="@+id/call_log" android:icon="@drawable/recent_call" android:title="Recent Calls"></item>
+    <item android:id="@+id/search_nearby"  android:icon="@drawable/search_nearby" android:title="Search Nearby"></item>
+    <item android:title="Help"  android:icon="@drawable/help"  android:id="@+id/about_us"></item>
+    <item android:title="Log Out"  android:icon="@drawable/log_out"  android:id="@+id/log_out"></item>
+
+
 </menu>

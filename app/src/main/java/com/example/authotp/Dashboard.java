@@ -3,13 +3,16 @@ package com.example.authotp;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.ActionBar;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -59,6 +62,7 @@ import android.widget.Toast;
 import com.example.authotp.Threads.GetCurrentUserThread;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -76,7 +80,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Dashboard extends AppCompatActivity {
+public class Dashboard extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
 
     private static final int REQUEST_CODE = 3055;
@@ -92,7 +96,12 @@ public class Dashboard extends AppCompatActivity {
     GetCurrentUserThread userThread;
     boolean isFirstTimeRun = true;
 
-    @Override
+    private  DrawerLayout drawerLayout;
+    private NavigationView navigationView;
+    ActionBarDrawerToggle actionBarDrawerToggle;
+
+    /*
+        @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
         MenuInflater menuInflater = getMenuInflater();
@@ -100,17 +109,118 @@ public class Dashboard extends AppCompatActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        super.onOptionsItemSelected(item);
+     */
 
-        switch (item.getItemId()){
+
+
+    //private User currentUser;
+    FirebaseDatabase firebaseDatabase;
+    FirebaseStorage firebaseStorage;
+    Intent serviceIntent;
+    Dialog popUpDialog;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_dashboard);
+        setTitle("Dashboard");
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!Permissions.check_phone_permission(Dashboard.this)){
+                requestPermissions(new String[] {
+                        Manifest.permission.READ_PHONE_STATE,
+                        Manifest.permission.READ_CALL_LOG,
+                }, REQUEST_PHONE);
+            }
+        }
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!Permissions.check_contacts_permission(Dashboard.this)){
+                requestPermissions(new String[] {
+                        Manifest.permission.READ_CONTACTS,
+                        Manifest.permission.WRITE_CONTACTS,
+                }, REQUEST_CONTACT);
+            }
+        }
+
+
+        // Get all the values from Shared Prefrences for a background thread;
+
+
+        /*
+        SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
+        currentUser = new User();
+        getSharedPref(sharedPreferences);
+         */
+
+        final SwipeRefreshLayout pullToRefresh = findViewById(R.id.pullToRefresh);
+        pullToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                updateScrollView(); // your code
+                pullToRefresh.setRefreshing(false);
+            }
+        });
+
+
+        // Drawer Layout
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.navigation_bar);
+        navigationView.setNavigationItemSelectedListener(Dashboard.this);
+
+        actionBarDrawerToggle = new ActionBarDrawerToggle(this,drawerLayout,R.string.open,R.string.close);
+
+        drawerLayout.addDrawerListener(actionBarDrawerToggle);
+        actionBarDrawerToggle.syncState();
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+
+        // Custom popup window created for profile pic and display a list of file of a particular user.
+        popUpDialog = new Dialog(this);
+
+        // Getting Firebase Database and Storage
+        firebaseDatabase = FirebaseDatabase.getInstance();
+        firebaseStorage =FirebaseStorage.getInstance();
+
+        // update the scroll view
+        userThread = new GetCurrentUserThread(Dashboard.this);
+        getCurrentUser = new Thread(userThread);
+        getCurrentUser.start();
+
+        //loadImage = new ProgressDialog(Dashboard.this);
+        //loadImage.setTitle("Processing");
+        //loadImage.setMessage("Please Wait...");
+        //loadImage.show();
+        updateScrollView();
+        //loadImage.dismiss();
+
+        // check if service is not started if not then start a service
+        if(!isMyServiceRunning(Notify.class)){
+            serviceIntent = new Intent(this, Notify.class);
+            serviceIntent.putExtra("inputExtra", "AuthOTP");
+            ContextCompat.startForegroundService(this, serviceIntent);
+            check_notification();
+        }
+
+        startDetector();
+        //  loadrofile.start();
+    }
+
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+
+        System.out.println("Clicked");
+        drawerLayout.closeDrawers();
+        switch (menuItem.getItemId()) {
             case R.id.edit_information:
-                Log.i("Selected :","edit info");
+                Log.i("Selected :", "edit info");
                 EditInfo();
                 return true;
             case R.id.delete_files:
-                Log.i("Selected :","delete files");
+                Log.i("Selected :", "delete files");
                 deleteFiles();
                 return true;
             case R.id.call_log:
@@ -123,15 +233,25 @@ public class Dashboard extends AppCompatActivity {
                 return true;
 
             case R.id.about_us:
-                Log.i("Selected :","about us");
+                Log.i("Selected :", "about us");
                 return true;
             case R.id.log_out:
-                Log.i("Selected :","log out");
+                Log.i("Selected :", "log out");
                 logOut();
                 return true;
             default:
                 return false;
         }
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        super.onOptionsItemSelected(item);
+        if(actionBarDrawerToggle.onOptionsItemSelected(item)) {
+            return true;
+            }
+        return false;
     }
 
     private void onSearchNearby() {
@@ -201,89 +321,6 @@ public class Dashboard extends AppCompatActivity {
         startActivity(intent);
     }
 
-    //private User currentUser;
-    FirebaseDatabase firebaseDatabase;
-    FirebaseStorage firebaseStorage;
-    Intent serviceIntent;
-    Dialog popUpDialog;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_dashboard);
-        setTitle("Dashboard");
-
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (!Permissions.check_phone_permission(Dashboard.this)){
-                requestPermissions(new String[] {
-                        Manifest.permission.READ_PHONE_STATE,
-                        Manifest.permission.READ_CALL_LOG,
-                }, REQUEST_PHONE);
-            }
-        }
-
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (!Permissions.check_contacts_permission(Dashboard.this)){
-                requestPermissions(new String[] {
-                        Manifest.permission.READ_CONTACTS,
-                        Manifest.permission.WRITE_CONTACTS,
-                }, REQUEST_CONTACT);
-            }
-        }
-
-
-        // Get all the values from Shared Prefrences for a background thread;
-
-
-        /*
-        SharedPreferences sharedPreferences = getSharedPreferences("com.example.authotp", Context.MODE_PRIVATE);
-        currentUser = new User();
-        getSharedPref(sharedPreferences);
-         */
-
-        final SwipeRefreshLayout pullToRefresh = findViewById(R.id.pullToRefresh);
-        pullToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                updateScrollView(); // your code
-                pullToRefresh.setRefreshing(false);
-            }
-        });
-
-
-
-        // Custom popup window created for profile pic and display a list of file of a particular user.
-        popUpDialog = new Dialog(this);
-
-        // Getting Firebase Database and Storage
-        firebaseDatabase = FirebaseDatabase.getInstance();
-        firebaseStorage =FirebaseStorage.getInstance();
-
-        // update the scroll view
-        userThread = new GetCurrentUserThread(Dashboard.this);
-        getCurrentUser = new Thread(userThread);
-        getCurrentUser.start();
-
-        //loadImage = new ProgressDialog(Dashboard.this);
-        //loadImage.setTitle("Processing");
-        //loadImage.setMessage("Please Wait...");
-        //loadImage.show();
-        updateScrollView();
-        //loadImage.dismiss();
-
-        // check if service is not started if not then start a service
-        if(!isMyServiceRunning(Notify.class)){
-            serviceIntent = new Intent(this, Notify.class);
-            serviceIntent.putExtra("inputExtra", "AuthOTP");
-            ContextCompat.startForegroundService(this, serviceIntent);
-            check_notification();
-        }
-
-        startDetector();
-      //  loadrofile.start();
-    }
 
 
     private void startDetector(){
@@ -699,6 +736,7 @@ public class Dashboard extends AppCompatActivity {
         ll.addView(row);
 
     }
+
 
     private class onBtnViewFiles implements View.OnClickListener {
 

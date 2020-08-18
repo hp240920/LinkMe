@@ -70,7 +70,7 @@ public class Sign_Up extends AppCompatActivity {
     TextView fileName;
     ImageView profile_pic;
     Button edit_profile, delete_profile;
-    Button btnSelect , btnSignUp;
+    Button btnSignUp;
     final int REQUEST_CODE = 9;
     final int INTENT_CODE_SELECTFILE = 86;
     private Uri pdfUri;
@@ -295,6 +295,12 @@ public class Sign_Up extends AppCompatActivity {
     //private User myUser;
 
     public void onclickbtnSignUp(View v){
+        EditText full_name  = findViewById(R.id.fullName);
+        String name = full_name.getText().toString();
+        if(name.isEmpty()){
+            full_name.setError("Required");
+            return;
+        }
         final User myUser = createUser();
 
         FirebaseQuerry.getKey(new FirebaseQuerry.FirestoreCallback() {

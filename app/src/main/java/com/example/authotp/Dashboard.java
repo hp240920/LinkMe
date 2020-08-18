@@ -222,7 +222,7 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
 
         View header = navigationView.getHeaderView(0);
         final ImageView my_profile = (ImageView) header.findViewById(R.id.nav_profile);
-        my_profile.setImageResource(R.drawable.default_dp);
+        my_profile.setImageResource(R.mipmap.ic_launcher_round);
         TextView my_name = (TextView) header.findViewById(R.id.nav_name);
         TextView my_phone = (TextView) header.findViewById(R.id.nav_number);
         //my_profile.setImageResource(R.drawable.default_dp);

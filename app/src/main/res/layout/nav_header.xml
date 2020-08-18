@@ -31,10 +31,11 @@
         android:layout_marginEnd="2dp"
         android:layout_marginRight="2dp"
         android:layout_marginBottom="5dp"
+        android:hint="Your Name"
         android:paddingTop="8dp"
-        android:text="Coding in Flow"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-        android:textColor="#050505" />
+        android:textColor="#050505"
+        android:textColorHint="@color/cardview_dark_background" />
 
     <TextView
         android:id="@+id/nav_number"
@@ -46,7 +47,8 @@
         android:layout_marginEnd="2dp"
         android:layout_marginRight="2dp"
         android:layout_marginBottom="2dp"
-        android:text="info@codinginflow.com"
-        android:textColor="#050505" />
+        android:hint="Your Phone"
+        android:textColor="#050505"
+        android:textColorHint="@color/cardview_dark_background" />
 
 </LinearLayout>

@@ -97,7 +97,6 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
     private long counter = 0;
     Thread getCurrentUser;
     GetCurrentUserThread userThread;
-    boolean isFirstTimeRun = true;
 
     private  DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -281,6 +280,7 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
 
             case R.id.about_us:
                 Log.i("Selected :", "about us");
+                about_us();
                 return true;
             case R.id.log_out:
                 Log.i("Selected :", "log out");
@@ -290,6 +290,7 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
                 return false;
         }
     }
+
 
 
     @Override
@@ -314,6 +315,11 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
     private void deleteFiles() {
         Intent intent = new Intent(this, deleteFiles.class);
         intent.putExtra("phone", userThread.getPhonenumber());
+        startActivity(intent);
+    }
+
+    private void about_us(){
+        Intent intent = new Intent(this, Help_Activity.class);
         startActivity(intent);
     }
 
@@ -498,7 +504,6 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
                 ListView list= (ListView) findViewById(R.id.listView);
                 //list.addView(new TextView(this));
                 list.setAdapter(adapter);
-                isFirstTimeRun = false;
                 for(Message newMessage : dashboardUserNumbers){
                     if(!newMessage.isNotify()){
                         unread_message(newMessage);

@@ -22,7 +22,7 @@ import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.WindowManager;
-import android.widget.Toast;
+//import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
@@ -50,14 +50,14 @@ public class Detector extends BroadcastReceiver{
             if (state.equals(TelephonyManager.EXTRA_STATE_RINGING)) {
                 //in_out = true;
                 SharePreHelper.setName("true");
-                Toast.makeText(context, "Ringing State Number is -" + incomingNumber, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(context, "Ringing State Number is -" + incomingNumber, Toast.LENGTH_SHORT).show();
             }
             if ((state.equals(TelephonyManager.EXTRA_STATE_OFFHOOK))) {
-                Toast.makeText(context, "Received State", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(context, "Received State", Toast.LENGTH_SHORT).show();
             }
             if (state.equals(TelephonyManager.EXTRA_STATE_IDLE)) {
                 //end = true;
-                Toast.makeText(context, "Idle State", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(context, "Idle State", Toast.LENGTH_SHORT).show();
                 // incomingNumber = getlastCall(context);
                 String incomingNumber1 = User.lastestNumber;
                 notificationOut(context,incomingNumber1,myNumber);
